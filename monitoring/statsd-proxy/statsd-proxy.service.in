@@ -1,0 +1,12 @@
+[Unit]
+Description=Proxy statsd UDP to Dokku service
+Requires=docker.service
+After=dokku-redeploy.service
+
+# DIR substituted in by "make install":
+[Service]
+WorkingDirectory=DIR
+ExecStart=/usr/bin/python statsd-proxy.py
+
+[Install]
+WantedBy=docker.service

@@ -1,0 +1,11 @@
+[Unit]
+Description=Report server metrics to statsd
+After=network.target
+
+# DIR and VENV substituted in by "make install":
+[Service]
+WorkingDirectory=DIR
+ExecStart=VENV/bin/python statsd-agent.py
+
+[Install]
+WantedBy=multi-user.target
