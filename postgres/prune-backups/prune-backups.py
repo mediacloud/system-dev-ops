@@ -189,14 +189,15 @@ def main():
     frequencies = ('daily', 'weekly', 'monthly', 'yearly')
 
     # thanks to https://github.com/xolox/python-rotate-backups/blob/master/rotate_backups/__init__.py
-    groupings = {freq: collections.defaultdict(list) for freq in frequencies}
+    last_by_grouping = {freq: {} for freq in frequencies}
 
-    def add_to_grouping(freq: str, index: tuple, item: Item, max_to_keep: int | None = None):
-        #print("add_to_grouping", freq, index, item.key)
-        if max_to_keep and len(groupings[freq][index]) == max_to_keep:
-            print("duplicate", freq, item.key, "have", groupings[freq][index][0].key)
-            return
-        groupings[freq][index].append(item)
+    # tuple varies in size/shape by grouping
+    def save_by_grouping(freq: str, index: tuple, item: Item, complain: bool = False):
+        #print("save_by_grouping", freq, index, item.key)
+        if index not in last_by_grouping[freq]:
+            last_by_grouping[freq][index] = item
+        elif complain:
+            print("duplicate", freq, item.key, "have", last_by_grouping[freq][index].key)
 
     # avoid stale values due to lack of block scoping
     del year
@@ -218,10 +219,10 @@ def main():
         month = item.month
         day = item.day
         week = item.week
-        add_to_grouping('daily', (year, month, day), item, 1)
-        add_to_grouping('weekly', (year, week), item)
-        add_to_grouping('monthly', (year, month), item)
-        add_to_grouping('yearly', (year,), item)
+        save_by_grouping('daily', (year, month, day), item, True)
+        save_by_grouping('weekly', (year, week), item)
+        save_by_grouping('monthly', (year, month), item)
+        save_by_grouping('yearly', (year,), item)
 
     # avoid stale values due to lack of block scoping
     del year
@@ -240,14 +241,13 @@ def main():
         if count == 0:
             return
 
-        # dict entries created newest to oldest
-        sorted_groupings = groupings[freq].items()
+        # dict entries created newest to oldest (ordered dict)
+        sorted_groupings = last_by_grouping[freq].items()
 
-        for groupid, items in sorted_groupings:
+        for groupid, item in sorted_groupings:
             # keep newest item in grouping
             # if already kept, will move on to next oldest grouping
-            if items:
-                item = items[0]
+            if item:
                 if item not in kept:
                     kept.add(item)
                     print("keeping", freq, item.key)
