@@ -188,7 +188,12 @@ def main():
     # MUST have an integer attribute in ap.args!!!
     frequencies = ('daily', 'weekly', 'monthly', 'yearly')
 
-    # thanks to https://github.com/xolox/python-rotate-backups/blob/master/rotate_backups/__init__.py
+    # thanks to
+    # https://github.com/xolox/python-rotate-backups/blob/master/rotate_backups/__init__.py
+    # for pointing out the dicts indexed by tuples could be kept in a
+    # dict indexed by frequency names.  Since input is already sorted
+    # newest first, only keeping first (newest) entry for each
+    # frequency period.
     last_by_grouping = {freq: {} for freq in frequencies}
 
     # tuple varies in size/shape by grouping
@@ -206,7 +211,7 @@ def main():
     del d
     del week
 
-    # process newest first; keep only last backup each day.
+    # process newest first; keep only last backup in each frequency bucket
     # if database name changed, items may not be in chronological order, so need sort.
     sorted_items = sorted(items, reverse=True)
 
@@ -245,17 +250,16 @@ def main():
         sorted_groupings = last_by_grouping[freq].items()
 
         for groupid, item in sorted_groupings:
-            # keep newest item in grouping
-            # if already kept, will move on to next oldest grouping
-            if item:
-                if item not in kept:
-                    kept.add(item)
-                    print("keeping", freq, item.key)
-                    if count > 0: # -1 means infinite
-                        count -= 1
-                        if count == 0:
-                            return
-        if count > 0:
+            # if item already kept, will move on to next oldest grouping
+            if item and item not in kept:
+                kept.add(item)
+                print("keeping", freq, item.key)
+                if count > 0: # -1 means infinite
+                    count -= 1
+                    if count == 0:
+                        return
+
+        if count > 0:           # -1 means infinite
             print("could keep", count, "more", freq)
     # end of mark function
 
