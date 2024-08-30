@@ -6,15 +6,15 @@ Requires "pip install boto3"
 Will use keys from AWS_SHARED_CREDENTIALS_FILE (default ~/.aws/credentials):
 https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#shared-credentials-file
 
-Should use any of:
-dokku postgres backup config
-
+Will honor any of:
 AWS_PROFILE
 AWS_SHARED_CREDENTIALS_FILE
 
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
 AWS_REGION
+
+***OR*** steal credentials from dokku postgres backup config files
 """
 
 # guides:
@@ -270,16 +270,26 @@ def main():
     for item in items:
         if item in kept:
             continue
-        print("delete", item.key)
         delete.append(item.key)
     print("keep", len(kept), "delete", len(delete))
 
     if args.delete:
-        # S3 has delete_objects call for batch remove
-        # (up to 1000 objects per call), but in practice,
-        # this should be run daily, and in production
-        # should remove at most one file a day.
-        print(dir(s3))
+        batchsize = 500         # max 1000
+        while len(delete) > 0:
+            objects = [{"Key": key} for key in delete[:batchsize]]
+            resp = s3.delete_objects(Bucket=bucket,
+                                     Delete={
+                                         "Objects": objects,
+                                         "Quiet": False
+                                     })
+            for obj in resp.get("Deleted", []):
+                print("deleted:", obj["Key"])
+            for obj in resp.get("Errors", []):
+                print(f"""{obj["Message"]}: {obj["Key"]}""")
+            delete = delete[batchsize:]
+    else:
+        for key in delete:
+            print("to be deleted:", key)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
