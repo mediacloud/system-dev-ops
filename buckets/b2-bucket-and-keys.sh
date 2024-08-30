@@ -27,7 +27,7 @@ if [ "x$FOUND" = x ]; then
 fi
 
 usage() {
-    echo "Usage: $0 create [--public|-p|--ro-key|-r|--help|-h] BUCKET-NAMES..." 1>&2
+    echo "Usage: $0 create [--public|-p|--ro-key|-r|--versioned|--help|-h] BUCKET-NAMES..." 1>&2
     echo "	$0 delete BUCKET-NAMES..." 1>&2
     exit 255
 }
@@ -42,12 +42,14 @@ case $COMMAND in
 create)
     PUBPRIV=allPrivate
     MAKE_RO_KEY=
+    VERSIONED=
     while [ $# -gt 0 ]; do
 	# Update usage function when this is changed!!!!!
 	case "$1" in
 	--debug|-d) set -x; DEBUG=1;;
 	--public|-p) PUBPRIV=allPublic;;
 	--ro-key|-r) MAKE_RO_KEY=1;;
+	--versioned) VERSIONED=1;;
 	--help|-h) usage;;
 	-*) echo "create: unknown option $1" 1>&2; usage;;
 	*) break;
@@ -110,6 +112,20 @@ create)
 	exit 33
     fi
 
+    if [ "x$VERSIONED" != x ]; then
+	# versioned
+	LIFECYCLE_OPTION=
+	LIFECYCLE_RULE=
+    else
+	# unversioned
+	LIFECYCLE_OPTION=--lifecycle-rule
+	# from get-bucket output when versioning disabled using Web UI
+	# and shown at https://www.backblaze.com/docs/en/cloud-storage-lifecycle-rules
+	# under "Keep only the last version of the file":
+	# NO SPACES!!
+	LIFECYCLE_RULE='{"daysFromHidingToDeleting":1,"daysFromUploadingToHiding":null,"fileNamePrefix":""}'
+    fi
+
     for BUCKET in "$@"; do
 	RO_KEY_NAME=${BUCKET}${KEY_RO_SUFFIX}
 	RW_KEY_NAME=${BUCKET}${KEY_RW_SUFFIX}
@@ -118,9 +134,9 @@ create)
 	#                   [--file-lock-enabled] [--replication REPLICATION]
 	#                   [--default-server-side-encryption {SSE-B2,none}]
 	#                   [--default-server-side-encryption-algorithm {AES256}]
-	#                   [--lifecycle-rule LIFECYCLE_RULES | --lifecycle-rules LIFECYCLE_RULES]
+	#                   [--lifecycle-rule LIFECYCLE_RULES]
 	#                   bucketName {allPublic,allPrivate}
-	BUCKET_ID=$(b2 create-bucket $BUCKET $PUBPRIV)
+	BUCKET_ID=$(b2 create-bucket $LIFECYCLE_OPTION $LIFECYCLE_RULE $BUCKET $PUBPRIV)
 	if [ $? != 0 ]; then
 	    echo "b2 create-bucket failed" 1>&2
 	    exit 1
