@@ -2,9 +2,13 @@
 # adapted from https://github.com/blackrosezy/statsd-agent
 # Phil Budne
 # March 2024
+#
+# NOTE! did not follow "tag_value" convention used elsewhere,
+# and I've continued that reign of error. -phil
 
 import os
 import socket
+import sys
 import time
 
 import statsd
@@ -13,22 +17,32 @@ import psutil
 INTERVAL = 60                   # seconds
 STATSD_HOST = "tarbell.angwin"
 
-DISKS = [
-    ("/", "root"),
-    ("/srv/data", "srv_data"),
-    ("/space", "space"),
-]
+# map partition mount points to reporting names
+DISKS = {
+    "/": "root",
+    "/srv/data": "srv_data",
+    "/space":  "space"
+}
 
 host = socket.gethostname().split(".")[0]
+dev_to_fs: dict[str, str] = {}
+filesystems = set()             # subset of DISK keys found mounted
+
+def get_devices():
+    # find device names for mounted filesystems
+    for disk in psutil.disk_partitions(all=True):
+        if disk.mountpoint in DISKS and disk.device.startswith("/dev/"):
+            devname = disk.device[5:]
+            print("adding", devname, disk.mountpoint)
+            dev_to_fs[devname] = disk.mountpoint
+            filesystems.add(disk.mountpoint)
 
 def report(f):
-    for path, name in DISKS:
-        if not os.path.exists(path):
-            continue
-        disk_usage = psutil.disk_usage(path)
+    for mount_point in filesystems:
+        disk_usage = psutil.disk_usage(mount_point)
+        name = DISKS[mount_point]
         f(f"disk.pct.{host}.{name}", disk_usage.percent)
 
-    
     f(f"cpu.pct.{host}", psutil.cpu_percent(interval=None))
 
     swap = psutil.swap_memory()
@@ -42,13 +56,32 @@ def report(f):
     f(f"load.5.{host}", la[1])
     f(f"load.15.{host}", la[2])
 
+    diskstats = psutil.disk_io_counters(perdisk=True)
+    for dev, stats in diskstats.items():
+        if dev in dev_to_fs:
+            fs = DISKS[dev_to_fs[dev]]
+            for field in stats._fields:
+                name, unit = field.replace("_", "-").rsplit("-", 1)
+                # group like units together
+                f(f"disk.stats.{unit}.{name}.{host}.{fs}", getattr(stats, field))
+
+    cputimes = psutil.cpu_times()
+    for field in cputimes._fields:
+        name = field.replace("_", "-")
+        f(f"cpu.state.{host}.{name}", getattr(cputimes, field))
+
+    # scpustats(ctx_switches=470529163283, interrupts=109920968106, soft_interrupts=31224130583, syscalls=0)
+    #print(psutil.cpu_stats())
+
+get_devices()
 while True:
     c = statsd.StatsdClient(STATSD_HOST, 8125, prefix="mc.systems")
-    f = c.gauge
-    #f = print
+    if "--debug" in sys.argv:
+        f = print
+    else:
+        f = c.gauge
 
     report(f)
    
     sleep_sec = INTERVAL - time.time() % INTERVAL
     time.sleep(sleep_sec)
-
