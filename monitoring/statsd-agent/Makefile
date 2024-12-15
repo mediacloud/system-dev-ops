@@ -30,3 +30,6 @@ $(VENVDONE): requirements.txt
 
 status:
 	systemctl status $(SVC)
+
+restart:
+	systemctl restart $(SVC)
