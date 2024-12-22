@@ -73,6 +73,20 @@ def report(f):
     # scpustats(ctx_switches=470529163283, interrupts=109920968106, soft_interrupts=31224130583, syscalls=0)
     #print(psutil.cpu_stats())
 
+    for ifname, stats in psutil.net_io_counters(pernic=True).items():
+        # only physical, connected ethernet interfaces
+        if ifname.startswith("en") and stats.bytes_recv > 0:
+            f(f"net.bytes.tx.{host}.{ifname}", stats.bytes_sent)
+            f(f"net.bytes.rx.{host}.{ifname}", stats.bytes_recv)
+
+            f(f"net.pkts.rx.ok.{host}.{ifname}", stats.packets_recv)
+            f(f"net.pkts.rx.err.{host}.{ifname}", stats.errin)
+            f(f"net.pkts.rx.drop.{host}.{ifname}", stats.dropin)
+
+            f(f"net.pkts.tx.ok.{host}.{ifname}", stats.packets_sent)
+            f(f"net.pkts.tx.err.{host}.{ifname}", stats.errout)
+            f(f"net.pkts.tx.drop.{host}.{ifname}", stats.dropout)
+
 get_devices()
 while True:
     c = statsd.StatsdClient(STATSD_HOST, 8125, prefix="mc.systems")
