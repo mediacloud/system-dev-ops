@@ -1,0 +1,11 @@
+[Unit]
+Description=Report nginx metrics to statsd/graphite/grafana
+After=network.target
+
+# DIR and VENV substituted in by "make install":
+[Service]
+WorkingDirectory=DIR
+ExecStart=VENV/bin/python nginx-agent.py
+
+[Install]
+WantedBy=multi-user.target
