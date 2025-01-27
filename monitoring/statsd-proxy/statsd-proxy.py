@@ -5,18 +5,19 @@ Program to proxy for a statsd-graphite-grafana container.
 Dokku doesn't make it easy to expose a container's UDP port on the
 host server....
 
-Maybe run this in a home-backed container?
-
-Or as a Dokku app setup to use docker-options:
+Maybe run this as a Dokku app setup to use docker-options:
 https://dokku.com/docs/networking/port-management/#dockerfile
 
         which suggests:
 
         dokku proxy:disable myapp
 
-        dokku docker-options:add myapp deploy "-p 2456:2456/udp"
+        dokku docker-options:add myapp deploy "-p 8125:8125/udp"
 
-Which would avoid the need to do docker inspect (could use Docker DNS?)
+Running as a Docker container attached to ANY docker network
+other than the default should give Docker DNS, but at least
+in the past, that required an obscure incantation.
+Maybe "dokku network:set APP NETWORK" makes it easy?
 """
 
 import json
