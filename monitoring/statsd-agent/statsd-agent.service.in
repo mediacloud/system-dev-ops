@@ -5,7 +5,7 @@ After=network.target
 # DIR and VENV substituted in by "make install":
 [Service]
 WorkingDirectory=DIR
-ExecStart=VENV/bin/python statsd-agent.py
+ExecStart=VENV/bin/python3 statsd-agent.py
 
 [Install]
 WantedBy=multi-user.target

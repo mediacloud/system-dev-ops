@@ -25,8 +25,8 @@ uninstall:
 
 $(VENVDONE): requirements.txt
 	test -d $(DIR) || mkdir -p $(DIR)
-	test -d $(VENV) || (cd $(DIR); python -mvenv venv)
-	$(VENV)/bin/python -m pip install -r requirements.txt
+	test -d $(VENV) || (cd $(DIR); python3 -mvenv venv)
+	$(VENV)/bin/python3 -m pip install -r requirements.txt
 
 status:
 	systemctl status $(SVC)
