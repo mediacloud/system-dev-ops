@@ -20,8 +20,9 @@ STATSD_HOST = "tarbell.angwin"
 # map partition mount points to reporting names
 DISKS = {
     "/": "root",
-    "/srv/data": "srv_data",
-    "/space":  "space"
+    "/srv/data": "srv_data",    # old ES cluster
+    "/space":  "space"          # tarbell
+    "/data":  "space"           # new ES cluster
 }
 
 host = socket.gethostname().split(".")[0]
