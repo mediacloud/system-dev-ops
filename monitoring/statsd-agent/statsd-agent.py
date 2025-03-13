@@ -21,8 +21,8 @@ STATSD_HOST = "tarbell.angwin"
 DISKS = {
     "/": "root",
     "/srv/data": "srv_data",    # old ES cluster
-    "/space":  "space"          # tarbell
-    "/data":  "space"           # new ES cluster
+    "/space": "space",          # tarbell
+    "/data": "data"             # new ES cluster
 }
 
 host = socket.gethostname().split(".")[0]
