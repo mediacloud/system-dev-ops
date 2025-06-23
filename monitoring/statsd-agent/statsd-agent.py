@@ -22,7 +22,8 @@ DISKS = {
     "/": "root",
     "/srv/data": "srv_data",    # old ES cluster
     "/space": "space",          # tarbell
-    "/data": "data"             # new ES cluster
+    "/data": "data",            # new ES cluster
+    "/nfs/ang/users": "users"
 }
 
 host = socket.gethostname().split(".")[0]
