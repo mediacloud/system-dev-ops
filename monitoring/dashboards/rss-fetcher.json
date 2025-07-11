@@ -9,10 +9,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2025-05-20T00:25:36Z",
+    "updated": "2025-07-11T22:41:21Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 18,
+    "version": 21,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -45,6 +45,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
+    "iteration": 1752273585326,
     "links": [],
     "panels": [
       {
@@ -107,25 +108,28 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.prod.rss-fetcher.fetcher.db.ready"
+            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.db.ready",
+            "textEditor": true
           },
           {
             "refCount": 0,
             "refId": "C",
-            "target": "stats.gauges.mc.prod.rss-fetcher.fetcher.db.running"
+            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.db.running",
+            "textEditor": true
           },
           {
             "hide": false,
             "refCount": 0,
             "refId": "B",
-            "target": "stats.gauges.mc.prod.rss-fetcher.fetcher.on_hand"
+            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.on_hand",
+            "textEditor": true
           },
           {
             "hide": false,
             "refCount": 0,
             "refId": "D",
-            "target": "stats.gauges.mc.prod.rss-fetcher.fetcher.hunter.blocked",
-            "textEditor": false
+            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.hunter.blocked",
+            "textEditor": true
           }
         ],
         "thresholds": [],
@@ -221,18 +225,18 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.prod.rss-fetcher.fetcher.start_delay.upper"
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.upper"
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.prod.rss-fetcher.fetcher.start_delay.lower"
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.lower"
           },
           {
             "hide": true,
             "refCount": 0,
             "refId": "C",
-            "target": "stats.timers.mc.prod.rss-fetcher.fetcher.start_delay.mean"
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.mean"
           }
         ],
         "thresholds": [],
@@ -327,7 +331,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.prod.rss-fetcher.fetcher.feeds.*.rate"
+            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate"
           }
         ],
         "thresholds": [],
@@ -428,7 +432,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.timers.mc.prod.rss-fetcher.fetcher.total.*.upper"
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.total.*.upper"
           }
         ],
         "thresholds": [],
@@ -522,7 +526,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.prod.rss-fetcher.fetcher.stories.*.rate"
+            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.stories.*.rate"
           }
         ],
         "thresholds": [],
@@ -616,7 +620,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.prod.rss-fetcher.gen_rss.stories.*.count"
+            "target": "stats.counters.mc.$realm.rss-fetcher.gen_rss.stories.*.count"
           }
         ],
         "thresholds": [],
@@ -705,8 +709,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.prod.rss-fetcher.fetcher.workers.*",
-            "textEditor": true
+            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.workers.*",
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -791,7 +795,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.prod.rss-fetcher.fetcher.adjust.*.rate",
+            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.adjust.*.rate",
             "textEditor": false
           }
         ],
@@ -880,7 +884,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.prod.rss-fetcher.fetcher.hunter.*.rate"
+            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.hunter.*.rate"
           }
         ],
         "thresholds": [],
@@ -966,7 +970,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.feeds.recent.hours_*.status_*",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.feeds.recent.hours_*.status_*",
             "textEditor": false
           }
         ],
@@ -1053,7 +1057,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.sources.recent.hours_*.status_*",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.sources.recent.hours_*.status_*",
             "textEditor": false
           }
         ],
@@ -1104,7 +1108,42 @@
     "style": "dark",
     "tags": [],
     "templating": {
-      "list": []
+      "list": [
+        {
+          "allValue": null,
+          "current": {
+            "selected": false,
+            "tags": [],
+            "text": "prod",
+            "value": "prod"
+          },
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "name": "realm",
+          "options": [
+            {
+              "selected": true,
+              "text": "prod",
+              "value": "prod"
+            },
+            {
+              "selected": false,
+              "text": "staging",
+              "value": "staging"
+            },
+            {
+              "selected": false,
+              "text": "pbudne",
+              "value": "pbudne"
+            }
+          ],
+          "query": "prod,staging,pbudne",
+          "skipUrlSync": false,
+          "type": "custom"
+        }
+      ]
     },
     "time": {
       "from": "now-24h",
@@ -1127,6 +1166,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 18
+    "version": 21
   }
 }

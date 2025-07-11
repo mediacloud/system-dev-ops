@@ -9,10 +9,10 @@
     "url": "/d/44aItldNk/web-search-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-01-28T23:47:00Z",
-    "updated": "2025-06-24T17:57:49Z",
-    "updatedBy": "admin",
+    "updated": "2025-07-11T22:33:59Z",
+    "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 30,
+    "version": 31,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 14,
-    "iteration": 1750787405174,
+    "iteration": 1752273185917,
     "links": [],
     "panels": [
       {
@@ -1252,24 +1252,9 @@
           "name": "realm",
           "options": [
             {
-              "selected": false,
+              "selected": true,
               "text": "prod",
               "value": "prod"
-            },
-            {
-              "selected": false,
-              "text": "hist-prod",
-              "value": "hist-prod"
-            },
-            {
-              "selected": false,
-              "text": "rss-prod",
-              "value": "rss-prod"
-            },
-            {
-              "selected": false,
-              "text": "csv-prod",
-              "value": "csv-prod"
             },
             {
               "selected": false,
@@ -1277,7 +1262,7 @@
               "value": "staging"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "pbudne",
               "value": "pbudne"
             },
@@ -1287,7 +1272,7 @@
               "value": "pgulley"
             }
           ],
-          "query": "prod, hist-prod,rss-prod,csv-prod,staging, pbudne, pgulley",
+          "query": "prod,staging, pbudne, pgulley",
           "skipUrlSync": false,
           "type": "custom"
         }
@@ -1314,6 +1299,6 @@
     "timezone": "",
     "title": "web-search stats",
     "uid": "44aItldNk",
-    "version": 30
+    "version": 31
   }
 }
