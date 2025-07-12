@@ -27,5 +27,11 @@ for dash in $(curl -H "$headers" -s "$FULLURL/api/search?query=&" | jq -r '.[] |
 #        folder="$(cat $dash_path | jq -r '.meta.folderTitle')"
 #        mkdir -p "$folder"
 #        mv -f $dash_path "$folder/${dash}-${slug}.json"
-        mv -f $dash_path "${slug}.json"
+        mv -f $dash_path "${slug}.json.tmp"
+	if cmp -s "${slug}.json.tmp" "${slug}.json"; then
+	    rm -f "${slug}.json.tmp"
+	else
+	    mv "${slug}.json.tmp" "${slug}.json"
+	    echo "${slug}.json.tmp" updated
+	fi
 done
