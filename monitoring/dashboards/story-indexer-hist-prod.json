@@ -9,10 +9,10 @@
     "url": "/d/t0lmYEsHz/story-indexer-hist-prod",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-07-08T02:11:19Z",
-    "updated": "2025-07-11T02:36:46Z",
+    "updated": "2025-07-12T04:32:29Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 5,
+    "version": 6,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -368,7 +368,7 @@
         },
         "yaxes": [
           {
-            "format": "short",
+            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -593,6 +593,6 @@
     "timezone": "",
     "title": "story-indexer hist-prod",
     "uid": "t0lmYEsHz",
-    "version": 5
+    "version": 6
   }
 }
