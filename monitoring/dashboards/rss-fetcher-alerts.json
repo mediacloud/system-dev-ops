@@ -9,10 +9,10 @@
     "url": "/d/YVUKAfDVk/rss-fetcher-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-10T21:45:57Z",
-    "updated": "2024-01-21T23:29:25Z",
+    "updated": "2025-07-17T21:48:50Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 23,
+    "version": 25,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -132,8 +132,7 @@
             "fill": true,
             "line": true,
             "op": "lt",
-            "value": 100,
-            "yaxis": "left"
+            "value": 100
           }
         ],
         "timeFrom": null,
@@ -308,6 +307,136 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "alert": {
+          "alertRuleTags": {},
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  50000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "A",
+                  "5m",
+                  "now"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "avg"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "for": "30m",
+          "frequency": "15m",
+          "handler": 1,
+          "name": "Top stories by domain (3 day average) alert",
+          "noDataState": "alerting",
+          "notifications": []
+        },
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "id": 10,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.top-domain.avg.days_3",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [
+          {
+            "colorMode": "critical",
+            "fill": true,
+            "line": true,
+            "op": "gt",
+            "value": 50000
+          }
+        ],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Top domain stories (3 day average)",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -325,6 +454,6 @@
     "timezone": "",
     "title": "rss-fetcher alerts",
     "uid": "YVUKAfDVk",
-    "version": 23
+    "version": 25
   }
 }

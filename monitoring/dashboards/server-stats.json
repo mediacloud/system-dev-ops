@@ -9,10 +9,10 @@
     "url": "/d/dG5Q_MJIz/server-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-03-15T22:08:11Z",
-    "updated": "2025-03-13T01:21:37Z",
+    "updated": "2025-07-14T03:10:47Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 30,
+    "version": 31,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -1036,14 +1036,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.net.pkts.rx.ok.*.*)"
+            "target": "scale(nonNegativeDerivative(stats.gauges.mc.systems.net.pkts.rx.ok.*.*), 0.01666666)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Network Packets In/Minute",
+        "title": "Network Packets In/Second",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1059,7 +1059,7 @@
         },
         "yaxes": [
           {
-            "format": "none",
+            "format": "pps",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1122,14 +1122,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.net.pkts.tx.ok.*.*)"
+            "target": "scale(nonNegativeDerivative(stats.gauges.mc.systems.net.pkts.tx.ok.*.*), 0.01666666)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Network Packets Out/Minute",
+        "title": "Network Packets Out/Second",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1145,7 +1145,7 @@
         },
         "yaxes": [
           {
-            "format": "none",
+            "format": "pps",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1208,14 +1208,15 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.net.bytes.rx.*.*)"
+            "target": "scale(nonNegativeDerivative(stats.gauges.mc.systems.net.bytes.rx.*.*), 0.1333333333)",
+            "textEditor": false
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Network Bytes In/Minute",
+        "title": "Network Bits In/Second",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1231,7 +1232,7 @@
         },
         "yaxes": [
           {
-            "format": "decbytes",
+            "format": "bps",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1294,14 +1295,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.net.bytes.tx.*.*)"
+            "target": "scale(nonNegativeDerivative(stats.gauges.mc.systems.net.bytes.tx.*.*), 0.1333333333)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Network Bytes Out/Minute",
+        "title": "Network Bits Out/Second",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1317,7 +1318,7 @@
         },
         "yaxes": [
           {
-            "format": "decbytes",
+            "format": "bps",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1354,6 +1355,6 @@
     "timezone": "",
     "title": "Server stats",
     "uid": "dG5Q_MJIz",
-    "version": 30
+    "version": 31
   }
 }

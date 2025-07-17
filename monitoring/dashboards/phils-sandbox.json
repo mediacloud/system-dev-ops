@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2025-03-02T20:27:32Z",
+    "updated": "2025-07-17T21:08:03Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 89,
+    "version": 91,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,13 +39,12 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1740947189512,
+    "iteration": 1752783940973,
     "links": [],
     "panels": [
       {
         "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
+        "bars": false,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -57,7 +56,7 @@
           "x": 0,
           "y": 0
         },
-        "id": 42,
+        "id": 44,
         "legend": {
           "avg": false,
           "current": false,
@@ -67,7 +66,7 @@
           "total": false,
           "values": false
         },
-        "lines": false,
+        "lines": true,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -79,20 +78,19 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": true,
+        "stack": false,
         "steppedLine": false,
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.*.provider.*.query.op_*.count",
-            "textEditor": true
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.top-domain.avg.days_3"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Provider counts",
+        "title": "rss-fetcher top domain stories",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -219,10 +217,11 @@
       {
         "aliasColors": {},
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -230,7 +229,7 @@
           "x": 0,
           "y": 8
         },
-        "id": 20,
+        "id": 42,
         "legend": {
           "avg": false,
           "current": false,
@@ -257,14 +256,15 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*"
+            "target": "stats.counters.mc.$realm.*.provider.*.query.op_*.count",
+            "textEditor": true
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Fetcher Queues (stacked)",
+        "title": "Provider counts",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -393,7 +393,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -401,7 +401,7 @@
           "x": 0,
           "y": 16
         },
-        "id": 16,
+        "id": 20,
         "legend": {
           "avg": false,
           "current": false,
@@ -421,37 +421,21 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [
-          {
-            "alias": "/^.*\\.prefetch$/",
-            "bars": false,
-            "fill": 0,
-            "lines": true,
-            "stack": false
-          }
-        ],
+        "seriesOverrides": [],
         "spaceLength": 10,
         "stack": true,
         "steppedLine": false,
         "targets": [
           {
-            "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.requests.*",
-            "textEditor": true
-          },
-          {
-            "refCount": 0,
-            "refId": "B",
-            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.prefetch",
-            "textEditor": false
+            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Q fetcher requests",
+        "title": "Fetcher Queues (stacked)",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -576,7 +560,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -588,7 +572,7 @@
           "x": 0,
           "y": 24
         },
-        "id": 14,
+        "id": 16,
         "legend": {
           "avg": false,
           "current": false,
@@ -606,29 +590,31 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": true,
+        "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "/^.*\\.prefetch$/",
+            "bars": false,
+            "fill": 0,
+            "lines": true,
+            "stack": false
+          }
+        ],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.upper",
-            "textEditor": false
+            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.requests.*",
+            "textEditor": true
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.lower",
-            "textEditor": false
-          },
-          {
-            "refCount": 0,
-            "refId": "C",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.mean",
+            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.prefetch",
             "textEditor": false
           }
         ],
@@ -636,7 +622,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "q fetch get_delay time",
+        "title": "Q fetcher requests",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -652,7 +638,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -779,7 +765,7 @@
           "x": 0,
           "y": 32
         },
-        "id": 23,
+        "id": 14,
         "legend": {
           "avg": false,
           "current": false,
@@ -807,19 +793,19 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.upper",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.upper",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.lower",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.lower",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "C",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.mean",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.mean",
             "textEditor": false
           }
         ],
@@ -827,7 +813,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "q fetch finish time",
+        "title": "q fetch get_delay time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -957,6 +943,105 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 40
+        },
+        "id": 23,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "A",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.upper",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.lower",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.mean",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "q fetch finish time",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -978,7 +1063,7 @@
           "name": "realm",
           "options": [
             {
-              "selected": true,
+              "selected": false,
               "text": "prod",
               "value": "prod"
             },
@@ -998,7 +1083,7 @@
               "value": "csv-prod"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "staging",
               "value": "staging"
             },
@@ -1045,6 +1130,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 89
+    "version": 91
   }
 }
