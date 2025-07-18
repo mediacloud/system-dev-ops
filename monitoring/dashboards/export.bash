@@ -32,6 +32,6 @@ for dash in $(curl -H "$headers" -s "$FULLURL/api/search?query=&" | jq -r '.[] |
 	    rm -f "${slug}.json.tmp"
 	else
 	    mv "${slug}.json.tmp" "${slug}.json"
-	    echo "${slug}.json.tmp" updated
+	    echo "${slug}.json" updated
 	fi
 done

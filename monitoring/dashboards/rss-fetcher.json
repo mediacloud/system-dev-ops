@@ -9,10 +9,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2025-07-11T22:41:21Z",
+    "updated": "2025-07-18T13:49:10Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 21,
+    "version": 23,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -45,7 +45,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
-    "iteration": 1752273585326,
+    "iteration": 1752846377967,
     "links": [],
     "panels": [
       {
@@ -1017,6 +1017,93 @@
       },
       {
         "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 45
+        },
+        "id": 34,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.top-domain.avg.days_3",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Top domain stories/day (3 day average)",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
         "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
@@ -1166,6 +1253,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 21
+    "version": 23
   }
 }
