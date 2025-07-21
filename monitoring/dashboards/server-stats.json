@@ -9,10 +9,10 @@
     "url": "/d/dG5Q_MJIz/server-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-03-15T22:08:11Z",
-    "updated": "2025-07-14T03:10:47Z",
+    "updated": "2025-07-18T22:46:33Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 31,
+    "version": 32,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -114,7 +114,12 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "/stats.gauges.mc.systems.cpu.pct.es-test-[1-4]/",
+            "lines": false
+          }
+        ],
         "spaceLength": 10,
         "stack": false,
         "steppedLine": false,
@@ -130,7 +135,8 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 95
+            "value": 95,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -207,7 +213,12 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "/stats.gauges.mc.systems.load.15.es-test-[1-4]/",
+            "lines": false
+          }
+        ],
         "spaceLength": 10,
         "stack": false,
         "steppedLine": false,
@@ -292,7 +303,12 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "/stats.gauges.mc.systems.vm.pct.es-test-[1-4]/",
+            "lines": false
+          }
+        ],
         "spaceLength": 10,
         "stack": false,
         "steppedLine": false,
@@ -378,7 +394,12 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "/stats.gauges.mc.systems.swap.pct.es-test-[1-4]/",
+            "lines": false
+          }
+        ],
         "spaceLength": 10,
         "stack": false,
         "steppedLine": false,
@@ -1355,6 +1376,6 @@
     "timezone": "",
     "title": "Server stats",
     "uid": "dG5Q_MJIz",
-    "version": 31
+    "version": 32
   }
 }

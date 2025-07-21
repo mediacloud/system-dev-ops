@@ -9,10 +9,10 @@
     "url": "/d/YHyBwfGNz/elasticsearch-graphs",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-11-13T05:54:16Z",
-    "updated": "2025-06-26T16:33:56Z",
+    "updated": "2025-07-18T22:49:57Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 39,
+    "version": 40,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 13,
-    "iteration": 1750955355785,
+    "iteration": 1752878868179,
     "links": [],
     "panels": [
       {
@@ -1946,6 +1946,93 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 80
+        },
+        "id": 63,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.systems.disk.pct.es*.data",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "ES server data partition percent used",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": "30s",
@@ -2035,6 +2122,6 @@
     "timezone": "",
     "title": "Elasticsearch Graphs",
     "uid": "YHyBwfGNz",
-    "version": 39
+    "version": 40
   }
 }

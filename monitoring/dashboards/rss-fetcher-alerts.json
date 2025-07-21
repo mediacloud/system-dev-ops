@@ -9,10 +9,10 @@
     "url": "/d/YVUKAfDVk/rss-fetcher-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-10T21:45:57Z",
-    "updated": "2025-07-17T21:48:50Z",
+    "updated": "2025-07-21T03:23:35Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 25,
+    "version": 27,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -315,7 +315,7 @@
             {
               "evaluator": {
                 "params": [
-                  50000
+                  8000
                 ],
                 "type": "gt"
               },
@@ -395,13 +395,13 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 50000
+            "value": 8000
           }
         ],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Top domain stories (3 day average)",
+        "title": "Top domain stories/day (3 day average)",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -454,6 +454,6 @@
     "timezone": "",
     "title": "rss-fetcher alerts",
     "uid": "YVUKAfDVk",
-    "version": 25
+    "version": 27
   }
 }
