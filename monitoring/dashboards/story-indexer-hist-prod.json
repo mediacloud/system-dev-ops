@@ -9,10 +9,10 @@
     "url": "/d/t0lmYEsHz/story-indexer-hist-prod",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-07-08T02:11:19Z",
-    "updated": "2025-07-31T04:27:08Z",
+    "updated": "2025-08-02T00:25:37Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 7,
+    "version": 11,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -240,15 +240,15 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
           "dataLinks": []
         },
         "percentage": false,
-        "pointradius": 2,
-        "points": false,
+        "pointradius": 0.5,
+        "points": true,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -256,8 +256,15 @@
         "steppedLine": false,
         "targets": [
           {
+            "refCount": 0,
             "refId": "A",
             "target": "stats.timers.mc.hist-prod.story-indexer.importer.fetch-ts.upper",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.timers.mc.hist-prod.story-indexer.importer.fetch-ts.lower",
             "textEditor": false
           }
         ],
@@ -565,7 +572,7 @@
         }
       }
     ],
-    "refresh": "30s",
+    "refresh": false,
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -593,6 +600,6 @@
     "timezone": "",
     "title": "story-indexer hist-prod",
     "uid": "t0lmYEsHz",
-    "version": 7
+    "version": 11
   }
 }

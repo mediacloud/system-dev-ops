@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2025-07-11T18:44:56Z",
+    "updated": "2025-08-02T20:12:28Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 30,
+    "version": 34,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -136,7 +136,8 @@
             "fill": true,
             "line": true,
             "op": "lt",
-            "value": 100000
+            "value": 100000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -225,7 +226,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 9,
@@ -270,7 +271,8 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 175000
+            "value": 175000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -408,7 +410,8 @@
             "fill": true,
             "line": true,
             "op": "lt",
-            "value": 200000
+            "value": 200000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -497,7 +500,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 9,
@@ -542,7 +545,8 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 2500000
+            "value": 2500000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -656,7 +660,7 @@
         "dashes": false,
         "datasource": null,
         "description": "",
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -799,7 +803,7 @@
         "dashes": false,
         "datasource": null,
         "description": "",
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -843,7 +847,8 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 100000
+            "value": 100000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -930,7 +935,7 @@
         "dashes": false,
         "datasource": null,
         "description": "",
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -1019,6 +1024,137 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "alert": {
+          "alertRuleTags": {},
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  10000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "A",
+                  "30m",
+                  "now"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "min"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "keep_state",
+          "for": "5m",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "Search API latency alert",
+          "noDataState": "no_data",
+          "notifications": []
+        },
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 26
+        },
+        "id": 13,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 3,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.timers.mc.prod.web-search.monitor-api.college.31d.words.median",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [
+          {
+            "colorMode": "critical",
+            "fill": true,
+            "line": true,
+            "op": "gt",
+            "value": 10000,
+            "yaxis": "left"
+          }
+        ],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Search API latency",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -1049,6 +1185,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 30
+    "version": 34
   }
 }

@@ -9,10 +9,10 @@
     "url": "/d/44aItldNk/web-search-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-01-28T23:47:00Z",
-    "updated": "2025-07-11T22:33:59Z",
+    "updated": "2025-08-02T16:04:18Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 31,
+    "version": 32,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 14,
-    "iteration": 1752273185917,
+    "iteration": 1754150156242,
     "links": [],
     "panels": [
       {
@@ -260,25 +260,25 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.counters.mc.$realm.web-search.api.calls.*.status_*.count",
+            "target": "stats.counters.mc.$realm.web-search.api.calls.*.status_*.rate",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.counters.mc.$realm.web-search.api.calls.*.*.status_*.count",
+            "target": "stats.counters.mc.$realm.web-search.api.calls.*.*.status_*.rate",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "C",
-            "target": "stats.counters.mc.$realm.web-search.api.calls.*.*.*.status_*.count",
+            "target": "stats.counters.mc.$realm.web-search.api.calls.*.*.*.status_*.rate",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "D",
-            "target": "stats.counters.mc.$realm.web-search.api.calls.*.*.*.*.status_*.count",
+            "target": "stats.counters.mc.$realm.web-search.api.calls.*.*.*.*.status_*.rate",
             "textEditor": false
           }
         ],
@@ -286,7 +286,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "web-search API counts",
+        "title": "web-search API calls/second",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1231,7 +1231,7 @@
         }
       }
     ],
-    "refresh": "1m",
+    "refresh": false,
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1299,6 +1299,6 @@
     "timezone": "",
     "title": "web-search stats",
     "uid": "44aItldNk",
-    "version": 31
+    "version": 32
   }
 }
