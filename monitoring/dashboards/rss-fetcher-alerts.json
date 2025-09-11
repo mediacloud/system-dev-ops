@@ -9,10 +9,10 @@
     "url": "/d/YVUKAfDVk/rss-fetcher-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-10T21:45:57Z",
-    "updated": "2025-07-21T03:23:35Z",
+    "updated": "2025-08-09T06:12:41Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 27,
+    "version": 30,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -336,13 +336,17 @@
               "type": "query"
             }
           ],
-          "executionErrorState": "alerting",
-          "for": "30m",
+          "executionErrorState": "keep_state",
+          "for": "12h",
           "frequency": "15m",
           "handler": 1,
           "name": "Top stories by domain (3 day average) alert",
-          "noDataState": "alerting",
-          "notifications": []
+          "noDataState": "no_data",
+          "notifications": [
+            {
+              "uid": "Mqmz8gcSz"
+            }
+          ]
         },
         "aliasColors": {},
         "bars": true,
@@ -454,6 +458,6 @@
     "timezone": "",
     "title": "rss-fetcher alerts",
     "uid": "YVUKAfDVk",
-    "version": 27
+    "version": 30
   }
 }

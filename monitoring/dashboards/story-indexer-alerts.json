@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2025-08-02T20:12:28Z",
+    "updated": "2025-09-11T03:31:47Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 34,
+    "version": 39,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -461,7 +461,7 @@
             {
               "evaluator": {
                 "params": [
-                  2500000
+                  1000000
                 ],
                 "type": "gt"
               },
@@ -545,8 +545,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 2500000,
-            "yaxis": "left"
+            "value": 1000000
           }
         ],
         "timeFrom": null,
@@ -1032,7 +1031,7 @@
             {
               "evaluator": {
                 "params": [
-                  10000
+                  20000
                 ],
                 "type": "gt"
               },
@@ -1042,7 +1041,7 @@
               "query": {
                 "params": [
                   "A",
-                  "30m",
+                  "10m",
                   "now"
                 ]
               },
@@ -1054,12 +1053,16 @@
             }
           ],
           "executionErrorState": "keep_state",
-          "for": "5m",
-          "frequency": "1m",
+          "for": "30m",
+          "frequency": "5m",
           "handler": 1,
           "name": "Search API latency alert",
           "noDataState": "no_data",
-          "notifications": []
+          "notifications": [
+            {
+              "uid": "_ApAP7FVk"
+            }
+          ]
         },
         "aliasColors": {},
         "bars": false,
@@ -1112,8 +1115,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 10000,
-            "yaxis": "left"
+            "value": 20000
           }
         ],
         "timeFrom": null,
@@ -1185,6 +1187,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 34
+    "version": 39
   }
 }

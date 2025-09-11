@@ -9,10 +9,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2025-07-18T13:49:10Z",
+    "updated": "2025-08-14T15:24:06Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 23,
+    "version": 24,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -45,7 +45,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
-    "iteration": 1752846377967,
+    "iteration": 1755184797481,
     "links": [],
     "panels": [
       {
@@ -1085,7 +1085,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": "0",
+            "min": null,
             "show": true
           },
           {
@@ -1253,6 +1253,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 23
+    "version": 24
   }
 }
