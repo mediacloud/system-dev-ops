@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2025-09-11T03:31:47Z",
+    "updated": "2025-09-23T21:54:10Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 39,
+    "version": 41,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -924,7 +924,11 @@
           "handler": 1,
           "name": "Pending Tasks alert",
           "noDataState": "no_data",
-          "notifications": []
+          "notifications": [
+            {
+              "uid": "_ApAP7FVk"
+            }
+          ]
         },
         "aliasColors": {
           "stats.gauges.mc.prod.story-indexer.elastic-stats.indices.health.color_red": "dark-red"
@@ -980,8 +984,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 0,
-            "yaxis": "left"
+            "value": 0
           }
         ],
         "timeFrom": null,
@@ -1031,7 +1034,7 @@
             {
               "evaluator": {
                 "params": [
-                  20000
+                  10000
                 ],
                 "type": "gt"
               },
@@ -1115,7 +1118,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 20000
+            "value": 10000
           }
         ],
         "timeFrom": null,
@@ -1187,6 +1190,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 39
+    "version": 41
   }
 }
