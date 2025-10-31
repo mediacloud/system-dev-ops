@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2025-09-23T21:54:10Z",
+    "updated": "2025-10-31T16:59:33Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 41,
+    "version": 45,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -48,7 +48,7 @@
             {
               "evaluator": {
                 "params": [
-                  100000
+                  5000
                 ],
                 "type": "lt"
               },
@@ -58,7 +58,7 @@
               "query": {
                 "params": [
                   "A",
-                  "24h",
+                  "1h",
                   "now"
                 ]
               },
@@ -70,11 +70,11 @@
             }
           ],
           "executionErrorState": "alerting",
-          "for": "24h",
-          "frequency": "60m",
+          "for": "3h",
+          "frequency": "15m",
           "handler": 1,
-          "name": "Production Stories Added in last 24 hours alert",
-          "noDataState": "no_data",
+          "name": "Production Stories Added in last hour",
+          "noDataState": "alerting",
           "notifications": [
             {
               "uid": "_ApAP7FVk"
@@ -136,8 +136,7 @@
             "fill": true,
             "line": true,
             "op": "lt",
-            "value": 100000,
-            "yaxis": "left"
+            "value": 5000
           }
         ],
         "timeFrom": null,
@@ -437,7 +436,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -545,7 +544,8 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 1000000
+            "value": 1000000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
@@ -567,11 +567,12 @@
         },
         "yaxes": [
           {
+            "decimals": null,
             "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1160,6 +1161,141 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "alert": {
+          "alertRuleTags": {},
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  1
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "A",
+                  "5m",
+                  "now"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "for": "5m",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "Last Snapshot Success",
+          "noDataState": "no_data",
+          "notifications": [
+            {
+              "uid": "_ApAP7FVk"
+            }
+          ]
+        },
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "description": "",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 34
+        },
+        "id": 15,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.prod.story-indexer.elastic-stats.snapshot.last.state_success",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [
+          {
+            "colorMode": "critical",
+            "fill": true,
+            "line": true,
+            "op": "lt",
+            "value": 1
+          }
+        ],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Last Snapshot Success",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "max": "1",
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -1190,6 +1326,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 41
+    "version": 45
   }
 }
