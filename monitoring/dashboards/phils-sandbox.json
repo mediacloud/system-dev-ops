@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2025-07-17T21:08:03Z",
+    "updated": "2025-11-01T01:05:12Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 91,
+    "version": 93,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,12 +39,13 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1752783940973,
+    "iteration": 1761958979709,
     "links": [],
     "panels": [
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -56,7 +57,7 @@
           "x": 0,
           "y": 0
         },
-        "id": 44,
+        "id": 46,
         "legend": {
           "avg": false,
           "current": false,
@@ -82,15 +83,23 @@
         "steppedLine": false,
         "targets": [
           {
+            "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.top-domain.avg.days_3"
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.fetch.mean",
+            "textEditor": true
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.fetch.median",
+            "textEditor": true
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "rss-fetcher top domain stories",
+        "title": "Fetch time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -106,7 +115,7 @@
         },
         "yaxes": [
           {
-            "format": "short",
+            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -216,8 +225,7 @@
       },
       {
         "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
+        "bars": false,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -229,7 +237,7 @@
           "x": 0,
           "y": 8
         },
-        "id": 42,
+        "id": 44,
         "legend": {
           "avg": false,
           "current": false,
@@ -239,7 +247,7 @@
           "total": false,
           "values": false
         },
-        "lines": false,
+        "lines": true,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -251,20 +259,19 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": true,
+        "stack": false,
         "steppedLine": false,
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.*.provider.*.query.op_*.count",
-            "textEditor": true
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.top-domain.avg.days_3"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Provider counts",
+        "title": "rss-fetcher top domain stories",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1063,7 +1070,7 @@
           "name": "realm",
           "options": [
             {
-              "selected": false,
+              "selected": true,
               "text": "prod",
               "value": "prod"
             },
@@ -1083,7 +1090,7 @@
               "value": "csv-prod"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "staging",
               "value": "staging"
             },
@@ -1130,6 +1137,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 91
+    "version": 93
   }
 }
