@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2025-07-10T23:26:15Z",
+    "updated": "2025-12-11T00:30:04Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 61,
+    "version": 62,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1752187384733,
+    "iteration": 1765412543834,
     "links": [],
     "panels": [
       {
@@ -114,7 +114,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1200,7 +1200,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1285,7 +1285,7 @@
         },
         "yaxes": [
           {
-            "format": "short",
+            "format": "percent",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1378,7 +1378,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1505,7 +1505,7 @@
           "name": "realm",
           "options": [
             {
-              "selected": true,
+              "selected": false,
               "text": "prod",
               "value": "prod"
             },
@@ -1555,7 +1555,7 @@
               "value": "arch-staging"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "pbudne",
               "value": "pbudne"
             },
@@ -1622,6 +1622,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 61
+    "version": 62
   }
 }
