@@ -10,10 +10,10 @@
     "url": "/d/44aItldNk/web-search-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-01-28T23:47:00Z",
-    "updated": "2025-08-02T16:04:18Z",
+    "updated": "2025-12-11T22:40:14Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 32,
+    "version": 33,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 14,
-    "iteration": 1754150156242,
+    "iteration": 1765492731056,
     "links": [],
     "panels": [
       {
@@ -1214,7 +1214,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1232,7 +1232,7 @@
         }
       }
     ],
-    "refresh": false,
+    "refresh": "1m",
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1300,6 +1300,6 @@
     "timezone": "",
     "title": "web-search stats",
     "uid": "44aItldNk",
-    "version": 32
+    "version": 33
   }
 }
