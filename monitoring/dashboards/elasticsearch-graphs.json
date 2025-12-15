@@ -10,10 +10,10 @@
     "url": "/d/YHyBwfGNz/elasticsearch-graphs",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-11-13T05:54:16Z",
-    "updated": "2025-07-31T04:37:23Z",
+    "updated": "2025-12-15T21:45:51Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 41,
+    "version": 42,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 13,
-    "iteration": 1753936443968,
+    "iteration": 1765834814216,
     "links": [],
     "panels": [
       {
@@ -715,7 +715,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -889,7 +889,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1072,7 +1072,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -2034,6 +2034,91 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 88
+        },
+        "id": 65,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.snapshot.time_since_last_start.state_success"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Time since last successful snapshot",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": "30s",
@@ -2076,7 +2161,7 @@
               "value": "csv-prod"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "staging",
               "value": "staging"
             },
@@ -2091,7 +2176,7 @@
               "value": "pgulley"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "new",
               "value": "new"
             }
@@ -2123,6 +2208,6 @@
     "timezone": "",
     "title": "Elasticsearch Graphs",
     "uid": "YHyBwfGNz",
-    "version": 41
+    "version": 42
   }
 }
