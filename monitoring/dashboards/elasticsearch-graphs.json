@@ -10,10 +10,10 @@
     "url": "/d/YHyBwfGNz/elasticsearch-graphs",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-11-13T05:54:16Z",
-    "updated": "2025-12-15T21:45:51Z",
+    "updated": "2025-12-21T19:33:24Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 42,
+    "version": 44,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 13,
-    "iteration": 1765834814216,
+    "iteration": 1746236403738,
     "links": [],
     "panels": [
       {
@@ -220,7 +220,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -307,7 +307,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -393,7 +393,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -480,7 +480,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -629,7 +629,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": "0",
+            "min": null,
             "show": true
           },
           {
@@ -652,7 +652,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -715,7 +715,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": "0",
+            "min": null,
             "show": true
           },
           {
@@ -747,7 +747,7 @@
           "x": 0,
           "y": 32
         },
-        "id": 12,
+        "id": 32,
         "legend": {
           "avg": false,
           "current": false,
@@ -769,12 +769,31 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
+            "refCount": 0,
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.docs.count.name_mc_search-*)",
+            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_parent.*)), 'parent')",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_fielddata.*)), 'fielddata')",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_request.*)), 'request')",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "D",
+            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_inflight_requests.*)), 'inflight')",
             "textEditor": false
           }
         ],
@@ -782,7 +801,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Document Import rate",
+        "title": "ES Circuit Breakers",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -889,7 +908,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": "0",
+            "min": null,
             "show": true
           },
           {
@@ -920,548 +939,6 @@
           "w": 12,
           "x": 0,
           "y": 40
-        },
-        "id": 28,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "hide": true,
-            "refCount": -1,
-            "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_total)",
-            "textEditor": false
-          },
-          {
-            "refCount": 0,
-            "refId": "B",
-            "target": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_time_in_millis), #A)",
-            "targetFull": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_time_in_millis), nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_total))",
-            "textEditor": false
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "mean indexing latency",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 40
-        },
-        "id": 59,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.docs.deleted",
-            "textEditor": true
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Deleted documents",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 48
-        },
-        "id": 30,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": true,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*_total)",
-            "textEditor": true
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "All primaries \"*_count\"  per minute",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "none",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "description": "NOTE: story indexing does a (quick) query before each story is added, which dilutes values in this graph!\n",
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 48
-        },
-        "id": 29,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "hide": true,
-            "refCount": -1,
-            "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_total)",
-            "textEditor": true
-          },
-          {
-            "refCount": 0,
-            "refId": "B",
-            "target": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_time_in_millis), #A)",
-            "targetFull": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_time_in_millis), nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_total))",
-            "textEditor": true
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "mean query latency",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 56
-        },
-        "id": 34,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": true,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refCount": 0,
-            "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.jvm.gc.collection_millis.*)",
-            "textEditor": false
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "JVM GC  time (ms)",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 56
-        },
-        "id": 52,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 1,
-        "points": true,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refCount": 0,
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.node.jvm.mem.heap_used_percent.*",
-            "textEditor": false
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "JVM Heap percent used",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "decimals": null,
-            "format": "percent",
-            "label": null,
-            "logBase": 1,
-            "max": "100",
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 64
         },
         "id": 8,
         "legend": {
@@ -1587,19 +1064,106 @@
       {
         "aliasColors": {},
         "bars": true,
-        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 64
+          "y": 40
         },
-        "id": 4,
+        "id": 34,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "A",
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.jvm.gc.collection_millis.*)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "JVM GC  time (ms)",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 48
+        },
+        "id": 12,
         "legend": {
           "avg": false,
           "current": false,
@@ -1626,15 +1190,199 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*_in_millis)",
-            "textEditor": true
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.docs.count.name_mc_search-*)",
+            "textEditor": false
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "all indices avg time in millis",
+        "title": "Document Import rate",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 48
+        },
+        "id": 52,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 1,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.node.jvm.mem.heap_used_percent.*",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "JVM Heap percent used",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": null,
+            "format": "percent",
+            "label": null,
+            "logBase": 1,
+            "max": "100",
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 56
+        },
+        "id": 28,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "A",
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_total)",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_time_in_millis), #A)",
+            "targetFull": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_time_in_millis), nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.indexing.index_total))",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "mean indexing latency",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1658,7 +1406,502 @@
             "show": true
           },
           {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 56
+        },
+        "id": 59,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.docs.deleted",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Deleted documents",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "description": "NOTE: story indexing does a (quick) query before each story is added, which dilutes values in this graph!\n",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 64
+        },
+        "id": 29,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "A",
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_total)",
+            "textEditor": true
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_time_in_millis), #A)",
+            "targetFull": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_time_in_millis), nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.search.query_total))",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "mean query latency",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
             "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 64
+        },
+        "id": 51,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "hide": false,
+            "refCount": 4,
+            "refId": "A",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.bulk.*time_in_millis.name_mc*)), #G), 'bulk')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.bulk.*time_in_millis.name_mc*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'bulk')",
+            "textEditor": false
+          },
+          {
+            "refCount": 3,
+            "refId": "B",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.search.*millis.name_mc*)), #G), 'search')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.search.*millis.name_mc*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'search')",
+            "textEditor": false
+          },
+          {
+            "refCount": 3,
+            "refId": "C",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.refresh.total_time_in_millis.name_mc_search*)), #G), 'refresh')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.refresh.total_time_in_millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'refresh')",
+            "textEditor": false
+          },
+          {
+            "refCount": 3,
+            "refId": "D",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.warmer.*millis.name_mc_search*)), #G), 'warmer')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.warmer.*millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'warmer')",
+            "textEditor": false
+          },
+          {
+            "hide": true,
+            "refCount": 3,
+            "refId": "F",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.flush.*millis.name_mc_search*)), #G), 'flush')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.flush.*millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'flush')",
+            "textEditor": false
+          },
+          {
+            "hide": true,
+            "refCount": 2,
+            "refId": "G",
+            "target": "sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "mc_search time percentages",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": null,
+            "format": "percent",
+            "label": null,
+            "logBase": 1,
+            "max": "100",
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 72
+        },
+        "id": 30,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*_total)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "All primaries \"*_count\"  per minute",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "none",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 72
+        },
+        "id": 50,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "A",
+            "target": "asPercent(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*millis), #B)",
+            "targetFull": "asPercent(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*millis), alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*millis)), 'total'))",
+            "textEditor": false
+          },
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "B",
+            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*millis)), 'total')",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "time percentages (all indices)",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": null,
+            "format": "percent",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1683,7 +1926,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 72
+          "y": 80
         },
         "id": 54,
         "legend": {
@@ -1764,15 +2007,15 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 72
+          "y": 80
         },
-        "id": 32,
+        "id": 4,
         "legend": {
           "avg": false,
           "current": false,
@@ -1794,203 +2037,12 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": true,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refCount": 0,
-            "refId": "A",
-            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_parent.*)), 'parent')",
-            "textEditor": false
-          },
-          {
-            "refCount": 0,
-            "refId": "B",
-            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_fielddata.*)), 'fielddata')",
-            "textEditor": false
-          },
-          {
-            "refCount": 0,
-            "refId": "C",
-            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_request.*)), 'request')",
-            "textEditor": false
-          },
-          {
-            "refCount": 0,
-            "refId": "D",
-            "target": "alias(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.node.breakers.tripped.name_inflight_requests.*)), 'inflight')",
-            "textEditor": false
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "ES Circuit Breakers",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 80
-        },
-        "id": 61,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
         "stack": false,
         "steppedLine": false,
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.*.provider.es.query.*.rate"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "MC Provider Query Rates",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 80
-        },
-        "id": 63,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.systems.disk.pct.es*.data",
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*_in_millis)",
             "textEditor": true
           }
         ],
@@ -1998,92 +2050,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "ES server data partition percent used",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "percent",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 88
-        },
-        "id": 65,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.snapshot.time_since_last_start.state_success"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Time since last successful snapshot",
+        "title": "all indices avg time in millis",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -2107,7 +2074,7 @@
             "show": true
           },
           {
-            "format": "short",
+            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -2161,7 +2128,7 @@
               "value": "csv-prod"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "staging",
               "value": "staging"
             },
@@ -2176,7 +2143,7 @@
               "value": "pgulley"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "new",
               "value": "new"
             }
@@ -2208,6 +2175,6 @@
     "timezone": "",
     "title": "Elasticsearch Graphs",
     "uid": "YHyBwfGNz",
-    "version": 42
+    "version": 44
   }
 }

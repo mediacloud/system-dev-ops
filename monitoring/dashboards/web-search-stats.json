@@ -10,10 +10,10 @@
     "url": "/d/44aItldNk/web-search-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-01-28T23:47:00Z",
-    "updated": "2025-12-11T22:40:14Z",
+    "updated": "2025-12-25T16:56:43Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 33,
+    "version": 35,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 14,
-    "iteration": 1765492731056,
+    "iteration": 1766677922181,
     "links": [],
     "panels": [
       {
@@ -455,14 +455,14 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.counters.mc.$realm.web-search.gunicorn.request.status.*.count"
+            "target": "stats.counters.mc.$realm.web-search.gunicorn.request.status.*.rate"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "gunicorn request status",
+        "title": "gunicorn request status (per second)",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1300,6 +1300,6 @@
     "timezone": "",
     "title": "web-search stats",
     "uid": "44aItldNk",
-    "version": 33
+    "version": 35
   }
 }
