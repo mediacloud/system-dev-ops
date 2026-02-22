@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2025-12-11T00:30:04Z",
-    "updatedBy": "phil.budne@gmail.com",
+    "updated": "2025-12-31T21:32:46Z",
+    "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 62,
+    "version": 64,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1765412543834,
+    "iteration": 1767216535879,
     "links": [],
     "panels": [
       {
@@ -1262,7 +1262,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.*queuer.data-disk-free"
+            "target": "stats.gauges.mc.$realm.story-indexer.*.data-disk-free",
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -1440,7 +1441,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.*queuer.check-output.status*.count"
+            "target": "stats.counters.mc.$realm.story-indexer.*.check-output.status*.count",
+            "textEditor": true
           }
         ],
         "thresholds": [],
@@ -1622,6 +1624,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 62
+    "version": 64
   }
 }

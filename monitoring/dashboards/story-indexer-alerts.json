@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2025-12-30T02:55:23Z",
+    "updated": "2026-02-22T04:30:07Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 47,
+    "version": 50,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -270,8 +270,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 175000,
-            "yaxis": "left"
+            "value": 175000
           }
         ],
         "timeFrom": null,
@@ -298,281 +297,6 @@
             "logBase": 1,
             "max": null,
             "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "alert": {
-          "alertRuleTags": {},
-          "conditions": [
-            {
-              "evaluator": {
-                "params": [
-                  200000
-                ],
-                "type": "lt"
-              },
-              "operator": {
-                "type": "and"
-              },
-              "query": {
-                "params": [
-                  "A",
-                  "3h",
-                  "now"
-                ]
-              },
-              "reducer": {
-                "params": [],
-                "type": "sum"
-              },
-              "type": "query"
-            }
-          ],
-          "executionErrorState": "alerting",
-          "for": "1h",
-          "frequency": "30m",
-          "handler": 1,
-          "name": "Historical Stories Added to ES by hour alert",
-          "noDataState": "no_data",
-          "notifications": [
-            {
-              "uid": "_ApAP7FVk"
-            }
-          ]
-        },
-        "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "description": "",
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 9,
-          "w": 12,
-          "x": 0,
-          "y": 9
-        },
-        "id": 11,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "maxDataPoints": "",
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "hide": false,
-            "refCount": -1,
-            "refId": "A",
-            "target": "summarize(stats.counters.mc.hist-prod.story-indexer.importer.stories.status_created.count, '1h', 'sum', false)",
-            "textEditor": true
-          }
-        ],
-        "thresholds": [
-          {
-            "colorMode": "critical",
-            "fill": true,
-            "line": true,
-            "op": "lt",
-            "value": 200000,
-            "yaxis": "left"
-          }
-        ],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Historical Stories Added to ES by hour",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "alert": {
-          "alertRuleTags": {},
-          "conditions": [
-            {
-              "evaluator": {
-                "params": [
-                  1000000
-                ],
-                "type": "gt"
-              },
-              "operator": {
-                "type": "and"
-              },
-              "query": {
-                "params": [
-                  "A",
-                  "10m",
-                  "now"
-                ]
-              },
-              "reducer": {
-                "params": [],
-                "type": "avg"
-              },
-              "type": "query"
-            }
-          ],
-          "executionErrorState": "alerting",
-          "for": "30m",
-          "frequency": "5m",
-          "handler": 1,
-          "name": "sum of all hist-stack input & delay queues alert",
-          "noDataState": "no_data",
-          "notifications": [
-            {
-              "uid": "_ApAP7FVk"
-            }
-          ]
-        },
-        "aliasColors": {},
-        "bars": false,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 9,
-          "w": 12,
-          "x": 12,
-          "y": 9
-        },
-        "id": 10,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "sumSeries(stats.gauges.mc.hist-prod.story-indexer.rabbitmq-stats.queues.ready.*-in, stats.gauges.mc.hist-prod.story-indexer.rabbitmq-stats.queues.ready.*-delay, stats.gauges.mc.hist-prod.story-indexer.rabbitmq-stats.queues.ready.*-fast)",
-            "textEditor": true
-          }
-        ],
-        "thresholds": [
-          {
-            "colorMode": "critical",
-            "fill": true,
-            "line": true,
-            "op": "gt",
-            "value": 1000000,
-            "yaxis": "left"
-          }
-        ],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "sum of all hist-stack input & delay queues",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "decimals": null,
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
             "show": true
           },
           {
@@ -666,7 +390,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 18
+          "y": 9
         },
         "id": 4,
         "legend": {
@@ -809,7 +533,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 18
+          "y": 9
         },
         "id": 6,
         "legend": {
@@ -945,7 +669,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 26
+          "y": 17
         },
         "id": 9,
         "legend": {
@@ -1080,7 +804,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 26
+          "y": 17
         },
         "id": 13,
         "legend": {
@@ -1214,7 +938,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 34
+          "y": 25
         },
         "id": 15,
         "legend": {
@@ -1345,7 +1069,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 34
+          "y": 25
         },
         "id": 16,
         "legend": {
@@ -1457,6 +1181,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 47
+    "version": 50
   }
 }

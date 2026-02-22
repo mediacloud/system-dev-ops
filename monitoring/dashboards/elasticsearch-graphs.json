@@ -10,10 +10,10 @@
     "url": "/d/YHyBwfGNz/elasticsearch-graphs",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-11-13T05:54:16Z",
-    "updated": "2025-12-21T19:33:24Z",
+    "updated": "2026-01-18T23:03:15Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 44,
+    "version": 45,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 13,
-    "iteration": 1746236403738,
+    "iteration": 1768777282389,
     "links": [],
     "panels": [
       {
@@ -625,11 +625,12 @@
         },
         "yaxes": [
           {
+            "decimals": null,
             "format": "short",
-            "label": null,
+            "label": "",
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -821,7 +822,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -2175,6 +2176,6 @@
     "timezone": "",
     "title": "Elasticsearch Graphs",
     "uid": "YHyBwfGNz",
-    "version": 44
+    "version": 45
   }
 }
