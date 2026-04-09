@@ -10,10 +10,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2025-12-28T22:30:42Z",
+    "updated": "2026-03-28T15:51:59Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 27,
+    "version": 31,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -46,7 +46,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
-    "iteration": 1766959855946,
+    "iteration": 1774712103192,
     "links": [],
     "panels": [
       {
@@ -332,7 +332,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate"
+            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate",
+            "textEditor": true
           }
         ],
         "thresholds": [],
@@ -658,16 +659,12 @@
         }
       },
       {
-        "aliasColors": {
-          "stats.gauges.mc.prod.rss-fetcher.fetcher.workers.current": "red",
-          "stats.gauges.mc.prod.rss-fetcher.fetcher.workers.n": "blue"
-        },
+        "aliasColors": {},
         "bars": false,
-        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -675,7 +672,7 @@
           "x": 0,
           "y": 29
         },
-        "id": 27,
+        "id": 38,
         "legend": {
           "avg": false,
           "current": false,
@@ -698,11 +695,24 @@
         "seriesOverrides": [],
         "spaceLength": 10,
         "stack": false,
-        "steppedLine": true,
+        "steppedLine": false,
         "targets": [
           {
+            "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.workers.*",
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.lower",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper_90",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper",
             "textEditor": false
           }
         ],
@@ -710,7 +720,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "worker processes",
+        "title": "Story Save Time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -726,7 +736,7 @@
         },
         "yaxes": [
           {
-            "format": "short",
+            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -837,6 +847,185 @@
       },
       {
         "aliasColors": {
+          "stats.gauges.mc.prod.rss-fetcher.fetcher.workers.current": "red",
+          "stats.gauges.mc.prod.rss-fetcher.fetcher.workers.n": "blue"
+        },
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 37
+        },
+        "id": 27,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": true,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.workers.*",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "worker processes",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 37
+        },
+        "id": 31,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pluginVersion": "6.4.4",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.feeds.recent.hours_24.status_working",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Active Feeds",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {
           "stats.counters.mc.prod.rss-fetcher.fetcher.hunter.find_work.count": "yellow",
           "stats.counters.mc.prod.rss-fetcher.fetcher.hunter.get_ready.count": "green"
         },
@@ -850,7 +1039,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 37
+          "y": 45
         },
         "id": 25,
         "legend": {
@@ -925,7 +1114,7 @@
       },
       {
         "aliasColors": {},
-        "bars": true,
+        "bars": false,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -936,9 +1125,9 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 37
+          "y": 45
         },
-        "id": 31,
+        "id": 32,
         "legend": {
           "avg": false,
           "current": false,
@@ -948,7 +1137,7 @@
           "total": false,
           "values": false
         },
-        "lines": false,
+        "lines": true,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -965,7 +1154,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.feeds.recent.hours_*.status_*",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.sources.recent.hours_24.status_working",
             "textEditor": false
           }
         ],
@@ -973,7 +1162,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Active Feeds",
+        "title": "Sources with Active Feeds",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -993,7 +1182,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": "0",
+            "min": null,
             "show": true
           },
           {
@@ -1025,10 +1214,10 @@
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
-          "h": 9,
+          "h": 8,
           "w": 12,
           "x": 0,
-          "y": 45
+          "y": 53
         },
         "hiddenSeries": false,
         "id": 10,
@@ -1088,93 +1277,6 @@
             "logBase": 1,
             "max": null,
             "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 45
-        },
-        "id": 32,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": true,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.sources.recent.hours_*.status_*",
-            "textEditor": false
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Sources with Active Feeds",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
             "show": true
           },
           {
@@ -1277,9 +1379,100 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 61
+        },
+        "id": 40,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "A",
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.mean_50"
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Story Insert Time",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
-    "refresh": "30s",
+    "refresh": false,
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1300,7 +1493,7 @@
           "name": "realm",
           "options": [
             {
-              "selected": true,
+              "selected": false,
               "text": "prod",
               "value": "prod"
             },
@@ -1310,7 +1503,7 @@
               "value": "staging"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "pbudne",
               "value": "pbudne"
             }
@@ -1342,6 +1535,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 27
+    "version": 31
   }
 }
