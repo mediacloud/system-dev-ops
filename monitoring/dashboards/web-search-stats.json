@@ -10,10 +10,10 @@
     "url": "/d/44aItldNk/web-search-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-01-28T23:47:00Z",
-    "updated": "2026-04-09T16:48:50Z",
+    "updated": "2026-04-09T17:06:02Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 36,
+    "version": 37,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 14,
-    "iteration": 1775753093128,
+    "iteration": 1766677922181,
     "links": [],
     "panels": [
       {
@@ -326,12 +326,12 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -339,7 +339,7 @@
           "x": 12,
           "y": 8
         },
-        "id": 61,
+        "id": 52,
         "legend": {
           "avg": false,
           "current": false,
@@ -349,7 +349,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -361,21 +361,21 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.systems.load.5.es*",
-            "textEditor": true
+            "target": "stats.counters.mc.$realm.web-search.cache.total.*.count",
+            "textEditor": false
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "ES Server Load Averages",
+        "title": "cache hits/misses",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -391,7 +391,7 @@
         },
         "yaxes": [
           {
-            "format": "short",
+            "format": "none",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -501,12 +501,12 @@
       },
       {
         "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
+        "bars": false,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "description": "",
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -514,7 +514,7 @@
           "x": 12,
           "y": 16
         },
-        "id": 52,
+        "id": 49,
         "legend": {
           "avg": false,
           "current": false,
@@ -524,7 +524,7 @@
           "total": false,
           "values": false
         },
-        "lines": false,
+        "lines": true,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -536,21 +536,20 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": true,
+        "stack": false,
         "steppedLine": false,
         "targets": [
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.counters.mc.$realm.web-search.cache.total.*.count",
-            "textEditor": false
+            "target": "stats.gauges.mc.$realm.web-search.gunicorn.workers"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "cache hits/misses",
+        "title": "gunicorn workers",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -566,7 +565,7 @@
         },
         "yaxes": [
           {
-            "format": "none",
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -704,7 +703,7 @@
           "x": 12,
           "y": 24
         },
-        "id": 49,
+        "id": 46,
         "legend": {
           "avg": false,
           "current": false,
@@ -714,7 +713,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -722,7 +721,7 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": false,
+        "points": true,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -732,14 +731,19 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.web-search.gunicorn.workers"
+            "target": "nonNegativeDerivative(stats.gauges.mc.nginx.*.total.*)"
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": ""
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "gunicorn workers",
+        "title": "nginx",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -883,7 +887,7 @@
           "x": 12,
           "y": 32
         },
-        "id": 46,
+        "id": 47,
         "legend": {
           "avg": false,
           "current": false,
@@ -911,7 +915,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.nginx.*.total.*)"
+            "target": "stats.gauges.mc.nginx.*.curr.writing"
           },
           {
             "refCount": 0,
@@ -923,7 +927,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "nginx",
+        "title": "nginx writing",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1046,13 +1050,23 @@
         }
       },
       {
-        "aliasColors": {},
+        "aliasColors": {
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-fast.success_f": "dark-red",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-fast.success_t": "dark-green",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-slow.success_f": "semi-dark-red",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-slow.success_t": "semi-dark-green",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-fast.success_f": "light-red",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-fast.success_t": "light-green",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-slow.success_f": "super-light-red",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-slow.success_t": "super-light-green",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_user-slow.success_f": "dark-orange",
+          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_user-slow.success_t": "dark-blue"
+        },
         "bars": false,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "",
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -1060,7 +1074,7 @@
           "x": 12,
           "y": 40
         },
-        "id": 47,
+        "id": 57,
         "legend": {
           "avg": false,
           "current": false,
@@ -1086,21 +1100,15 @@
         "steppedLine": false,
         "targets": [
           {
-            "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.nginx.*.curr.writing"
-          },
-          {
-            "refCount": 0,
-            "refId": "B",
-            "target": ""
+            "target": "stats.gauges.mc.$realm.web-search.tasks.completed.*.*"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "nginx writing",
+        "title": "Tasks Completed",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1120,7 +1128,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
+            "min": "0",
             "show": true
           },
           {
@@ -1187,102 +1195,6 @@
         "timeRegions": [],
         "timeShift": null,
         "title": "provider call rates",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-fast.success_f": "dark-red",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-fast.success_t": "dark-green",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-slow.success_f": "semi-dark-red",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_admin-slow.success_t": "semi-dark-green",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-fast.success_f": "light-red",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-fast.success_t": "light-green",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-slow.success_f": "super-light-red",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_system-slow.success_t": "super-light-green",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_user-slow.success_f": "dark-orange",
-          "stats.gauges.mc.pbudne.web-search.tasks.completed.queue_user-slow.success_t": "dark-blue"
-        },
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 48
-        },
-        "id": 57,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": true,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.web-search.tasks.completed.*.*"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Tasks Completed",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1388,6 +1300,6 @@
     "timezone": "",
     "title": "web-search stats",
     "uid": "44aItldNk",
-    "version": 36
+    "version": 37
   }
 }
