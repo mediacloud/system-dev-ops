@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2026-02-22T04:30:07Z",
+    "updated": "2026-04-11T23:28:56Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 50,
+    "version": 52,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -509,16 +509,12 @@
             }
           ],
           "executionErrorState": "alerting",
-          "for": "5m",
-          "frequency": "1m",
+          "for": "15m",
+          "frequency": "5m",
           "handler": 1,
-          "name": "prod indexer quarantine queues alert",
+          "name": "Stories available from rss-fetcher alert",
           "noDataState": "no_data",
-          "notifications": [
-            {
-              "uid": "_ApAP7FVk"
-            }
-          ]
+          "notifications": []
         },
         "aliasColors": {},
         "bars": false,
@@ -526,8 +522,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "",
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -535,7 +530,7 @@
           "x": 12,
           "y": 9
         },
-        "id": 6,
+        "id": 18,
         "legend": {
           "avg": false,
           "current": false,
@@ -562,7 +557,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "sumSeries(stats.gauges.mc.*prod.story-indexer.rabbitmq-stats.queues.ready.*-quar)"
+            "target": "diffSeries(stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.max-id,stats.gauges.mc.prod.story-indexer.rss-puller.stories.max-id)",
+            "textEditor": true
           }
         ],
         "thresholds": [
@@ -571,14 +567,13 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 100000,
-            "yaxis": "left"
+            "value": 100000
           }
         ],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "all prod quarantine queues",
+        "title": "Stories available from rss-fetcher",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -759,7 +754,7 @@
             {
               "evaluator": {
                 "params": [
-                  10000
+                  100000
                 ],
                 "type": "gt"
               },
@@ -769,22 +764,22 @@
               "query": {
                 "params": [
                   "A",
-                  "10m",
+                  "5m",
                   "now"
                 ]
               },
               "reducer": {
                 "params": [],
-                "type": "min"
+                "type": "avg"
               },
               "type": "query"
             }
           ],
-          "executionErrorState": "keep_state",
-          "for": "30m",
-          "frequency": "5m",
+          "executionErrorState": "alerting",
+          "for": "5m",
+          "frequency": "1m",
           "handler": 1,
-          "name": "Search API latency alert",
+          "name": "prod indexer quarantine queues alert",
           "noDataState": "no_data",
           "notifications": [
             {
@@ -798,7 +793,8 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "description": "",
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -806,7 +802,7 @@
           "x": 12,
           "y": 17
         },
-        "id": 13,
+        "id": 6,
         "legend": {
           "avg": false,
           "current": false,
@@ -816,15 +812,15 @@
           "total": false,
           "values": false
         },
-        "lines": false,
+        "lines": true,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
           "dataLinks": []
         },
         "percentage": false,
-        "pointradius": 3,
-        "points": true,
+        "pointradius": 2,
+        "points": false,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -833,8 +829,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.timers.mc.prod.web-search.monitor-api.college.31d.words.median",
-            "textEditor": true
+            "target": "sumSeries(stats.gauges.mc.*prod.story-indexer.rabbitmq-stats.queues.ready.*-quar)"
           }
         ],
         "thresholds": [
@@ -843,13 +838,14 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 10000
+            "value": 100000,
+            "yaxis": "left"
           }
         ],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Search API latency",
+        "title": "all prod quarantine queues",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -865,7 +861,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1028,6 +1024,140 @@
             {
               "evaluator": {
                 "params": [
+                  10000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "A",
+                  "10m",
+                  "now"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "min"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "keep_state",
+          "for": "30m",
+          "frequency": "5m",
+          "handler": 1,
+          "name": "Search API latency alert",
+          "noDataState": "no_data",
+          "notifications": [
+            {
+              "uid": "_ApAP7FVk"
+            }
+          ]
+        },
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 25
+        },
+        "id": 13,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 3,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.timers.mc.prod.web-search.monitor-api.college.31d.words.median",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [
+          {
+            "colorMode": "critical",
+            "fill": true,
+            "line": true,
+            "op": "gt",
+            "value": 10000
+          }
+        ],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Search API latency",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "alert": {
+          "alertRuleTags": {},
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
                   1468800000
                 ],
                 "type": "gt"
@@ -1069,7 +1199,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 25
+          "y": 33
         },
         "id": 16,
         "legend": {
@@ -1181,6 +1311,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 50
+    "version": 52
   }
 }
