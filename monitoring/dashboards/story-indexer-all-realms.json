@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2026-04-11T22:54:13Z",
+    "updated": "2026-04-15T01:32:13Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 70,
+    "version": 72,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1775947057158,
+    "iteration": 1776215089405,
     "links": [],
     "panels": [
       {
@@ -914,7 +914,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "mean processing time per story",
+        "title": "mean processing time per message",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1523,18 +1523,11 @@
         "steppedLine": false,
         "targets": [
           {
-            "hide": true,
-            "refCount": -1,
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.rss-puller.stories.max-id",
-            "textEditor": true
-          },
-          {
+            "hide": false,
             "refCount": 0,
-            "refId": "B",
-            "target": "diffSeries(stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.max-id, #A)",
-            "targetFull": "diffSeries(stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.max-id, stats.gauges.mc.$realm.story-indexer.rss-puller.stories.max-id)",
-            "textEditor": false
+            "refId": "A",
+            "target": "diffSeries(stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.max-id, stats.gauges.mc.$realm.story-indexer.rss-puller.stories.max-id)",
+            "textEditor": true
           }
         ],
         "thresholds": [],
@@ -1805,6 +1798,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 70
+    "version": 72
   }
 }

@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2026-04-11T23:28:56Z",
+    "updated": "2026-04-16T04:17:02Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 52,
+    "version": 53,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -436,8 +436,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 0,
-            "yaxis": "left"
+            "value": 0
           }
         ],
         "timeFrom": null,
@@ -514,7 +513,11 @@
           "handler": 1,
           "name": "Stories available from rss-fetcher alert",
           "noDataState": "no_data",
-          "notifications": []
+          "notifications": [
+            {
+              "uid": "_ApAP7FVk"
+            }
+          ]
         },
         "aliasColors": {},
         "bars": false,
@@ -1311,6 +1314,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 52
+    "version": 53
   }
 }

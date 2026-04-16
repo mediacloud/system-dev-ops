@@ -10,10 +10,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2026-04-11T16:21:43Z",
+    "updated": "2026-04-12T17:22:51Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 32,
+    "version": 33,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -46,7 +46,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
-    "iteration": 1775924449710,
+    "iteration": 1776014492594,
     "links": [],
     "panels": [
       {
@@ -1383,97 +1383,6 @@
       {
         "aliasColors": {},
         "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 61
-        },
-        "id": 40,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refCount": 0,
-            "refId": "A",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.mean_50"
-          },
-          {
-            "refCount": 0,
-            "refId": "B",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Story Insert Time",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "ms",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -1483,7 +1392,7 @@
         "gridPos": {
           "h": 8,
           "w": 12,
-          "x": 12,
+          "x": 0,
           "y": 61
         },
         "id": 42,
@@ -1559,7 +1468,7 @@
         }
       }
     ],
-    "refresh": false,
+    "refresh": "30s",
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1622,6 +1531,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 32
+    "version": 33
   }
 }

@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2025-12-15T05:03:19Z",
+    "updated": "2026-04-15T21:48:13Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 94,
+    "version": 96,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1765774885772,
+    "iteration": 1776289469007,
     "links": [],
     "panels": [
       {
@@ -225,11 +225,11 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -237,7 +237,7 @@
           "x": 0,
           "y": 8
         },
-        "id": 44,
+        "id": 20,
         "legend": {
           "avg": false,
           "current": false,
@@ -247,7 +247,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -259,19 +259,26 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
+            "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.top-domain.avg.days_3"
+            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*",
+            "textEditor": true
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "rss-fetcher top domain stories",
+        "title": "Fetcher Queues (stacked)",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -323,7 +330,7 @@
           "x": 12,
           "y": 8
         },
-        "id": 18,
+        "id": 48,
         "legend": {
           "avg": false,
           "current": false,
@@ -350,14 +357,15 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.slots.*"
+            "target": "derivative(sumSeries(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*))",
+            "textEditor": false
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Qfetch slots",
+        "title": "fetcher queue derivative",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -374,177 +382,6 @@
         "yaxes": [
           {
             "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 16
-        },
-        "id": 20,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": true,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "Fetcher Queues (stacked)",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 16
-        },
-        "id": 38,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refCount": 0,
-            "refId": "C",
-            "target": "stats.timers.mc.$realm.story-indexer.parser.extracted-pub-date.upper_90"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "parser extracted pub date",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "none",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -577,7 +414,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 24
+          "y": 16
         },
         "id": 16,
         "legend": {
@@ -669,19 +506,19 @@
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "gives an idea how \"far behind\" the importer is; for historical data it will be YEARS!",
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 24
+          "y": 16
         },
-        "id": 39,
+        "id": 18,
         "legend": {
           "avg": false,
           "current": false,
@@ -707,21 +544,15 @@
         "steppedLine": false,
         "targets": [
           {
-            "refCount": 0,
-            "refId": "C",
-            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
-          },
-          {
-            "refCount": 0,
-            "refId": "D",
-            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper"
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.slots.*"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "page text fetch time seen by importer",
+        "title": "Qfetch slots",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -737,7 +568,7 @@
         },
         "yaxes": [
           {
-            "format": "dateTimeAsIso",
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -770,7 +601,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 32
+          "y": 24
         },
         "id": 14,
         "legend": {
@@ -863,16 +694,15 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "",
-        "fill": 1,
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 32
+          "y": 24
         },
-        "id": 40,
+        "id": 38,
         "legend": {
           "avg": false,
           "current": false,
@@ -900,21 +730,14 @@
           {
             "refCount": 0,
             "refId": "C",
-            "target": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, #D)",
-            "targetFull": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower)"
-          },
-          {
-            "hide": true,
-            "refCount": -1,
-            "refId": "D",
-            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
+            "target": "stats.timers.mc.$realm.story-indexer.parser.extracted-pub-date.upper_90"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "fetch time spread seen by importer",
+        "title": "parser extracted pub date",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -930,7 +753,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "none",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -963,7 +786,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 40
+          "y": 32
         },
         "id": 23,
         "legend": {
@@ -1056,15 +879,16 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
+        "description": "gives an idea how \"far behind\" the importer is; for historical data it will be YEARS!",
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 40
+          "y": 32
         },
-        "id": 48,
+        "id": 39,
         "legend": {
           "avg": false,
           "current": false,
@@ -1090,15 +914,115 @@
         "steppedLine": false,
         "targets": [
           {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.elastic-stats.snapshot.time_since_last_start.state_success"
+            "refCount": 0,
+            "refId": "C",
+            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
+          },
+          {
+            "refCount": 0,
+            "refId": "D",
+            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Time since last successful snapshot start",
+        "title": "page text fetch time seen by importer",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "dateTimeAsIso",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "description": "",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 40
+        },
+        "id": 40,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, #D)",
+            "targetFull": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower)"
+          },
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "D",
+            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "fetch time spread seen by importer",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1222,6 +1146,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 94
+    "version": 96
   }
 }
