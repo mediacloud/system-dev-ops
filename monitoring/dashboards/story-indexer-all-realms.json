@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2026-04-15T01:32:13Z",
+    "updated": "2026-04-24T05:23:23Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 72,
+    "version": 77,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1776215089405,
+    "iteration": 1776982097896,
     "links": [],
     "panels": [
       {
@@ -705,7 +705,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -713,7 +713,7 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": false,
+        "points": true,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -889,7 +889,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -897,7 +897,7 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": false,
+        "points": true,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -1134,7 +1134,7 @@
       },
       {
         "aliasColors": {},
-        "bars": true,
+        "bars": false,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -1164,7 +1164,7 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": false,
+        "points": true,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -1572,16 +1572,14 @@
         }
       },
       {
-        "aliasColors": {
-          "stats.counters.mc.prod.story-indexer.rss-queuer.files.status_skipped.count": "yellow",
-          "stats.counters.mc.prod.story-indexer.rss-queuer.files.status_success.count": "green"
-        },
+        "aliasColors": {},
         "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 1,
+        "description": "Totals of fetcher messages",
+        "fill": 0,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -1589,7 +1587,7 @@
           "x": 12,
           "y": 64
         },
-        "id": 40,
+        "id": 52,
         "legend": {
           "avg": false,
           "current": false,
@@ -1609,21 +1607,44 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "total",
+            "bars": false,
+            "lines": true,
+            "stack": false,
+            "steppedLine": true
+          }
+        ],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
+            "refCount": 1,
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.*queuer.files.*.count"
+            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*",
+            "textEditor": true
+          },
+          {
+            "refCount": 1,
+            "refId": "B",
+            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in",
+            "textEditor": true
+          },
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "alias(sumSeries(#A,#B),'total')",
+            "targetFull": "alias(sumSeries(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*,stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in),'total')",
+            "textEditor": true
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Files queued (count)",
+        "title": "Fetcher Messages (stacked)",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1643,7 +1664,7 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": "0",
+            "min": null,
             "show": true
           },
           {
@@ -1798,6 +1819,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 72
+    "version": 77
   }
 }
