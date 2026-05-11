@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2026-04-24T05:23:23Z",
+    "updated": "2026-05-11T01:31:08Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 77,
+    "version": 79,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1776982097896,
+    "iteration": 1778462743927,
     "links": [],
     "panels": [
       {
@@ -1484,11 +1484,12 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
+        "description": "NOTE!  rss-fetcher max id is polled: only checked every five minutes, and subtraction result may be negative!\n",
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
@@ -1507,7 +1508,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -1682,7 +1683,7 @@
         }
       }
     ],
-    "refresh": "30s",
+    "refresh": false,
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1819,6 +1820,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 77
+    "version": 79
   }
 }
