@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2026-05-04T01:39:43Z",
+    "updated": "2026-05-28T04:24:33Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 97,
+    "version": 98,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1777858612293,
+    "iteration": 1779942135917,
     "links": [],
     "panels": [
       {
@@ -787,6 +787,100 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
+        "description": "",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 32
+        },
+        "id": 40,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, #D)",
+            "targetFull": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower)"
+          },
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "D",
+            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "fetch time spread seen by importer",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
         "description": "gives an idea how \"far behind\" the importer is; for historical data it will be YEARS!",
         "fill": 1,
         "fillGradient": 0,
@@ -853,100 +947,6 @@
         "yaxes": [
           {
             "format": "dateTimeAsIso",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "description": "",
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 40
-        },
-        "id": 40,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refCount": 0,
-            "refId": "C",
-            "target": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, #D)",
-            "targetFull": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower)"
-          },
-          {
-            "hide": true,
-            "refCount": -1,
-            "refId": "D",
-            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "fetch time spread seen by importer",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1054,6 +1054,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 97
+    "version": 98
   }
 }
