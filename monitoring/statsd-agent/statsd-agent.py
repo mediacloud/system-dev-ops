@@ -44,6 +44,9 @@ def report(f):
         disk_usage = psutil.disk_usage(mount_point)
         name = DISKS[mount_point]
         f(f"disk.pct.{host}.{name}", disk_usage.percent)
+        f(f"disk.total.{host}.{name}", disk_usage.total)
+        f(f"disk.used.{host}.{name}", disk_usage.used)
+        f(f"disk.free.{host}.{name}", disk_usage.free)
 
     f(f"cpu.pct.{host}", psutil.cpu_percent(interval=None))
 
