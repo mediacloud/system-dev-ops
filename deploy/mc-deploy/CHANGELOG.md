@@ -1,3 +1,5 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
 * 0.0.1: initial prototype: only Dokku deploy command implemented, for rss-fetcher
+* 0.0.2: fix package name
+
