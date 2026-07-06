@@ -44,6 +44,7 @@ class BaseDeploy:
         self.login_user = self.get_login_user()
         self.private_dir = None
         self.settings = {}      # app/stack settings
+        self.debug_output = True # TEMP!!!
 
     ################ utilities (in alphabetical order!)
 
@@ -202,7 +203,7 @@ class BaseDeploy:
                 return name
         return None
 
-    def git_upstream_url(repo: str) -> str:
+    def git_upstream_url(self, repo: str) -> str:
         return f"{self.UPSTREAM_HOST}:{self.UPSTREAM_USER}/{repo}"
 
     def inst_name_set(self) -> None:
@@ -323,6 +324,7 @@ class BaseDeploy:
         args = self._proc_args(cmd)
         handle_errors = kws.pop("handle_errors", True)
         try:
+            self.debug("proc_output_all", cmd)
             # from subprocess.getstatusoutput WITHOUT shell=True!!
             # to avoid passing tainted data to shell:
             output = subprocess.check_output(args, text=True, shell=False, **kws)
@@ -360,15 +362,16 @@ class BaseDeploy:
         Generally used to perform actions, so quits on errors
         (unless handle_errors=False)
 
-        Also pass always=True when running commands
-        that make no changes, but return status.
+        Also pass always=True for commands
+        that make no changes, but return status in dry runs.
         """
         args = self._proc_args(cmd)
         if self.dry_run and not always:
             print("ignoring", " ".join(args))
             return 0
-        # avoid passing tainted data to shell:
+        # avoid passing tainted data to shell (and additional overhead)
         status = subprocess.call(args, shell=False, **kws)
+        self.debug("proc_call", cmd, "->", status)
         if status != 0 and handle_errors:
             acmd = " ".join(args)
             self.fatal(f"{acmd} exited with status {status}")
@@ -454,8 +457,9 @@ class BaseDeploy:
             return importlib.metadata.version(__package__)
         except importlib.metadata.PackageNotFoundError:
             # this happens if package not installed
-            # (ie; when this was developed/debugged)
-            self.fatal(f"could not get {__package__} version")
+            # (development done with a symlink)
+            if not self.deploy_dev:
+                self.fatal(f"could not get {__package__} version")
             return "NOVERS"     # for dry-run
             
     # PLEASE: add new utilities above *** IN ALPHABETICAL ORDER ***
@@ -482,6 +486,7 @@ class BaseDeploy:
                     init_func(cp)
 
     def run(self) -> int:
+        self.deploy_dev = os.environ.get("MCDEPLOY_DEV", "") != ""
         ap = argparse.ArgumentParser(prog="deploy")
         self.parser_init(ap)
         args = ap.parse_args()
@@ -491,4 +496,8 @@ class BaseDeploy:
         self.branch = self.git_branch()
         self.parser_results(args)
 
-        return cmd_func(args)
+        try:
+            return cmd_func(args)
+        except KeyboardInterrupt:
+            # eg control-C at confirm prompt!
+            return 1

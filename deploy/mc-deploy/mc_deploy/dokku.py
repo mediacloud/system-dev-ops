@@ -2,6 +2,9 @@
 Deploy an application using Dokku
 """
 
+# XXX implement create, destroy!!  Use dokku cronjobs!
+# XXX scream if on "main" branch and origin is mcremote!!!!
+
 import base64
 import json
 import os
@@ -144,7 +147,9 @@ class DokkuDeploy(BaseDeploy):
             kws["stdin"] = subprocess.DEVNULL
         # authorized_keys runs dokku as shell!
         sargs = ["ssh", self.dokku_ssh_user] + args
-        return subprocess.run(sargs, **kws).returncode
+        status = subprocess.run(sargs, **kws).returncode
+        self.debug("dokku_call", cmd, "->", status)
+        return status
 
     def dokku_fix_git_deploy_branch(self) -> None:
         # Early on there was some pain with (earlier versions of)
@@ -173,6 +178,7 @@ class DokkuDeploy(BaseDeploy):
         run a dokku command via ssh capturing output, return all as one string
         (always via ssh to allow configuring remote server)
         """
+        self.debug("dokku_output_all", cmd)
         args = self._proc_args(cmd) # force to list
         if "stdin" not in kws:
             # avoid hanging if backgrounded
@@ -241,7 +247,12 @@ class DokkuDeploy(BaseDeploy):
         push_tag_to = []        # remotes to push tag to
         if not args.unpushed:
             push_tag_to.append("origin")
+        mcremote = self.git_upstream_remote()
+        self.debug("mcremote", mcremote)
         if self.is_dev():
+            if mcremote == "origin" and branch == "main" and not args.unpushed:
+                # code push would overwrite main branch!!!
+                self.fatal("Please don't do development on 'main' with {self.UPSTREAM_USER} origin!")
             if self.git_is_current(branch, "origin"):
                 print(f"origin/{branch} up to date")
             elif not args.unpushed:
@@ -250,7 +261,6 @@ class DokkuDeploy(BaseDeploy):
             if args.unpushed:
                 self.fatal(f"cannot use --unpushed with {self.inst_id}",
                            quit=True)
-            mcremote = self.git_upstream_remote()
             if not mcremote:
                 self.fatal("could not find upstream remote")
 
@@ -258,7 +268,7 @@ class DokkuDeploy(BaseDeploy):
                 push_tag_to.append(mcremote)
 
             if self.git_is_current(branch, mcremote):
-                print(f"{mcremote} {branch} branch up to date.")
+                print(f"{mcremote}/{branch} is up to date.")
             else:
                 # pushing to mediacloud repo NOT optional
                 # for production or staging!!!
@@ -290,11 +300,13 @@ class DokkuDeploy(BaseDeploy):
         curr_hash = curr_settings.get(self.DEPLOY_HASH_VAR) # set by create cmd
         expected_hash = self.deployment_hash()
         if curr_hash != expected_hash:
-            self.debug("got:", curr_hash, "expected:", expected_hash)
-            self.fatal("instance deployment hash mismatch: rerun 'create'")
+            if self.deploy_dev:
+                self.debug("got:", curr_hash, "expected:", expected_hash)
+            else:
+                self.fatal("instance deployment hash mismatch: rerun 'create'")
 
         self.proc_call(["git", "fetch", dokku_remote])
-        code_change = self.git_is_current(branch, dokku_remote, self.DOKKU_GIT_BRANCH)
+        code_change = not self.git_is_current(branch, dokku_remote, self.DOKKU_GIT_BRANCH)
 
         config_tag: str | None = None
         if self.is_prod():
@@ -372,15 +384,17 @@ class DokkuDeploy(BaseDeploy):
         if args.unpushed and len(push_tag_to) > 0:
             print("--unpushed but push_tag_to is", push_tags_to)
         for remote in push_tag_to:
+            print("pushing tag", tag, "to", remote)
             self.proc_call(["git", "push", remote, tag],
                            handle_errors=False,
                            stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL)
         if config_tag:
+            print("tagging config as", config_tag)
             self.settings_tag_private_conf(config_tag)
 
         if self.DOKKU_SCALE:
-            # start non-web processes (only needed first time)
+            # start non-web processes (only needed first time?)
             print("scaling up")
             scale_cmd = ["ps:scale", "--skip-deploy", app] + self.DOKKU_SCALE
             self.dokku_call(scale_cmd)
