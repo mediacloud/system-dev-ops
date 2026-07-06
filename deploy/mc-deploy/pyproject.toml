@@ -1,0 +1,47 @@
+[project]
+name = "mc_deploy"
+version = "0.0.1"		# ALSO: update CHANGELOG.md!
+description='Media Cloud Extensible Deployment Tools'
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Phil Budne", email = "phil@regressive.org"},
+]
+
+dependencies = [
+    "python-dotenv ~= 1.0.1",
+    "tomli"			# will also use tomllib
+]
+
+[tool.mypy]
+# from rss-fetcher via story-indexer!
+# originally from https://blog.wolt.com/engineering/2021/09/30/professional-grade-mypy-configuration/
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+
+# from https://quantlane.com/blog/type-checking-large-codebase/
+# in the order they appear:
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+#disallow_any_generics = true
+disallow_subclassing_any = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+# look for local stubs to PyPI packages in top level stubs directory
+mypy_path = "stubs"
+
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
+[tool.setuptools.packages.find]
+where = ["."]
+namespaces = false
+
+[project.urls]
+"Homepage" = "https://mediacloud.org"
+"Bug Tracker" = "https://github.com/mediacloud/system-dev-ops/issues"
+"Source Code" = "https://github.com/mediacloud/system-dev-ops/deploy"
