@@ -10,7 +10,7 @@ PY=$(PROG).py
 
 install: $(VENVDONE)
 	echo "installed from system-dev-ops repo" > $(DIR)/README
-	cp -p $(PY) $(DIR)
+	cp $(PY) $(DIR)
 	chown root:root $(DIR)/$(PY)
 	sed -e "s@DIR@$(DIR)@" -e "s@VENV@$(VENV)@" < $(SVC).in > $(SYSTEMD_DIR)/$(SVC)
 	systemctl daemon-reload
