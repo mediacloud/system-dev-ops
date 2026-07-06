@@ -1,6 +1,6 @@
 [project]
 name = "mc-deploy"
-version = "0.0.2"		# ALSO: update CHANGELOG.md!
+version = "0.0.3"		# ALSO: update CHANGELOG.md!
 description='Media Cloud Extensible Deployment Tools'
 readme = "README.md"
 requires-python = ">=3.10"

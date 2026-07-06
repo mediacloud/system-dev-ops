@@ -158,7 +158,7 @@ class BaseDeploy:
     def git_file_hash(self, fname):
         """return git hash of one file"""
         hash = self.proc_output_one("git log -n1 --oneline --no-abbrev-commit "
-                                    f"--format='%h' {fname}")
+                                    f"--format=%h {fname}")
         if hash:
             return hash
         self.fatal(f"could not get {fname} git hash")
