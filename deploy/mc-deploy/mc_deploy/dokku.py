@@ -11,7 +11,7 @@ import socket
 import subprocess
 import sys
 
-from .base import BaseDeploy
+from .base import BaseDeploy, ProcCmd
 
 class DokkuDeploy(BaseDeploy):
     DEPLOY_DIR = "dokku-scripts"
@@ -138,7 +138,7 @@ class DokkuDeploy(BaseDeploy):
         return self.dokku_call(["apps:exists", app],
                                always=True, stderr=subprocess.DEVNULL) == 0
 
-    def dokku_call(self, cmd, **kws):
+    def dokku_call(self, cmd: ProcCmd, **kws):
         """
         run a dokku command via ssh
         (always via ssh to allow configuring remote server)
@@ -180,7 +180,7 @@ class DokkuDeploy(BaseDeploy):
             self.dokku_call(["git:set", app, "deploy-branch",
                              self.DOKKU_GIT_BRANCH])
 
-    def dokku_output_all(self, cmd, **kws) -> str:
+    def dokku_output_all(self, cmd: ProcCmd, **kws) -> str:
         """
         run a dokku command via ssh capturing output, return all as one string
         (always via ssh to allow configuring remote server)
@@ -195,7 +195,7 @@ class DokkuDeploy(BaseDeploy):
         sargs = ["ssh", self.dokku_ssh_user] + args
         return self.proc_output_all(sargs, **kws)
 
-    def dokku_output_lines(self, cmd, **kws) -> list[str]:
+    def dokku_output_lines(self, cmd: ProcCmd, **kws) -> list[str]:
         """
         run a dokku command via ssh capturing output, return as list of lines
         (always via ssh to allow configuring remote server)
@@ -203,7 +203,7 @@ class DokkuDeploy(BaseDeploy):
         output = self.dokku_output_all(cmd, **kws)
         return output.split("\n")
 
-    def dokku_output_one(self, cmd, **kws) -> str | None:
+    def dokku_output_one(self, cmd: ProcCmd, **kws) -> str | None:
         """
         run a dokku command via ssh capturing output, return first line or None
         (always via ssh to allow configuring remote server)
@@ -217,7 +217,7 @@ class DokkuDeploy(BaseDeploy):
         if plugin == "storage":
             return self.dokku_storage_create(name, app)
         if self.dokku_service_exists(plugin, name):
-            print(plugin, "service", name, "exists")
+            print(plugin, "service", name, "already exists")
         elif self.dokku_call(f"{plugin:create} {name}") == 0: # loud for now
             print(plugin, "service", name, "created")
         else:
@@ -257,11 +257,14 @@ class DokkuDeploy(BaseDeploy):
 
     def dokku_services_create(self, app):
         for plugin, suffix in self.DOKKU_SERVICES:
-            self.dokku_service_create(plugin, app + suffix, app)
+            if not self.dokku_service_create(plugin, app + suffix, app):
+                return False
+        return True
 
     def dokku_services_destroy(self, app):
         for plugin, suffix in self.DOKKU_SERVICES:
             self.dokku_service_destroy(plugin, app + suffix)
+        return True
 
     def _dokku_storage_path(self, app):
         return os.path.join(self.DOKKU_STORAGE_HOME, app)
@@ -275,7 +278,7 @@ class DokkuDeploy(BaseDeploy):
         expect = f"{stdir}:{self.DOKKU_STORAGE_MOUNT_POINT}"
         mounts = self.dokku_output_lines(f"storage:list {app}")
         if expect in mounts:
-            print("storage directory", stdir, "mounted at",
+            print("storage directory", stdir, "already mounted at",
                   self.DOKKU_STORAGE_MOUNT_POINT)
             return True
         print("mounting storage directory", stdir, "at",
@@ -301,7 +304,14 @@ class DokkuDeploy(BaseDeploy):
             return 1
         if not self.dokku_services_create(app):
             return 1
+
         self.dokku_fix_git_deploy_branch(app)
+
+        new_hash = self.deployment_hash() # mc-deploy version, git hash of project deploy.py
+        curr_hash = self.dokku_output_one(["config:get", app, self.DEPLOY_HASH_VAR], handle_errors=False)
+        if new_hash != curr_hash:
+            # speaks for itself:
+            self.dokku_call(["config:set", app, "--no-restart", f"{self.DEPLOY_HASH_VAR}={new_hash}"])
         return 0
 
     def crontab_cmd(self, args):
@@ -389,8 +399,7 @@ class DokkuDeploy(BaseDeploy):
         # dokku-scripts/deploy.py script.
 
         # get all current settings (used later as well)
-        jstr = self.dokku_output_all(
-            f"config:export --format=json {app}")
+        jstr = self.dokku_output_all(f"config:export --format=json {app}")
         curr_settings = json.loads(jstr)
         curr_hash = curr_settings.get(self.DEPLOY_HASH_VAR) # set by create cmd
         expected_hash = self.deployment_hash()
@@ -517,9 +526,30 @@ class DokkuDeploy(BaseDeploy):
         self.fatal("use deploy command!", quit=True)
 
 class DokkuDBMixin:
-    def clone_cmd(self, args):
-        """Clone database"""
+    """
+    mixin for an app w/ a postgres database service
+    """
+    # XXX need var for server w/ prod database!
+
+    def dburl_cmd_init(self, cp):
+        cp.add_argument("service",
+                        help="db service to get URL for")
+
+    def dburl_cmd(self, args):
+        """Return URL suitable as DATABASE_URL for use outside Dokku"""
         self.check_not_root()   # for ssh keys for dokku & git
+        # see rss-fetcher/dokku-scripts/dburl.sh
+        self.fatal("dburl not yet implemented", quit=True)
+    
+    def clone_cmd_init(self, cp):
+        cp.add_argument("service",
+                        help="db service to clone prod database to")
+        # maybe take optional source host & service names?
+
+    def clone_cmd(self, args):
+        """Clone production database"""
+        self.check_not_root()   # for ssh keys for dokku & git
+        # see {rss-fetcher,web-search}/dokku-scripts/clone-db.sh
         self.fatal("clone not yet implemented", quit=True)
 
 

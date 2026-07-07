@@ -15,9 +15,12 @@ import subprocess
 import sys
 import tempfile
 import time
+from typing import TypeAlias
 
 # PyPI
 import dotenv
+
+ProcCmd: TypeAlias = str | list[str]
 
 class BaseDeploy:
     """
@@ -270,6 +273,10 @@ class BaseDeploy:
         self.debug("login_user", self.login_user)
 
     def deploy_helper(self) -> None:
+        """
+        helper function for deploy commands
+        across deployment platforms
+        """
         if self.test_branch:
             self.branch = self.test_branch
         else:
@@ -305,7 +312,7 @@ class BaseDeploy:
         self.debug("inst_name", self.inst_name)
 
     @staticmethod
-    def _proc_args(cmd: str) -> list[str]:
+    def _proc_args(cmd: ProcCmd) -> list[str]:
         """
         allow proc_ methods to take cmd as string
         BUT if it contains any quoting of spaces, MUST pass as vector!!!!
@@ -315,7 +322,7 @@ class BaseDeploy:
         assert isinstance(cmd, list)
         return cmd
 
-    def proc_output_all(self, cmd, **kws) -> str:
+    def proc_output_all(self, cmd: ProcCmd, **kws) -> str:
         """
         return all output as single string
         """
@@ -333,9 +340,11 @@ class BaseDeploy:
             c2 = " ".join(args)
             if handle_errors:
                 self.fatal(f"'{c2}' failed with status {ex.returncode}")
-            return "ERROR"      # for dry run
+                return "ERROR"
+            else:
+                return ""
 
-    def proc_output_lines(self, cmd, **kws) -> list[str]:
+    def proc_output_lines(self, cmd: ProcCmd, **kws) -> list[str]:
         """
         run command, capture output lines in list.
         cmd can be string or iterable argv;
@@ -347,11 +356,11 @@ class BaseDeploy:
         output = self.proc_output_all(cmd, **kws)
         return output.split("\n")
 
-    def proc_output_one(self, cmd, **kws) -> str:
+    def proc_output_one(self, cmd: ProcCmd, **kws) -> str:
         """return first line of output from cmd"""
         return self.proc_output_lines(cmd, **kws)[0]
 
-    def proc_call(self, cmd, always=False, handle_errors=True, **kws):
+    def proc_call(self, cmd: ProcCmd, always=False, handle_errors=True, **kws):
         """
         run command (str or argv), return status,
         NOTE! name compatible with subprocess module
@@ -494,5 +503,6 @@ class BaseDeploy:
         try:
             return cmd_func(args)
         except KeyboardInterrupt:
+            print("")
             # eg control-C at confirm prompt!
             return 1
