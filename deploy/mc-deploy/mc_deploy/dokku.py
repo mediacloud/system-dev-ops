@@ -2,8 +2,7 @@
 Deploy an application using Dokku
 """
 
-# XXX implement create, destroy!!  Use dokku cronjobs!
-# XXX scream if on "main" branch and origin is mcremote!!!!
+# XXX Use dokku cronjobs for rss-fetcher
 
 import base64
 import json
@@ -33,15 +32,10 @@ class DokkuDeploy(BaseDeploy):
     DOKKU_GIT_BRANCH = "main" # branch at dokku_git_remote
 
     DOKKU_LETSENCRYPT_EMAIL = "system@mediacloud.org"
-    DOKKU_STORAGE_HOME = "/var/lib/dokku/data/storage"
-    PUBLIC_NAME: str            # w/o PUBLIC_DOMAIN appended
+    DOKKU_STORAGE_HOME = "/var/lib/dokku/data/storage" # odd this is needed!
+    DOKKU_STORAGE_MOUNT_POINT = "/app/data"            # reasonable default!
 
-    def inst_name_set(self):
-        """
-        called after self.deploy_{type,user}, and self.inst_name are valid,
-        before the command is run.
-        """
-        super().inst_name_set()
+    PUBLIC_NAME: str            # w/o PUBLIC_DOMAIN appended
 
     def parser_init(self, ap):
         super().parser_init(ap)
@@ -65,7 +59,6 @@ class DokkuDeploy(BaseDeploy):
         """
         super().parser_results(args)
         self.dokku_host = args.host
-        self.dokku_git_remote = f"dokku_{self.inst_id}"
         self.dokku_ssh_user = f"dokku@{self.dokku_host}"
 
     def settings_apply(self, changes: list[str], code_change: bool):
@@ -112,6 +105,8 @@ class DokkuDeploy(BaseDeploy):
 
         ah = self.dokku_host.split(".")[0] # could come from --host
         # from config.sh -- probably applies to Docker too
+        # if we sent to airtable from this script, use the values
+        # but no need to add them to app settings!
         self.settings_add("AIRTABLE_HARDWARE", ah)
         self.settings_add("AIRTABLE_ENV", self.inst_id)
         self.settings_add("AIRTABLE_NAME", self.inst_id) # XXX ???
@@ -130,6 +125,18 @@ class DokkuDeploy(BaseDeploy):
         # get git hash of project's deploy.py file:
         deploy_py_hash = self.git_file_hash(self.source_file())
         return f"{mc_deploy_vers}-{deploy_py_hash}"
+
+    def dokku_app_create(self, app):
+        if self.dokku_app_exists(app):
+            return True
+        return self.dokku_call(["apps:create", app]) == 0
+
+    def dokku_app_destroy(self, app):
+        return self.dokku_call(["--force", "apps:create", app]) == 0
+
+    def dokku_app_exists(self, app):
+        return self.dokku_call(["apps:exists", app],
+                               always=True, stderr=subprocess.DEVNULL) == 0
 
     def dokku_call(self, cmd, **kws):
         """
@@ -151,24 +158,24 @@ class DokkuDeploy(BaseDeploy):
         self.debug("dokku_call", cmd, "->", status)
         return status
 
-    def dokku_fix_git_deploy_branch(self) -> None:
+    def dokku_fix_git_deploy_branch(self, app: str) -> None:
+        """
+        check dokku git deploy branch is set properly
+        """
+
         # Early on there was some pain with (earlier versions of)
         # Dokku (it didn't want to use the "main" branch, and Phil
         # insisted), what you see below is the result of that
         # struggle.  It may, or may not still be needed. Change at
         # your own risk!
 
-        app = self.inst_name
-
-        # check dokku git deploy branch is set properly
-        # XXX do this before calling self.git_is_current on the dokku repo??
-        # XXX in "create"???
         for line in self.dokku_output_lines(["git:report", app]):
+            line = line.lstrip()
             if line.startswith("Git deploy branch:"):
-                curr_dokku_git_branch = line.split[3]
+                curr_dokku_git_branch = line.split()[3]
                 break
         else:
-            curr_dokku_git_branch = None
+            return
         if curr_dokku_git_branch != self.DOKKU_GIT_BRANCH:
             self.dokku_call(["git:set", app, "deploy-branch",
                              self.DOKKU_GIT_BRANCH])
@@ -206,12 +213,96 @@ class DokkuDeploy(BaseDeploy):
             return None
         return lines
 
+    def dokku_service_create(self, plugin, name, app):
+        if plugin == "storage":
+            return self.dokku_storage_create(name, app)
+        if self.dokku_service_exists(plugin, name):
+            print(plugin, "service", name, "exists")
+        elif self.dokku_call(f"{plugin:create} {name}") == 0: # loud for now
+            print(plugin, "service", name, "created")
+        else:
+            print(plugin, "service", name, "create failed")
+            return False
+
+        if self.dokku_service_linked(plugin, name, app):
+            print(plugin, "service", name, "already linked to app", app)
+        elif self.dokku_call(f"{plugin}:link {name} {app}") == 0: # loud for now
+            print(plugin, "service", name, "linked to app", app)
+        else:
+            print(plugin, "service", name, "link failed")
+            return False
+        return True
+
+    def dokku_service_destroy(self, plugin, name, app):
+        if plugin == "storage":
+            return self.dokku_storage_destroy(name)
+        if self.dokku_service_exists(plugin, name):
+            print(plugin, "service", name, "exists")
+            if self.dokku_service_linked(plugin, name, app):
+                self.dokku_call(f"{plugin}:unlink {name} {app}") # XXX check?
+                print("destroying", plugin, "service", name)
+                if not self.dokku_call(f"--force {plugin}:destroy {name}"):
+                    return False
+        return True
+
+    def dokku_service_exists(self, plugin, name):
+        return self.dokku_call(f"{plugin}:exists {name}",
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL) == 0
+
+    def dokku_service_linked(self, plugin, name, app):
+        return self.dokku_call(f"{plugin}:linked {name} {app}",
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL) == 0
+
+    def dokku_services_create(self, app):
+        for plugin, suffix in self.DOKKU_SERVICES:
+            self.dokku_service_create(plugin, app + suffix, app)
+
+    def dokku_services_destroy(self, app):
+        for plugin, suffix in self.DOKKU_SERVICES:
+            self.dokku_service_destroy(plugin, app + suffix)
+
+    def _dokku_storage_path(self, app):
+        return os.path.join(self.DOKKU_STORAGE_HOME, app)
+
+    def dokku_storage_create(self, name, app):
+        stdir = self._dokku_storage_path(name)
+        if not os.path.exists(stdir):
+            print("creating", name, "storage dir", stdir)
+            self.dokku_call(f"storage:ensure-directory {name}")
+
+        expect = f"{stdir}:{self.DOKKU_STORAGE_MOUNT_POINT}"
+        mounts = self.dokku_output_lines(f"storage:list {app}")
+        if expect in mounts:
+            print("storage directory", stdir, "mounted at",
+                  self.DOKKU_STORAGE_MOUNT_POINT)
+            return True
+        print("mounting storage directory", stdir, "at",
+              self.DOKKU_STORAGE_MOUNT_POINT)
+        return self.dokku_call(f"storage:mount {app} {expect}") == 0
+
+    def dokku_storage_destroy(self, name):
+        # leave storage in place
+        return True
+
     ################ subcommands
+
+    def create_cmd_init(self, cp):
+        cp.add_argument("instance")
 
     def create_cmd(self, args):
         """Create Dokku app instance"""
         self.check_not_root()   # for ssh keys for dokku & git
-        self.fatal("create not yet implemented", quit=True)
+        app = self._inst2name(args.instance)
+
+        self.confirm(f"Really create app {app}? [no] ")
+        if not self.dokku_app_create(app):
+            return 1
+        if not self.dokku_services_create(app):
+            return 1
+        self.dokku_fix_git_deploy_branch(app)
+        return 0
 
     def crontab_cmd(self, args):
         """Create Dokku app crontab"""
@@ -225,6 +316,7 @@ class DokkuDeploy(BaseDeploy):
         cp.add_argument("-u", "--unpushed", 
                         action="store_true",
                         help="allow deployment of unpushed dev repo")
+        # XXX take -U --user ??
 
     def deploy_cmd(self, args):
         """Push code to Dokku app instance"""
@@ -234,13 +326,16 @@ class DokkuDeploy(BaseDeploy):
             # XXX display diffs, or list uncommitted files??
             self.fatal("local changes not checked in")
 
+        self.deploy_helper()
+
+        self.dokku_git_remote = f"dokku_{self.inst_id}"
+
         branch = self.branch
         app = self.inst_name   # Dokku app name
-        if self.dokku_call(["apps:exists", app],
-                           always=True, stderr=subprocess.DEVNULL) != 0:
+        if not self.dokku_app_exists(app):
             self.fatal(f"App {app} does not exist at {self.dokku_host}")
 
-        self.dokku_fix_git_deploy_branch()
+        self.dokku_fix_git_deploy_branch(app) # remove????
 
         # Don't push code tags if code not pushed!
         # --unpushed void where prohibited by law (see below).
@@ -328,14 +423,13 @@ class DokkuDeploy(BaseDeploy):
         if code_change:
             print("Last commit:")
             self.proc_call("git log -n1", always=True) # output to user
-
             tag = self.tag
             self.confirm(f"Push branch {branch} to {self.dokku_host} dokku app {app}? [no] ")
         elif conf_changes:
             self.confirm("No code changes; apply config changes? [no] ")
         elif not code_change:
                 sys.stderr.write("No code or config changes. Fin.\n")
-                sys.exit(0)
+                return 0
 
         if self.is_prod():
             self.confirm_production()
@@ -346,7 +440,7 @@ class DokkuDeploy(BaseDeploy):
                 if config_tag:
                     self.settings_tag_private_conf(config_tag)
                 sys.stderr.write("Config updated. The End.\n")
-                sys.exit(0)
+                return 0
 
         assert code_change
 
@@ -402,11 +496,20 @@ class DokkuDeploy(BaseDeploy):
         if self.DOKKU_STOP:
             self.dokku_call(["ps:start", app]) # not needed?
 
+    def destroy_cmd_init(self, cp):
+        cp.add_argument("instance")
+
     def destroy_cmd(self, args):
         """Destroy Dokku app instance"""
-        # require root, only delete local instances???
-        self.check_is_root()
-        self.fatal("destroy not yet implemented", quit=True)
+        self.check_not_root()   # for ssh keys for dokku & git
+        app = self._inst2name(args.instance)
+        if not self.confirm(f"Really destroy app {app}? [no]"):
+            return 1
+        if not self.dokku_services_destroy(app):
+            return 1
+        if not self.dokku_app_destroy(app):
+            return 1
+        return 0
 
     def push_cmd(self, args):
         """(pointer to deploy)"""

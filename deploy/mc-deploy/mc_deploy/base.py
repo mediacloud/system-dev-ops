@@ -104,8 +104,9 @@ class BaseDeploy:
         """
         return os.path.dirname(self.source_file())
 
-    def get_inst_base(self, args):
+    def get_inst_base(self):
         # NOTE! Can be prefixed with "flavor" (ie; hist-indexer)!!!
+        # set by some top-level option
         # here to allow override
         return self.INST_BASE
 
@@ -206,11 +207,14 @@ class BaseDeploy:
     def git_upstream_url(self, repo: str) -> str:
         return f"{self.UPSTREAM_HOST}:{self.UPSTREAM_USER}/{repo}"
 
-    def inst_name_set(self) -> None:
-        """
-        called after self.inst_name set
-        """
-        pass
+    def _inst2name(self, id: str) -> str:
+        # PLEASE don't alter/overwrite this: all projects using this
+        # convention (dev/staging grouped together)
+        base = self.get_inst_base()
+        if id == "prod":
+            return base
+        else:
+            return f"{id}-{base}"
 
     def is_dev(self):
         """shorthand; avoid testing branch name!!"""
@@ -249,11 +253,6 @@ class BaseDeploy:
                         choices=["prod", "staging"],
                         help="test deployment code (impl. --dry-run)")
 
-        duser = self.login_user # dev instance user
-        ap.add_argument("-U", "--user",
-                        default=duser,
-                        help=f"dev instance user (default {duser})")
-
         scp = ap.add_subparsers(help="command", dest="command", required=True)
         self.init_command_parsers(scp)
 
@@ -261,33 +260,34 @@ class BaseDeploy:
         """
         called with result of argparse.parse_args
         """
-        if args.test:
-            self.branch = args.test
+        self.test_branch = args.test
+        if self.test_branch:
             self.dry_run = True
         else:
             self.dry_run = args.dry_run
         self.debug_output = args.debug or self.dry_run
         # can now call debug method!!
-        self.debug("branch", self.branch)
         self.debug("login_user", self.login_user)
+
+    def deploy_helper(self) -> None:
+        if self.test_branch:
+            self.branch = self.test_branch
+        else:
+            self.branch = self.git_branch()
+        self.debug("branch", self.branch)
 
         if self.branch == "prod":
             self.inst_type = self.inst_id = "prod"
-            inst_prefix = ""
         elif self.branch == "staging":
             self.inst_type = self.inst_id = "staging"
-            inst_prefix = "staging-"
         else:
             self.inst_type = 'dev'
-            self.inst_id = args.user
-            # must be legal hostname: strip illegal characters:
-            iu = args.user.replace("_", "")
-            inst_prefix = f"{iu}-"
+            self.inst_id = self.login_user
 
         self.debug("inst_type", self.inst_type) # prod/staging/dev
         self.debug("inst_id", self.inst_id) # prod/staging/USER
 
-        self.inst_base = self.get_inst_base(args)
+        self.inst_base = self.get_inst_base()
         self.debug("inst_base", self.inst_base)
 
         # naming scheme used across MC projects, group by user/realm then app
@@ -301,9 +301,7 @@ class BaseDeploy:
         self.tag = self.tag_make()
         self.debug("tag", self.tag)
 
-        # PLEASE don't alter/overwrite this: all projects using this
-        # convention (dev/staging grouped together)
-        self.inst_name = f"{inst_prefix}{self.inst_base}"
+        self.inst_name = self._inst2name(self.inst_id)
         self.debug("inst_name", self.inst_name)
 
     @staticmethod
@@ -491,9 +489,6 @@ class BaseDeploy:
         self.parser_init(ap)
         args = ap.parse_args()
         cmd_func = self.cmd_funcs.get(args.command)
-
-        # JUST before parser_results (altered by --testing)
-        self.branch = self.git_branch()
         self.parser_results(args)
 
         try:
