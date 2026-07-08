@@ -15,20 +15,44 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import TypeAlias
+from typing import Any, Callable, Protocol, TypeAlias
 
 # PyPI
 import dotenv
 
+CmdArgs: TypeAlias = argparse.Namespace        # xxx_cmd arg
+CmdParser: TypeAlias = argparse.ArgumentParser # xxx_cmd_init arg
+ParserArgs: TypeAlias = argparse.Namespace
+SubCommandParser: TypeAlias = argparse._SubParsersAction[argparse.ArgumentParser]
+
+# allow process methods to take str or argv
 ProcCmd: TypeAlias = str | list[str]
 
-class BaseDeploy:
+class DeployProtocol(Protocol):
+    """base for mixins"""
+
+    def check_not_root(self) -> None: ...
+
+    def check_is_root(self) -> None: ...
+
+    def fatal(self, msg: str, quit: bool = False) -> None: ...
+
+    def proj_version(self) -> str: ...
+
+    def proj_version_location(self) -> str: ...
+
+class BaseDeploy(DeployProtocol):
     """
     base class for deploy scripts;
     Only subclass this if you're not using Dokku or Docker!!
     """
 
     INST_BASE: str # instance name base (dokku app, stack name) -- keep short
+
+    # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
+    # NOT FULLY IMPLEMENTED: see get_inst_base/get_inst_type_id
+    INST_FLAVORS: list[str] = []
+
     PROJECT_REPO: str
     PUBLIC_DOMAIN = "mediacloud.org"
     #PUBLIC_SERVER = "tarbell"
@@ -37,23 +61,24 @@ class BaseDeploy:
     UPSTREAM_USER = "mediacloud" # owner user/organization
     #VENVDIR = "venv"
 
-    def __init__(self):
-        self.cmd_funcs = {}     # map command name to method
+    def __init__(self) -> None:
+        self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = {}     # map command name to method
         self.date_time = self.get_date_time()
+        self.debug_output = False          # for early debug calls
         self.deploy_dir = self.get_deploy_dir()
         self.dry_run = False    # for any initial proc_ calls
-        self._remotes = {}
-        self.hostname = socket.gethostname()
-        self.login_user = self.get_login_user()
-        self.private_dir = None
-        self.settings = {}      # app/stack settings
-        self.debug_output = True # TEMP!!!
+        self._remotes: dict[str, str] = {} # cached git remote name -> "url"
+        self.hostname = socket.gethostname().lower() # may not be FQDN
+        self.login_user = self.user = self.get_login_user()
+        self.private_dir: tempfile.TemporaryDirectory | None = None
+        self.settings: dict[str, str] = {} # app/stack settings
+        self.inst_flavor = ""
 
     ################ utilities (in alphabetical order!)
 
     # try to group related functions with common prefix!
 
-    def debug(self, *args):
+    def debug(self, *args: Any) -> None:
         """
         takes multiple args to avoid need for formatting
         strings that won't be displayed!!!!
@@ -62,32 +87,80 @@ class BaseDeploy:
             return
         print("DEBUG:", " ".join(str(x) for x in args))
 
-    def check_not_root(self):
+    def check_not_root(self) -> None:
         if os.getuid() != 0:
             return
         self.fatal("must not be run as root")
+        # may return in dry runs
 
-    def check_is_root(self):
+    def check_is_root(self) -> None:
         if os.getuid() == 0:
             return
         self.fatal("must be run as root")
+        # may return in dry runs
 
-    def confirm(self, msg):
+    def confirm(self, msg: str) -> None:
+        """
+        call for first confirmation; exits if not confirmed
+        """
         sys.stderr.write("\n")
         sys.stderr.write(msg)   # no newline
         sys.stderr.flush()
         conf = sys.stdin.readline().strip().lower()
         if conf not in ("y", "yes"):
             self.fatal("[cancelled]", quit=True)
+            # may return in dry runs
 
-    def confirm_production(self):
+    def confirm_production(self) -> None:
+        """
+        call for second confirmation; exits if not confirmed
+        """
         sys.stderr.write("This is production! Type YES to confirm: ")
         sys.stderr.flush()
         conf = sys.stdin.readline().strip()
         if conf != "YES":       # must be exact
-            self.fatal("[cancelled]", quit=True)
+            self.fatal("[cancelled]", quit=True) # never returns
 
-    def fatal(self, msg, quit=False):
+    def deploy_helper(self) -> None:
+        """
+        helper function for deploy commands
+        across classes
+        """
+        if self.test_branch:
+            self.branch = self.test_branch
+        else:
+            self.branch = self.git_branch()
+        self.debug("branch", self.branch)
+
+        if self.branch in ("prod", "staging"):
+            self.inst_type = self.inst_id = self.branch
+        else:
+            self.inst_type = "dev"
+            self.inst_id = self.user # in case --user option
+
+        self.debug("inst_type", self.inst_type) # prod/staging/dev
+        self.debug("inst_id", self.inst_id) # prod/staging/USER
+
+        self.inst_base = self.get_inst_base()
+        self.debug("inst_base", self.inst_base)
+
+        # naming scheme used across MC projects;
+        # group by user/realm then app/stack
+        self.statsd_prefix = f"mc.{self.inst_id}.{self.inst_base}"
+
+        # allow subclass override of STATSD_HOST
+        self.statsd_url = f"statsd://{self.STATSD_HOST}:8125"
+
+        self.debug("statsd_prefix", self.statsd_prefix)
+
+        # before make_tag
+        self.inst_name = self._id2name(self.inst_id)
+        self.debug("inst_name", self.inst_name)
+
+        self.tag = self.tag_make()
+        self.debug("tag", self.tag)
+
+    def fatal(self, msg: str, quit: bool = False) -> None:
         sys.stderr.write(msg + "\n")
         if self.dry_run and not quit:
             print("(continuing with dry-run)")
@@ -95,29 +168,31 @@ class BaseDeploy:
         sys.exit(1)
 
     @staticmethod
-    def get_date_time():
+    def get_date_time() -> str:
         # avoid datetime package and timezone miasma
+        # seconds ensure unique dev/staging tags
         return time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
 
-    def get_deploy_dir(self):
+    def get_deploy_dir(self) -> str:
         """
         called on start to populate self.deploy_dir; expects deploy.py
-        which subclasses and invokes XyzzyDeploy being located in the
-        project "dokku-scripts" or "docker" subdir.
+        which defines XyzzyDeploy being located in the project
+        "dokku-scripts" or "docker" subdir of the project top level.
         """
-        return os.path.dirname(self.source_file())
+        src = self.source_file()
+        assert isinstance(src, str)
+        return os.path.dirname(src)
 
-    def get_inst_base(self):
-        # NOTE! Can be prefixed with "flavor" (ie; hist-indexer)!!!
-        # set by some top-level option
-        # here to allow override
-        return self.INST_BASE
+    def get_inst_base(self) -> str:
+        base = self.INST_BASE
+        if self.inst_flavor:
+            return f"{self.inst_flavor}-{base}"
+        return base
 
-    @staticmethod
-    def get_login_user():
+    def get_login_user(self) -> str:
         """
         return currently logged in user
-        Goal is to AVOID returning "root" when usin su(do)
+        Goal is to AVOID returning "root" when using su(do)
         """
         try:
             # get user based on stdin (pseudo)terminal & "utmp" data
@@ -126,8 +201,10 @@ class BaseDeploy:
             # and sometimes in local terminal windows!!
             user = os.getlogin()
         except OSError:
-            user = os.environ.get("SUDO_USER")
-            if not user:
+            u = os.environ.get("SUDO_USER")
+            if u:
+                user = u
+            else:
                 user = getpass.getuser() # falls back to getpwent
 
         if not user or user == "root":
@@ -136,31 +213,33 @@ class BaseDeploy:
             user = "DRYRUN"
         return user
 
-    def git_branch(self):
+    def git_branch(self) -> str:
         """return branch name of current checkout"""
         return self.proc_output_one("git branch --show-current")
 
-    def _git_check_bad_version(self, where: str) -> None:
+    def _git_bad_version(self, where: str) -> None:
         self.fatal(f"{where}: update {self.proj_version_location()} in main branch first!")
 
-    def git_check_local_tag(self, tag):
+    def git_check_local_tag(self, tag: str) -> None:
         status = self.proc_call(
             f"git show-ref --verify --quiet refs/tags/{tag}",
             always=True,
             handle_errors=False)
         if status == 0:         # found
-            self._git_check_bad_version(f"found local tag {tag}")
+            # report using helper for common formatting
+            self._git_bad_version(f"found local tag {tag}")
 
 
-    def git_check_remote_tag(self, remote, tag):
+    def git_check_remote_tag(self, remote: str, tag: str) -> None:
         # https://stackoverflow.com/questions/5549479/git-check-if-commit-xyz-in-remote-repo
         status = self.proc_call(["git", "fetch", remote, tag],
                                 handle_errors=False,
                                 stdout=subprocess.DEVNULL)
         if status == 0:         # found
-            self._git_check_bad_version(f"found {remote} tag {tag}")
+            # report using helper for common formatting
+            self._git_bad_version(f"found {remote} tag {tag}")
 
-    def git_file_hash(self, fname):
+    def git_file_hash(self, fname: str) -> str:
         """return git hash of one file"""
         hash = self.proc_output_one("git log -n1 --oneline --no-abbrev-commit "
                                     f"--format=%h {fname}")
@@ -169,12 +248,12 @@ class BaseDeploy:
         self.fatal(f"could not get {fname} git hash")
         return "NOHASH"         # dry-run
 
-    def git_is_clean(self):
+    def git_is_clean(self) -> bool:
         """return whether working directory is 'clean' (fully committed)"""
         return self.proc_call("git diff --quiet",
                               always=True, handle_errors = False) == 0
 
-    def git_is_current(self, branch, remote, remote_branch=None):
+    def git_is_current(self, branch: str, remote: str, remote_branch: str | None = None) -> bool:
         """
         return True if local branch and remote are the same
         """
@@ -195,7 +274,7 @@ class BaseDeploy:
                     self._remotes[name] = url
         return self._remotes
 
-    def git_upstream_remote(self) -> str | None:
+    def git_upstream_remote(self) -> str:
         """
         return name of git "remote" belonging to project owner
         (must be current for staging and production deploys).
@@ -205,50 +284,68 @@ class BaseDeploy:
         for name, url in self.git_remotes().items():
             if url.startswith(prefix):
                 return name
-        return None
+        self.fatal("could not find upstream remote")
+        return "NOUPSTREAM"     # dry run
 
     def git_upstream_url(self, repo: str) -> str:
+        """
+        return git URL for home repo
+        """
         return f"{self.UPSTREAM_HOST}:{self.UPSTREAM_USER}/{repo}"
 
-    def _inst2name(self, id: str) -> str:
-        # PLEASE don't alter/overwrite this: all projects using this
-        # convention (dev/staging grouped together)
+    def _id2name(self, id: str) -> str:
+        """
+        return an instance name given an "instance id"
+
+        *PLEASE* don't alter/overwrite this: all projects using this
+        convention (dev/staging instances grouped together)
+        """
         base = self.get_inst_base()
         if id == "prod":
             return base
-        else:
-            return f"{id}-{base}"
+        return f"{id}-{base}"
 
-    def is_dev(self):
+    def is_dev(self) -> bool:
         """shorthand; avoid testing branch name!!"""
+        assert isinstance(self.inst_type, str)
         return self.inst_type == "dev"
 
-    def is_prod(self):
+    def is_prod(self) -> bool:
         """shorthand; avoid testing branch name!!"""
+        assert isinstance(self.inst_type, str)
         return self.inst_type == "prod"
 
-    def is_prod_staging(self):
+    def is_prod_staging(self) -> bool:
         """shorthand; avoid testing branch name!!"""
+        assert isinstance(self.inst_type, str)
         return self.inst_type in ("prod", "staging")
 
-    def is_staging(self):
+    def is_staging(self) -> bool:
         """shorthand; avoid testing branch name!!"""
+        assert isinstance(self.inst_type, str)
         return self.inst_type == "staging"
 
-    def parser_init(self, ap) -> None:
+    def parser_init(self, ap: argparse.ArgumentParser) -> None:
         """
         add top-level arguments common to all commands.
         results are handled in parser_results.
         """
         # conventions:
-        # * one letter arg first (matches argparse args)
+        # * one letter options first (matches argparse args)
         # * capital letter for one letter args that take a value
         # * help text starts uncapitalized (to match argparse)
         # * ALWAYS supply help, include "(default: DEFAULT)" as applicable
         ap.add_argument("-d", "--debug",
                         action="store_true",
                         help="debug deployment code")
-        ap.add_argument("-n", "--no-action", "--dry-run",
+        if self.INST_FLAVORS:
+            # top level option for create/destroy commands
+            def_flavor = self.INST_FLAVORS[0]
+            ap.add_argument("-F", "--flavor",
+                            choices=sorted(self.INST_FLAVORS),
+                            default=def_flavor,
+                            help=f"instance flavor (default {def_flavor})")
+        ap.add_argument("-n", "--no-action",
                         action="store_true",
                         dest="dry_run",
                         help="dry run: take no actions")
@@ -259,7 +356,7 @@ class BaseDeploy:
         scp = ap.add_subparsers(help="command", dest="command", required=True)
         self.init_command_parsers(scp)
 
-    def parser_results(self, args) -> None:
+    def parser_results(self, args: ParserArgs) -> None:
         """
         called with result of argparse.parse_args
         """
@@ -268,61 +365,30 @@ class BaseDeploy:
             self.dry_run = True
         else:
             self.dry_run = args.dry_run
-        self.debug_output = args.debug or self.dry_run
+        if self.INST_FLAVORS:
+            self.inst_flavor = args.flavor
+        self.debug_output = args.debug
         # can now call debug method!!
-        self.debug("login_user", self.login_user)
-
-    def deploy_helper(self) -> None:
-        """
-        helper function for deploy commands
-        across deployment platforms
-        """
-        if self.test_branch:
-            self.branch = self.test_branch
-        else:
-            self.branch = self.git_branch()
-        self.debug("branch", self.branch)
-
-        if self.branch == "prod":
-            self.inst_type = self.inst_id = "prod"
-        elif self.branch == "staging":
-            self.inst_type = self.inst_id = "staging"
-        else:
-            self.inst_type = 'dev'
-            self.inst_id = self.login_user
-
-        self.debug("inst_type", self.inst_type) # prod/staging/dev
-        self.debug("inst_id", self.inst_id) # prod/staging/USER
-
-        self.inst_base = self.get_inst_base()
-        self.debug("inst_base", self.inst_base)
-
-        # naming scheme used across MC projects, group by user/realm then app
-        self.statsd_prefix = f"mc.{self.inst_id}.{self.inst_base}"
-
-        # allow subclass override of STATSD_HOST
-        self.statsd_url = f"statsd://{self.STATSD_HOST}:8125"
-
-        self.debug("statsd_prefix", self.statsd_prefix)
-
-        self.tag = self.tag_make()
-        self.debug("tag", self.tag)
-
-        self.inst_name = self._inst2name(self.inst_id)
-        self.debug("inst_name", self.inst_name)
+        self.debug("user", self.user)
 
     @staticmethod
     def _proc_args(cmd: ProcCmd) -> list[str]:
         """
-        allow proc_ methods to take cmd as string
-        BUT if it contains any quoting of spaces, MUST pass as vector!!!!
-        """
+        allow proc_ methods to take cmd as string.
+
+        BUT if any args have spaces in them, YOU MUST pass command as
+        a list of args!!
+
+        ALL subprocess invocations are done DIRECTLY (without shell),
+        for safety (tainted data) and speed, so not only is quoting
+        unnecessary/ignore, ADDING quotes means the invoked program
+        will SEE THEM!!!  """
         if isinstance(cmd, str):
             return cmd.split()
         assert isinstance(cmd, list)
         return cmd
 
-    def proc_output_all(self, cmd: ProcCmd, **kws) -> str:
+    def proc_output_all(self, cmd: ProcCmd, **kws: Any) -> str:
         """
         return all output as single string
         """
@@ -333,6 +399,7 @@ class BaseDeploy:
             # from subprocess.getstatusoutput WITHOUT shell=True!!
             # to avoid passing tainted data to shell:
             output = subprocess.check_output(args, text=True, shell=False, **kws)
+            assert isinstance(output, str)
             if output[-1:] == '\n':
                 output = output[:-1]
             return output
@@ -344,7 +411,7 @@ class BaseDeploy:
             else:
                 return ""
 
-    def proc_output_lines(self, cmd: ProcCmd, **kws) -> list[str]:
+    def proc_output_lines(self, cmd: ProcCmd, **kws: Any) -> list[str]:
         """
         run command, capture output lines in list.
         cmd can be string or iterable argv;
@@ -356,11 +423,11 @@ class BaseDeploy:
         output = self.proc_output_all(cmd, **kws)
         return output.split("\n")
 
-    def proc_output_one(self, cmd: ProcCmd, **kws) -> str:
+    def proc_output_one(self, cmd: ProcCmd, **kws: Any) -> str:
         """return first line of output from cmd"""
-        return self.proc_output_lines(cmd, **kws)[0]
+        return self.proc_output_lines(cmd, **kws)[0] # XXX handle zero lines!
 
-    def proc_call(self, cmd: ProcCmd, always=False, handle_errors=True, **kws):
+    def proc_call(self, cmd: ProcCmd, always:bool=False, handle_errors:bool=True, **kws: Any) -> int:
         """
         run command (str or argv), return status,
         NOTE! name compatible with subprocess module
@@ -385,12 +452,12 @@ class BaseDeploy:
         return status
 
     def proj_version(self) -> str:
-        raise NotImplemented("use a mixin!")
+        raise NotImplementedError("use a mixin!")
 
     def proj_version_location(self) -> str:
-        raise NotImplemented("use a mixin!")
+        raise NotImplementedError("use a mixin!")
 
-    def settings_add(self, key: str, value: str):
+    def settings_add(self, key: str, value: str) -> None:
         """
         helper for settings_get_new
         """
@@ -420,20 +487,21 @@ class BaseDeploy:
         url = self.git_upstream_url(repo)
         self.private_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         atexit.register(self.private_dir.cleanup)
-        os.chmod(0o700, self.private_dir.name) # make unreadable
+        os.chmod(self.private_dir.name, 0o700) # make unreadable
         self.proc_call(["git", "clone", url], cwd=self.private_dir.name)
         for fname in fnames: # may read prod, then staging for overrides
-            self.settings.load_file(os.path.join(self.private_dir.name, repo, fname))
+            self.settings.update(dotenv.dotenv_values(os.path.join(self.private_dir.name, repo, fname)))
         # cloned repo kept around for later tagging
 
     def settings_tag_private_conf(self, tag: str) -> None:
         self.debug("config tag:", tag)
+        assert isinstance(self.private_dir, tempfile.TemporaryDirectory)
         self.proc_call(["git", "tag", tag], cwd=self.private_dir.name)
         # freshly cloned above, so remote always "origin"
         self.debug("pushing config tag")
         self.proc_call(["git", "push", "origin", tag], cwd=self.private_dir.name)
 
-    def source_file(self) -> str:
+    def source_file(self) -> str | None:
         """
         return path of deploy.py script that uses this package
         (for getting its hash, or the deploy directory path)
@@ -447,14 +515,20 @@ class BaseDeploy:
             return self.tag_staging()
         return self.tag_dev()
 
+    def tag_host(self) -> str:
+        return self.hostname.split(".")[0]
+
+    def tag_dev(self) -> str:
+        return f"{self.date_time}-{self.tag_host()}-{self.branch}-{self.inst_name}"
+
     def tag_prod(self) -> str:
-        # get_version defined in mixins!!
+        # proj_version defined in mixins!!
         return f"v{self.proj_version()}"
 
     def tag_staging(self) -> str:
-        return f"{self.date_time}-{self.hostname}-{self.branch}"
+        return f"{self.date_time}-{self.tag_host()}-{self.branch}"
 
-    tag_dev = tag_staging
+
 
     def version(self) -> str:
         """
@@ -473,14 +547,14 @@ class BaseDeploy:
 
     ################ commands in all versions of code
 
-    def version_cmd(self, args) -> int:
+    def version_cmd(self, args: CmdArgs) -> int:
         """Display deployment package version"""
         print(self.source_file(), self.version())
         return 0
 
     ################ top level
 
-    def init_command_parsers(self, scp) -> None:
+    def init_command_parsers(self, scp: SubCommandParser) -> None:
         for attr in sorted(dir(self)):
             if attr.endswith("_cmd"):
                 cmd = attr[:-4] # trim _cmd
@@ -498,6 +572,7 @@ class BaseDeploy:
         self.parser_init(ap)
         args = ap.parse_args()
         cmd_func = self.cmd_funcs.get(args.command)
+        assert cmd_func is not None
         self.parser_results(args)
 
         try:

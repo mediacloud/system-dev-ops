@@ -1,24 +1,25 @@
 """
-mixin to get project version from settings.py
+mixins for Django projects
 """
 
-class DjangoMixin:
+from .base import DeployProtocol
+
+# XXX move to web-search/dokku-scripts/deploy.py McWebDeploy class!
+class MCWebMixin(DeployProtocol):
     """
     get project VERSION from Django settings.py file
     """
     SETTINGS_FILE: str          # path to settings.py
 
-    def __init__(self):
-        super().__init__()
-
     def proj_version(self) -> str:
         # loading settings.py is a heavy lift
+        assert isinstance(self.SETTINGS_FILE, str)
         with open(self.SETTINGS_FILE) as f:
             for line in f:
                 if line.startswith("VERSION"):
                     break
             else:
-                self.fatal(f"Did not find VERSION in {settings_file}")
+                self.fatal(f"Did not find VERSION in {self.SETTINGS_FILE}", quit=True)
             # take RHS of '=' and LHS of any comment, remove spaces & quotes
             return line.split("=", 1)[1].split("#", 1)[0].strip().strip("'\"")
 

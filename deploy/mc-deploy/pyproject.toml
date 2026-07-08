@@ -10,7 +10,12 @@ authors = [
 
 dependencies = [
     "python-dotenv ~= 1.0.1",
-    "tomli"			# installed by pip; will also use tomllib
+    "tomli" # installed by pip; will also use tomllib (remove if python >=3.11)
+]
+
+[project.optional-dependencies]
+mypy = [
+    "mypy"
 ]
 
 [tool.mypy]

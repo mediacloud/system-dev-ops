@@ -1,0 +1,6 @@
+*~
+#*
+build
+mc_deploy.egg-info
+mc_deploy/__pycache__
+venv
