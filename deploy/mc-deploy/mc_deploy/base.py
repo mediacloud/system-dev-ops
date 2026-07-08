@@ -6,9 +6,9 @@ Base class for mediacloud deployment
 
 import argparse
 import atexit
-import getpass                  # getuser
-import importlib.metadata       # version
-import inspect                  # getsourcefile
+import getpass  # getuser
+import importlib.metadata  # version
+import inspect  # getsourcefile
 import os
 import socket
 import subprocess
@@ -20,13 +20,14 @@ from typing import Any, Callable, Protocol, TypeAlias
 # PyPI
 import dotenv
 
-CmdArgs: TypeAlias = argparse.Namespace        # xxx_cmd arg
-CmdParser: TypeAlias = argparse.ArgumentParser # xxx_cmd_init arg
+CmdArgs: TypeAlias = argparse.Namespace  # xxx_cmd arg
+CmdParser: TypeAlias = argparse.ArgumentParser  # xxx_cmd_init arg
 ParserArgs: TypeAlias = argparse.Namespace
 SubCommandParser: TypeAlias = argparse._SubParsersAction[argparse.ArgumentParser]
 
 # allow process methods to take str or argv
 ProcCmd: TypeAlias = str | list[str]
+
 
 class DeployProtocol(Protocol):
     """base for mixins"""
@@ -41,13 +42,14 @@ class DeployProtocol(Protocol):
 
     def proj_version_location(self) -> str: ...
 
+
 class BaseDeploy(DeployProtocol):
     """
     base class for deploy scripts;
     Only subclass this if you're not using Dokku or Docker!!
     """
 
-    INST_BASE: str # instance name base (dokku app, stack name) -- keep short
+    INST_BASE: str  # instance name base (dokku app, stack name) -- keep short
 
     # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
     # NOT FULLY IMPLEMENTED: see get_inst_base/get_inst_type_id
@@ -55,23 +57,25 @@ class BaseDeploy(DeployProtocol):
 
     PROJECT_REPO: str
     PUBLIC_DOMAIN = "mediacloud.org"
-    #PUBLIC_SERVER = "tarbell"
+    # PUBLIC_SERVER = "tarbell"
     STATSD_HOST = "tarbell.angwin"
-    UPSTREAM_HOST = "git@github.com" # remote URL prefix for github ssh
-    UPSTREAM_USER = "mediacloud" # owner user/organization
-    #VENVDIR = "venv"
+    UPSTREAM_HOST = "git@github.com"  # remote URL prefix for github ssh
+    UPSTREAM_USER = "mediacloud"  # owner user/organization
+    # VENVDIR = "venv"
 
     def __init__(self) -> None:
-        self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = {}     # map command name to method
+        self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = (
+            {}
+        )  # map command name to method
         self.date_time = self.get_date_time()
-        self.debug_output = False          # for early debug calls
+        self.debug_output = False  # for early debug calls
         self.deploy_dir = self.get_deploy_dir()
-        self.dry_run = False    # for any initial proc_ calls
-        self._remotes: dict[str, str] = {} # cached git remote name -> "url"
-        self.hostname = socket.gethostname().lower() # may not be FQDN
+        self.dry_run = False  # for any initial proc_ calls
+        self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
+        self.hostname = socket.gethostname().lower()  # may not be FQDN
         self.login_user = self.user = self.get_login_user()
         self.private_dir: tempfile.TemporaryDirectory | None = None
-        self.settings: dict[str, str] = {} # app/stack settings
+        self.settings: dict[str, str] = {}  # app/stack settings
         self.inst_flavor = ""
 
     ################ utilities (in alphabetical order!)
@@ -104,7 +108,7 @@ class BaseDeploy(DeployProtocol):
         call for first confirmation; exits if not confirmed
         """
         sys.stderr.write("\n")
-        sys.stderr.write(msg)   # no newline
+        sys.stderr.write(msg)  # no newline
         sys.stderr.flush()
         conf = sys.stdin.readline().strip().lower()
         if conf not in ("y", "yes"):
@@ -118,8 +122,8 @@ class BaseDeploy(DeployProtocol):
         sys.stderr.write("This is production! Type YES to confirm: ")
         sys.stderr.flush()
         conf = sys.stdin.readline().strip()
-        if conf != "YES":       # must be exact
-            self.fatal("[cancelled]", quit=True) # never returns
+        if conf != "YES":  # must be exact
+            self.fatal("[cancelled]", quit=True)  # never returns
 
     def deploy_helper(self) -> None:
         """
@@ -136,10 +140,10 @@ class BaseDeploy(DeployProtocol):
             self.inst_type = self.inst_id = self.branch
         else:
             self.inst_type = "dev"
-            self.inst_id = self.user # in case --user option
+            self.inst_id = self.user  # in case --user option
 
-        self.debug("inst_type", self.inst_type) # prod/staging/dev
-        self.debug("inst_id", self.inst_id) # prod/staging/USER
+        self.debug("inst_type", self.inst_type)  # prod/staging/dev
+        self.debug("inst_id", self.inst_id)  # prod/staging/USER
 
         self.inst_base = self.get_inst_base()
         self.debug("inst_base", self.inst_base)
@@ -205,7 +209,7 @@ class BaseDeploy(DeployProtocol):
             if u:
                 user = u
             else:
-                user = getpass.getuser() # falls back to getpwent
+                user = getpass.getuser()  # falls back to getpwent
 
         if not user or user == "root":
             self.fatal("could not determine login user")
@@ -218,51 +222,59 @@ class BaseDeploy(DeployProtocol):
         return self.proc_output_one("git branch --show-current")
 
     def _git_bad_version(self, where: str) -> None:
-        self.fatal(f"{where}: update {self.proj_version_location()} in main branch first!")
+        self.fatal(
+            f"{where}: update {self.proj_version_location()} in main branch first!"
+        )
 
     def git_check_local_tag(self, tag: str) -> None:
         status = self.proc_call(
             f"git show-ref --verify --quiet refs/tags/{tag}",
             always=True,
-            handle_errors=False)
-        if status == 0:         # found
+            handle_errors=False,
+        )
+        if status == 0:  # found
             # report using helper for common formatting
             self._git_bad_version(f"found local tag {tag}")
 
-
     def git_check_remote_tag(self, remote: str, tag: str) -> None:
         # https://stackoverflow.com/questions/5549479/git-check-if-commit-xyz-in-remote-repo
-        status = self.proc_call(["git", "fetch", remote, tag],
-                                handle_errors=False,
-                                stdout=subprocess.DEVNULL)
-        if status == 0:         # found
+        status = self.proc_call(
+            ["git", "fetch", remote, tag],
+            handle_errors=False,
+            stdout=subprocess.DEVNULL,
+        )
+        if status == 0:  # found
             # report using helper for common formatting
             self._git_bad_version(f"found {remote} tag {tag}")
 
     def git_file_hash(self, fname: str) -> str:
         """return git hash of one file"""
-        hash = self.proc_output_one("git log -n1 --oneline --no-abbrev-commit "
-                                    f"--format=%h {fname}")
+        hash = self.proc_output_one(
+            "git log -n1 --oneline --no-abbrev-commit " f"--format=%h {fname}"
+        )
         if hash:
             return hash
         self.fatal(f"could not get {fname} git hash")
-        return "NOHASH"         # dry-run
+        return "NOHASH"  # dry-run
 
     def git_is_clean(self) -> bool:
         """return whether working directory is 'clean' (fully committed)"""
-        return self.proc_call("git diff --quiet",
-                              always=True, handle_errors = False) == 0
+        return self.proc_call("git diff --quiet", always=True, handle_errors=False) == 0
 
-    def git_is_current(self, branch: str, remote: str, remote_branch: str | None = None) -> bool:
+    def git_is_current(
+        self, branch: str, remote: str, remote_branch: str | None = None
+    ) -> bool:
         """
         return True if local branch and remote are the same
         """
         if remote_branch is None:
             remote_branch = branch
-        sts = self.proc_call(f"git diff --quiet {branch} {remote}/{remote_branch} --",
-                             always=True,
-                             handle_errors=False,
-                             stderr=subprocess.DEVNULL)
+        sts = self.proc_call(
+            f"git diff --quiet {branch} {remote}/{remote_branch} --",
+            always=True,
+            handle_errors=False,
+            stderr=subprocess.DEVNULL,
+        )
         return sts == 0
 
     def git_remotes(self) -> dict[str, str]:
@@ -280,12 +292,12 @@ class BaseDeploy(DeployProtocol):
         (must be current for staging and production deploys).
         Must NOT be an https URL so tags can be pushed.
         """
-        prefix = self.git_upstream_url("") # ssh "url"
+        prefix = self.git_upstream_url("")  # ssh "url"
         for name, url in self.git_remotes().items():
             if url.startswith(prefix):
                 return name
         self.fatal("could not find upstream remote")
-        return "NOUPSTREAM"     # dry run
+        return "NOUPSTREAM"  # dry run
 
     def git_upstream_url(self, repo: str) -> str:
         """
@@ -335,23 +347,32 @@ class BaseDeploy(DeployProtocol):
         # * capital letter for one letter args that take a value
         # * help text starts uncapitalized (to match argparse)
         # * ALWAYS supply help, include "(default: DEFAULT)" as applicable
-        ap.add_argument("-d", "--debug",
-                        action="store_true",
-                        help="debug deployment code")
+        ap.add_argument(
+            "-d", "--debug", action="store_true", help="debug deployment code"
+        )
         if self.INST_FLAVORS:
             # top level option for create/destroy commands
             def_flavor = self.INST_FLAVORS[0]
-            ap.add_argument("-F", "--flavor",
-                            choices=sorted(self.INST_FLAVORS),
-                            default=def_flavor,
-                            help=f"instance flavor (default {def_flavor})")
-        ap.add_argument("-n", "--no-action",
-                        action="store_true",
-                        dest="dry_run",
-                        help="dry run: take no actions")
-        ap.add_argument("-T", "--test",
-                        choices=["prod", "staging"],
-                        help="test deployment code (impl. --dry-run)")
+            ap.add_argument(
+                "-F",
+                "--flavor",
+                choices=sorted(self.INST_FLAVORS),
+                default=def_flavor,
+                help=f"instance flavor (default {def_flavor})",
+            )
+        ap.add_argument(
+            "-n",
+            "--no-action",
+            action="store_true",
+            dest="dry_run",
+            help="dry run: take no actions",
+        )
+        ap.add_argument(
+            "-T",
+            "--test",
+            choices=["prod", "staging"],
+            help="test deployment code (impl. --dry-run)",
+        )
 
         scp = ap.add_subparsers(help="command", dest="command", required=True)
         self.init_command_parsers(scp)
@@ -382,7 +403,7 @@ class BaseDeploy(DeployProtocol):
         ALL subprocess invocations are done DIRECTLY (without shell),
         for safety (tainted data) and speed, so not only is quoting
         unnecessary/ignore, ADDING quotes means the invoked program
-        will SEE THEM!!!  """
+        will SEE THEM!!!"""
         if isinstance(cmd, str):
             return cmd.split()
         assert isinstance(cmd, list)
@@ -400,7 +421,7 @@ class BaseDeploy(DeployProtocol):
             # to avoid passing tainted data to shell:
             output = subprocess.check_output(args, text=True, shell=False, **kws)
             assert isinstance(output, str)
-            if output[-1:] == '\n':
+            if output[-1:] == "\n":
                 output = output[:-1]
             return output
         except subprocess.CalledProcessError as ex:
@@ -425,9 +446,11 @@ class BaseDeploy(DeployProtocol):
 
     def proc_output_one(self, cmd: ProcCmd, **kws: Any) -> str:
         """return first line of output from cmd"""
-        return self.proc_output_lines(cmd, **kws)[0] # XXX handle zero lines!
+        return self.proc_output_lines(cmd, **kws)[0]  # XXX handle zero lines!
 
-    def proc_call(self, cmd: ProcCmd, always:bool=False, handle_errors:bool=True, **kws: Any) -> int:
+    def proc_call(
+        self, cmd: ProcCmd, always: bool = False, handle_errors: bool = True, **kws: Any
+    ) -> int:
         """
         run command (str or argv), return status,
         NOTE! name compatible with subprocess module
@@ -487,10 +510,12 @@ class BaseDeploy(DeployProtocol):
         url = self.git_upstream_url(repo)
         self.private_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         atexit.register(self.private_dir.cleanup)
-        os.chmod(self.private_dir.name, 0o700) # make unreadable
+        os.chmod(self.private_dir.name, 0o700)  # make unreadable
         self.proc_call(["git", "clone", url], cwd=self.private_dir.name)
-        for fname in fnames: # may read prod, then staging for overrides
-            self.settings.update(dotenv.dotenv_values(os.path.join(self.private_dir.name, repo, fname)))
+        for fname in fnames:  # may read prod, then staging for overrides
+            self.settings.update(
+                dotenv.dotenv_values(os.path.join(self.private_dir.name, repo, fname))
+            )
         # cloned repo kept around for later tagging
 
     def settings_tag_private_conf(self, tag: str) -> None:
@@ -528,8 +553,6 @@ class BaseDeploy(DeployProtocol):
     def tag_staging(self) -> str:
         return f"{self.date_time}-{self.tag_host()}-{self.branch}"
 
-
-
     def version(self) -> str:
         """
         return version of THIS CODE
@@ -541,8 +564,8 @@ class BaseDeploy(DeployProtocol):
             # (development done with a symlink)
             if not self.deploy_dev:
                 self.fatal(f"could not get {__package__} version")
-            return "NOVERS"     # for dry-run
-            
+            return "NOVERS"  # for dry-run
+
     # PLEASE: add new utilities above *** IN ALPHABETICAL ORDER ***
 
     ################ commands in all versions of code
@@ -557,8 +580,8 @@ class BaseDeploy(DeployProtocol):
     def init_command_parsers(self, scp: SubCommandParser) -> None:
         for attr in sorted(dir(self)):
             if attr.endswith("_cmd"):
-                cmd = attr[:-4] # trim _cmd
-                func = getattr(self, attr) # get bound method
+                cmd = attr[:-4]  # trim _cmd
+                func = getattr(self, attr)  # get bound method
                 self.cmd_funcs[cmd] = func
                 cp = scp.add_parser(cmd, help=func.__doc__)
                 # foo_cmd can optionally have a foo_cmd_init for args

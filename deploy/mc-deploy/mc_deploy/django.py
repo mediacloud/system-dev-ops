@@ -4,12 +4,14 @@ mixins for Django projects
 
 from .base import DeployProtocol
 
+
 # XXX move to web-search/dokku-scripts/deploy.py McWebDeploy class!
 class MCWebMixin(DeployProtocol):
     """
     get project VERSION from Django settings.py file
     """
-    SETTINGS_FILE: str          # path to settings.py
+
+    SETTINGS_FILE: str  # path to settings.py
 
     def proj_version(self) -> str:
         # loading settings.py is a heavy lift

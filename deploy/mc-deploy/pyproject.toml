@@ -14,7 +14,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mypy = [
+# temp(?) [until using pre-commit]
+lint = [
+    "black",
+    "flake8",
+    "isort",
     "mypy"
 ]
 
