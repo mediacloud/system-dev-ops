@@ -24,7 +24,7 @@ class DokkuDeploy(BaseDeploy):
 
     DOKKU_B64_SETTINGS = True  # safety first! may not be needed w/o shell
     DOKKU_SCALE: list[str] = []  # list of "name=count"
-    DOKKU_SERVICES: list[tuple[str, str]]  # plugin, suffix
+    DOKKU_SERVICES: dict[str, str]  # map plugin to service suffix
     DOKKU_STOP = False
 
     # NOTE! pushing tag first time causes mayhem (reported by Rahul at
@@ -267,13 +267,13 @@ class DokkuDeploy(BaseDeploy):
         )
 
     def dokku_services_create(self, app: str) -> bool:
-        for plugin, suffix in self.DOKKU_SERVICES:
+        for plugin, suffix in self.DOKKU_SERVICES.items():
             if not self.dokku_service_create(plugin, app + suffix, app):
                 return False
         return True
 
     def dokku_services_destroy(self, app: str) -> bool:
-        for plugin, suffix in self.DOKKU_SERVICES:
+        for plugin, suffix in self.DOKKU_SERVICES.items():
             self.dokku_service_destroy(plugin, app + suffix, app)
         return True
 
