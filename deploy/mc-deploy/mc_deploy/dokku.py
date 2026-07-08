@@ -54,14 +54,16 @@ class DokkuDeploy(BaseDeploy):
         # ssh will think something nefarious is happening.  Using
         # fully quallified domain name, as it's the most likely to be
         # consistent.
-        self.fqdn = socket.getfqdn()
+
+        # SOME angwin hosts have mixed case canonical DNS names!
+        self.fqdn = socket.getfqdn().lower()
 
         # if not local, must be used every time
         # XXX could check environment var and/or dokku_XXX remote?!!
         ap.add_argument(
             "-H",
             "--host",
-            help=f"Dokku server (default {self.fqdn})",
+            help=f"Dokku server to deploy to (default {self.fqdn})",
             default=self.fqdn,
         )
 
@@ -70,7 +72,8 @@ class DokkuDeploy(BaseDeploy):
         handle values from options added by init_parser
         """
         super().parser_results(args)
-        self.dokku_host = socket.getfqdn(args.host)  # canonicalize
+        # SOME angwin hosts have mixed case canonical DNS names!
+        self.dokku_host = socket.getfqdn(args.host).lower()
         self.dokku_host_short = self.dokku_host.split(".")[0]
         self.dokku_ssh_user = f"dokku@{self.dokku_host}"
 

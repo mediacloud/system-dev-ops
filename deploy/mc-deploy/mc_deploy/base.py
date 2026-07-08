@@ -547,7 +547,7 @@ class BaseDeploy(DeployProtocol):
         return f"{self.date_time}-{self.tag_host()}-{self.branch}-{self.inst_name}"
 
     def tag_prod(self) -> str:
-        # proj_version defined in mixins!!
+        # proj_version defined in subclass/mixins!
         return f"v{self.proj_version()}"
 
     def tag_staging(self) -> str:
