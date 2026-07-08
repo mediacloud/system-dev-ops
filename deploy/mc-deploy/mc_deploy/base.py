@@ -23,7 +23,7 @@ import dotenv
 CmdArgs: TypeAlias = argparse.Namespace  # xxx_cmd arg
 CmdParser: TypeAlias = argparse.ArgumentParser  # xxx_cmd_init arg
 ParserArgs: TypeAlias = argparse.Namespace
-SubCommandParser: TypeAlias = argparse._SubParsersAction[argparse.ArgumentParser]
+SubCommandParser: TypeAlias = argparse._SubParsersAction
 
 # allow process methods to take str or argv
 ProcCmd: TypeAlias = str | list[str]
@@ -75,7 +75,7 @@ class BaseDeploy(DeployProtocol):
         self.hostname = socket.gethostname().lower()  # may not be FQDN
         self.login_user = self.user = self.get_login_user()
         self.private_dir: tempfile.TemporaryDirectory | None = None
-        self.settings: dict[str, str] = {}  # app/stack settings
+        self.settings: dict[str, str | None] = {}  # app/stack settings
         self.inst_flavor = ""
 
     ################ utilities (in alphabetical order!)
