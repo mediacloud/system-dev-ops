@@ -5,7 +5,10 @@ mixins for Django projects
 from .base import DeployProtocol
 
 
-# XXX move to web-search/dokku-scripts/deploy.py McWebDeploy class!
+class DjangoMixin(DeployProtocol):
+    """generic Django mixin"""
+
+
 class SettingsVersionMixin(DeployProtocol):
     """
     get web-search project VERSION from Django settings.py file
@@ -22,7 +25,9 @@ class SettingsVersionMixin(DeployProtocol):
                 if line.startswith("VERSION"):
                     break
             else:
-                self.fatal(f"Did not find VERSION in {self.SETTINGS_FILE}", quit=True)
+                self.fatal(
+                    f"Did not find VERSION in {self.SETTINGS_FILE}", quit=True
+                )
             # take RHS of '=' and LHS of any comment, remove spaces & quotes
             return line.split("=", 1)[1].split("#", 1)[0].strip().strip("'\"")
 

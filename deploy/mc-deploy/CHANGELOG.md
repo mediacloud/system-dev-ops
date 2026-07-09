@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.3.0: implement DokkuDBDeploy w/ real clone and dburl commands
 * 0.2.1: scale fixes, dokku_scale method, message tweaks
 * 0.2.0: made DOKKU_SCALE a dict, only run dokku ps:scale when needed
 

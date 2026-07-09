@@ -1,6 +1,6 @@
 [project]
 name = "mc-deploy"
-version = "0.2.1"	     # ALSO: update CHANGELOG.md & github tag!
+version = "0.3.0"	     # ALSO: update CHANGELOG.md & github tag!
 description='Media Cloud Extensible Deployment Tools'
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,15 @@ lint = [
     "isort",
     "mypy"
 ]
+
+[tool.black]
+line-length = 79
+target-version = ["py310"]
+
+# flake8 settings in .flake8?!
+
+[tool.isort]
+profile = "black"
 
 [tool.mypy]
 # from rss-fetcher via story-indexer!

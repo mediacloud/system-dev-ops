@@ -36,6 +36,8 @@ class DeployProtocol(Protocol):
 
     def check_is_root(self) -> None: ...
 
+    def debug(self, *args: Any) -> None: ...
+
     def fatal(self, msg: str, quit: bool = False) -> None: ...
 
     def proj_version(self) -> str: ...
@@ -259,7 +261,12 @@ class BaseDeploy(DeployProtocol):
 
     def git_is_clean(self) -> bool:
         """return whether working directory is 'clean' (fully committed)"""
-        return self.proc_call("git diff --quiet", always=True, handle_errors=False) == 0
+        return (
+            self.proc_call(
+                "git diff --quiet", always=True, handle_errors=False
+            )
+            == 0
+        )
 
     def git_is_current(
         self, branch: str, remote: str, remote_branch: str | None = None
@@ -419,7 +426,9 @@ class BaseDeploy(DeployProtocol):
             self.debug("proc_output_all", cmd)
             # from subprocess.getstatusoutput WITHOUT shell=True!!
             # to avoid passing tainted data to shell:
-            output = subprocess.check_output(args, text=True, shell=False, **kws)
+            output = subprocess.check_output(
+                args, text=True, shell=False, **kws
+            )
             assert isinstance(output, str)
             if output[-1:] == "\n":
                 output = output[:-1]
@@ -449,7 +458,11 @@ class BaseDeploy(DeployProtocol):
         return self.proc_output_lines(cmd, **kws)[0]  # XXX handle zero lines!
 
     def proc_call(
-        self, cmd: ProcCmd, always: bool = False, handle_errors: bool = True, **kws: Any
+        self,
+        cmd: ProcCmd,
+        always: bool = False,
+        handle_errors: bool = True,
+        **kws: Any,
     ) -> int:
         """
         run command (str or argv), return status,
@@ -503,18 +516,24 @@ class BaseDeploy(DeployProtocol):
         self.debug("loaded", fname)
         return True
 
-    def settings_load_private_files(self, repo: str, fnames: list[str]) -> None:
+    def settings_load_private_files(
+        self, repo: str, fnames: list[str]
+    ) -> None:
         """
         helper for settings_get_new
         """
         url = self.git_upstream_url(repo)
-        self.private_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.private_dir = tempfile.TemporaryDirectory(
+            ignore_cleanup_errors=True
+        )
         atexit.register(self.private_dir.cleanup)
         os.chmod(self.private_dir.name, 0o700)  # make unreadable
         self.proc_call(["git", "clone", url], cwd=self.private_dir.name)
         for fname in fnames:  # may read prod, then staging for overrides
             self.settings.update(
-                dotenv.dotenv_values(os.path.join(self.private_dir.name, repo, fname))
+                dotenv.dotenv_values(
+                    os.path.join(self.private_dir.name, repo, fname)
+                )
             )
         # cloned repo kept around for later tagging
 
@@ -524,7 +543,9 @@ class BaseDeploy(DeployProtocol):
         self.proc_call(["git", "tag", tag], cwd=self.private_dir.name)
         # freshly cloned above, so remote always "origin"
         self.debug("pushing config tag")
-        self.proc_call(["git", "push", "origin", tag], cwd=self.private_dir.name)
+        self.proc_call(
+            ["git", "push", "origin", tag], cwd=self.private_dir.name
+        )
 
     def source_file(self) -> str | None:
         """
@@ -572,7 +593,9 @@ class BaseDeploy(DeployProtocol):
 
     def version_cmd(self, args: CmdArgs) -> int:
         """Display deployment package version"""
-        print(self.source_file(), self.version())
+        print(self.version())
+        # file whose git hash will be added to DEPLOY_HASH
+        # print(self.source_file())
         return 0
 
     ################ top level
@@ -590,6 +613,7 @@ class BaseDeploy(DeployProtocol):
                     init_func(cp)
 
     def run(self) -> int:
+        # helper for development/test of this package:
         self.deploy_dev = os.environ.get("MCDEPLOY_DEV", "") != ""
         ap = argparse.ArgumentParser(prog="deploy")
         self.parser_init(ap)
@@ -602,5 +626,5 @@ class BaseDeploy(DeployProtocol):
             return cmd_func(args)
         except KeyboardInterrupt:
             print("")
-            # eg control-C at confirm prompt!
+            # handle control-C at confirm prompt!
             return 1
