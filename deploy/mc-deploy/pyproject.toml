@@ -1,6 +1,6 @@
 [project]
 name = "mc-deploy"
-version = "0.2.0"	     # ALSO: update CHANGELOG.md & github tag!
+version = "0.2.1"	     # ALSO: update CHANGELOG.md & github tag!
 description='Media Cloud Extensible Deployment Tools'
 readme = "README.md"
 requires-python = ">=3.10"

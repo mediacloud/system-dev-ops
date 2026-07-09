@@ -464,7 +464,7 @@ class BaseDeploy(DeployProtocol):
         """
         args = self._proc_args(cmd)
         if self.dry_run and not always:
-            print("ignoring", " ".join(args))
+            print("dry run, ignoring", " ".join(args))
             return 0
         # avoid passing tainted data to shell (and additional overhead)
         status = subprocess.call(args, shell=False, **kws)

@@ -215,6 +215,33 @@ class DokkuDeploy(BaseDeploy):
             return ""
         return lines[0]
 
+    def dokku_scale(self, app: str) -> None:
+        # get current counter counts:
+        procs_curr = collections.Counter()
+        for line in self.dokku_output_lines(["ps:report", app]):
+            toks = line.split()
+            if toks[0] == "Status":
+                proc = toks[1]
+                procs_curr[proc] += 1
+
+        # get changes:
+        procs_scale: dict[str, int] = {}
+        for proc, count in self.DOKKU_SCALE.items():
+            if count != procs_curr.get(proc, 0):
+                procs_scale[proc] = count
+            procs_curr.pop(proc, 0)
+
+        # zero out any thing currently running, but
+        # not present in DOKKU_SCALE:
+        for proc, count in procs_curr.items():
+            procs_scale[proc] = 0
+
+        if procs_scale:
+            scale_cmd = ["ps:scale", app]
+            for proc, count in procs_scale.items():
+                scale_cmd.append(f"{proc}={count}")
+            self.dokku_call(scale_cmd)
+
     def dokku_service_create(self, plugin: str, name: str, app: str) -> bool:
         if plugin == "storage":
             return self.dokku_storage_create(name, app)
@@ -431,7 +458,7 @@ class DokkuDeploy(BaseDeploy):
             if mcremote == "origin" and branch == "main" and not args.unpushed:
                 # code push would overwrite main branch!!!
                 self.fatal(
-                    "Please don't do development on 'main' with {self.UPSTREAM_USER} origin!"
+                    "Please don't do development on 'main' with {self.UPSTREAM_USER} as origin!"
                 )
             if self.git_is_current(branch, "origin"):
                 print(f"origin/{branch} up to date")
@@ -510,14 +537,13 @@ class DokkuDeploy(BaseDeploy):
         if code_change:
             print("Last commit:")
             self.proc_call("git log -n1", always=True)  # output to user
-            tag = self.tag
             self.confirm(
                 f"Push branch {branch} to {self.dokku_host} dokku app {app}? [no] "
             )
         elif conf_changes:
             self.confirm("No code changes; apply config changes? [no] ")
         elif not code_change:
-            sys.stderr.write("No code or config changes. Fin.\n")
+            sys.stderr.write("No code or config changes. Done.\n")
             return 0
 
         if self.is_prod():
@@ -567,7 +593,7 @@ class DokkuDeploy(BaseDeploy):
             stderr=subprocess.DEVNULL,
         )
 
-        # push tag to external repos:
+        # push code tag to external repos:
         if args.unpushed and len(push_tag_to) > 0:
             print("--unpushed but push_tag_to is", push_tag_to)
         for remote in push_tag_to:
@@ -584,27 +610,7 @@ class DokkuDeploy(BaseDeploy):
             self.settings_tag_private_conf(config_tag)
 
         if self.DOKKU_SCALE:    # only needed once, or on change
-            # get currenc counter counts:
-            procs_curr = collections.Counter()
-            for line in self.dokku_output_lines(["ps:report", app]):
-                toks = line.split()
-                if toks[0] == "Status":
-                    proc = toks[1]
-                    procs_curr[proc] += 1
-
-            # get changes:
-            procs_scale: dict[str, int] = {}
-            for proc, count in self.DOKKU_SCALE:
-                if count != procs_curr[proc]:
-                    procs_scale[proc] = count
-            for proc, count in procs_curr.items():
-                if count > self.DOKKU_SCALE.get(proc, 0):
-                    procs_scale[proc] = 0
-            if procs_scale:
-                scale_cmd = ["ps:scale", app]
-                for proc, count in procs_scale.items():
-                    scale_cmd.append(f"{proc}={count}")
-                self.dokku_call(scale_cmd)
+            self.dokku_scale(app)
 
         if self.DOKKU_STOP:
             self.dokku_call(["ps:start", app])  # not needed?
