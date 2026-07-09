@@ -147,12 +147,10 @@ class BaseDeploy(DeployProtocol):
         self.debug("inst_type", self.inst_type)  # prod/staging/dev
         self.debug("inst_id", self.inst_id)  # prod/staging/USER
 
-        self.inst_base = self.get_inst_base()
-        self.debug("inst_base", self.inst_base)
-
         # naming scheme used across MC projects;
         # group by user/realm then app/stack
-        self.statsd_prefix = f"mc.{self.inst_id}.{self.inst_base}"
+        inst_base = self.get_inst_base()
+        self.statsd_prefix = f"mc.{self.inst_id}.{inst_base}"
 
         # allow subclass override of STATSD_HOST
         self.statsd_url = f"statsd://{self.STATSD_HOST}:8125"

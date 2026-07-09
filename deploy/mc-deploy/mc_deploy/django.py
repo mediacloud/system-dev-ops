@@ -1,12 +1,8 @@
 """
-mixins for Django projects
+ideally, mixins for Django projects
 """
 
 from .base import DeployProtocol
-
-
-class DjangoMixin(DeployProtocol):
-    """generic Django mixin"""
 
 
 class SettingsVersionMixin(DeployProtocol):

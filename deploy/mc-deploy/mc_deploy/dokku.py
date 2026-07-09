@@ -152,6 +152,22 @@ class DokkuDeploy(BaseDeploy):
         self.debug("dokku_call", cmd, "->", status)
         return status
 
+    def dokku_domains_add(self, app: str, domains: list[str]) -> bool:
+        return self.dokku_call(["domains:add", app] + domains) == 0
+
+    def dokku_domains_vhosts(self, app: str) -> list[str]:
+        """
+        return currently configured virtual hosts routed to app
+        """
+        for line in self.dokku_output_lines(["domains:report", app]):
+            line = line.strip()
+            if line.startswith("Domains app vhosts:"):
+                toks = line.split(":", 1)[1].split()
+                return toks
+        else:
+            self.fatal("could not find app vhosts")
+            return []  # dry run
+
     def dokku_fix_git_deploy_branch(self, app: str) -> None:
         """
         check dokku git deploy branch is set properly
@@ -354,19 +370,6 @@ class DokkuDeploy(BaseDeploy):
         # leave storage in place
         return True
 
-    def dokku_vhosts(self, app: str) -> list[str]:
-        """
-        return currently configured virtual hosts routed to app
-        """
-        for line in self.dokku_output_lines(["domains:report", app]):
-            line = line.strip()
-            if line.startswith("Domains app vhosts:"):
-                toks = line.split(":", 1)[1].split()
-                return toks
-        else:
-            self.fatal("could not find app vhosts")
-            return []  # dry run
-
     def settings_apply(self, changes: list[str], code_change: bool) -> bool:
         cmd = ["config:set", self.inst_name]
         if self.DOKKU_B64_SETTINGS:
@@ -378,8 +381,14 @@ class DokkuDeploy(BaseDeploy):
         if changes:
             cmd += changes
             self.dokku_call(cmd)
+            self.settings_changed()
             return True  # changes applied
         return False  # no changes applied
+
+    def settings_changed(self) -> None:
+        """
+        called when settings have changed
+        """
 
     def settings_changes(self, curr_settings: dict[str, str]) -> list[str]:
         """this was in config.sh; return list of changed settings"""
@@ -405,22 +414,22 @@ class DokkuDeploy(BaseDeploy):
         """
         retrieve all settings: app dependant
         """
-        self.settings_add("DOKKU_DEFAULT_CHECKS_WAIT", "5")
-        self.settings_add("DOKKU_WAIT_TO_RETIRE", "30")
+        self.settings_add("DOKKU_DEFAULT_CHECKS_WAIT", "5")  # default: 10
+        self.settings_add("DOKKU_WAIT_TO_RETIRE", "30")  # default: 60
         self.settings_add("TZ", "UTC")  # display/log time in UTC
 
         # from config.sh -- probably applies to Docker too
         # if we sent to airtable from this script, use the values
-        # but no need to add them to app settings!
+        # but no need to add them to app settings!!!!
         self.settings_add("AIRTABLE_HARDWARE", self.dokku_host_short)
-        self.settings_add("AIRTABLE_ENV", self.inst_id)
-        self.settings_add("AIRTABLE_NAME", self.inst_id)  # XXX ???
-        self.settings_add("SENTRY_ENV", self.inst_id)  # XXX
+        self.settings_add("AIRTABLE_ENV", self.inst_id)  # prod/staging/USER
+        self.settings_add("AIRTABLE_NAME", self.get_inst_base())
+        self.settings_add("SENTRY_ENV", self.inst_id)  # prod/staging/USER
 
     ################ commands
 
     def create_cmd_init(self, cp: CmdParser) -> None:
-        cp.add_argument("instance")
+        cp.add_argument("instance", help="prod/staging/USER")
 
     def create_cmd(self, args: CmdArgs) -> int:
         """Create Dokku app instance"""
@@ -670,7 +679,7 @@ class DokkuDeploy(BaseDeploy):
         return 0
 
     def destroy_cmd_init(self, cp: CmdParser) -> None:
-        cp.add_argument("instance")
+        cp.add_argument("instance", help="prod/staging/USER")
 
     def destroy_cmd(self, args: CmdArgs) -> int:
         """Destroy Dokku app instance"""
@@ -681,6 +690,7 @@ class DokkuDeploy(BaseDeploy):
             return 1
         if not self.dokku_app_destroy(app):
             return 1
+        print("[OK]")
         return 0
 
     def push_cmd(self, args: CmdArgs) -> int:
@@ -693,6 +703,7 @@ class DokkuDeploy(BaseDeploy):
 class DokkuDBDeploy(DokkuDeploy):
     """
     base for an app w/ a postgres database service
+    (should be a mixin, but easier not to)
     """
 
     # this code probably not portable, but at least
@@ -803,3 +814,27 @@ class DokkuDBDeploy(DokkuDeploy):
             dsn = "postgresql:" + dsn.removeprefix("postgres:")
         print(dsn)
         return 0
+
+
+class DokkuDBDjangoDeploy(DokkuDBDeploy):
+    """
+    (should be a mixin, but easier not to)
+    """
+
+    def settings_changed(self) -> None:
+        """
+        called when settings have changed;
+        update app domains
+        """
+        app = self.inst_name
+        allowed = self.settings["ALLOWED_HOSTS"]
+        if not allowed:
+            return
+        curr_vhosts = self.dokku_domains_vhosts(app)
+        hosts = allowed.split(",")
+        add = []
+        for h in hosts:
+            if h not in curr_vhosts:
+                add.append(h)
+        if add:
+            self.dokku_domains_add(app, add)
