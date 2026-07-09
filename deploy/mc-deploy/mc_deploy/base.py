@@ -524,18 +524,19 @@ class BaseDeploy(DeployProtocol):
         """
         url = self.git_upstream_url(repo)
         self.private_dir = tempfile.TemporaryDirectory(
-            ignore_cleanup_errors=True
+            ignore_cleanup_errors=True  # may cleanup twice
         )
         atexit.register(self.private_dir.cleanup)
-        os.chmod(self.private_dir.name, 0o700)  # make unreadable
-        self.proc_call(["git", "clone", url], cwd=self.private_dir.name)
+        os.chmod(self.private_dir.name, 0o700)  # make private
+        self.proc_call(
+            ["git", "clone", url], cwd=self.private_dir.name, always=True
+        )
         for fname in fnames:  # may read prod, then staging for overrides
-            self.settings.update(
-                dotenv.dotenv_values(
-                    os.path.join(self.private_dir.name, repo, fname)
-                )
-            )
-        # cloned repo kept around for later tagging
+            path = os.path.join(self.private_dir.name, repo, fname)
+            if not os.path.exists(path):
+                self.fatal(f"could not find {path}")
+            self.settings.update(dotenv.dotenv_values(os.path.join(path)))
+        # cloned repo kept around for later tagging (see below)
 
     def settings_tag_private_conf(self, tag: str) -> None:
         self.debug("config tag:", tag)
