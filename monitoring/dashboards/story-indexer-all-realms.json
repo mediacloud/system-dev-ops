@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2026-05-11T01:31:08Z",
+    "updated": "2026-06-02T16:31:22Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 79,
+    "version": 80,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1778462743927,
+    "iteration": 1780415847748,
     "links": [],
     "panels": [
       {
@@ -1527,8 +1527,8 @@
             "hide": false,
             "refCount": 0,
             "refId": "A",
-            "target": "diffSeries(stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.max-id, stats.gauges.mc.$realm.story-indexer.rss-puller.stories.max-id)",
-            "textEditor": true
+            "target": "removeBelowValue(diffSeries(stats.gauges.mc.prod.rss-fetcher.rss-fetcher-stats.stories.max-id, stats.gauges.mc.$realm.story-indexer.rss-puller.stories.max-id), 0)",
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -1683,7 +1683,7 @@
         }
       }
     ],
-    "refresh": false,
+    "refresh": "30s",
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1820,6 +1820,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 79
+    "version": 80
   }
 }

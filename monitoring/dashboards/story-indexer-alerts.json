@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2026-05-06T03:22:27Z",
-    "updatedBy": "phil.budne@gmail.com",
+    "updated": "2026-06-26T03:39:30Z",
+    "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 60,
+    "version": 61,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -1050,7 +1050,7 @@
             }
           ],
           "executionErrorState": "keep_state",
-          "for": "30m",
+          "for": "60m",
           "frequency": "5m",
           "handler": 1,
           "name": "Search API latency alert",
@@ -1162,7 +1162,7 @@
             {
               "evaluator": {
                 "params": [
-                  10
+                  15
                 ],
                 "type": "gt"
               },
@@ -1246,7 +1246,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 10
+            "value": 15
           }
         ],
         "timeFrom": null,
@@ -1583,6 +1583,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 60
+    "version": 61
   }
 }

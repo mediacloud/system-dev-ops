@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2026-05-28T04:24:33Z",
+    "updated": "2026-06-20T22:09:34Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 98,
+    "version": 100,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1779942135917,
+    "iteration": 1781989878928,
     "links": [],
     "panels": [
       {
@@ -57,7 +57,7 @@
           "x": 0,
           "y": 0
         },
-        "id": 46,
+        "id": 50,
         "legend": {
           "avg": false,
           "current": false,
@@ -85,21 +85,25 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.fetch.mean",
-            "textEditor": true
+            "target": "sumSeries(stats.gauges.mc.systems.disk.used.es*.data)"
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.fetch.median",
-            "textEditor": true
+            "target": "sumSeries(stats.gauges.mc.systems.disk.total.es*.data)"
+          },
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "sumSeries(stats.gauges.mc.systems.disk.free.es*.data)",
+            "textEditor": false
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Fetch time",
+        "title": "Production ES Space",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -115,7 +119,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "bytes",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -225,7 +229,8 @@
       },
       {
         "aliasColors": {},
-        "bars": true,
+        "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -237,7 +242,7 @@
           "x": 0,
           "y": 8
         },
-        "id": 16,
+        "id": 46,
         "legend": {
           "avg": false,
           "current": false,
@@ -247,7 +252,7 @@
           "total": false,
           "values": false
         },
-        "lines": false,
+        "lines": true,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -257,37 +262,29 @@
         "pointradius": 2,
         "points": false,
         "renderer": "flot",
-        "seriesOverrides": [
-          {
-            "alias": "/^.*\\.prefetch$/",
-            "bars": false,
-            "fill": 0,
-            "lines": true,
-            "stack": false
-          }
-        ],
+        "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": true,
+        "stack": false,
         "steppedLine": false,
         "targets": [
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.requests.*",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.fetch.mean",
             "textEditor": true
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.prefetch",
-            "textEditor": false
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.fetch.median",
+            "textEditor": true
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Q fetcher requests",
+        "title": "Fetch time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -303,7 +300,7 @@
         },
         "yaxes": [
           {
-            "format": "short",
+            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -413,7 +410,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -425,7 +422,7 @@
           "x": 0,
           "y": 16
         },
-        "id": 14,
+        "id": 16,
         "legend": {
           "avg": false,
           "current": false,
@@ -443,29 +440,31 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": true,
+        "points": false,
         "renderer": "flot",
-        "seriesOverrides": [],
+        "seriesOverrides": [
+          {
+            "alias": "/^.*\\.prefetch$/",
+            "bars": false,
+            "fill": 0,
+            "lines": true,
+            "stack": false
+          }
+        ],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.upper",
-            "textEditor": false
+            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.requests.*",
+            "textEditor": true
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.lower",
-            "textEditor": false
-          },
-          {
-            "refCount": 0,
-            "refId": "C",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.mean",
+            "target": "stats.gauges.mc.$realm.story-indexer.fetcher.prefetch",
             "textEditor": false
           }
         ],
@@ -473,7 +472,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "q fetch get_delay time",
+        "title": "Q fetcher requests",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -489,7 +488,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -610,7 +609,7 @@
           "x": 0,
           "y": 24
         },
-        "id": 23,
+        "id": 14,
         "legend": {
           "avg": false,
           "current": false,
@@ -638,19 +637,19 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.upper",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.upper",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.lower",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.lower",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "C",
-            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.mean",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.get_delay.mean",
             "textEditor": false
           }
         ],
@@ -658,7 +657,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "q fetch finish time",
+        "title": "q fetch get_delay time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -787,7 +786,6 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "",
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
@@ -796,7 +794,7 @@
           "x": 0,
           "y": 32
         },
-        "id": 40,
+        "id": 23,
         "legend": {
           "avg": false,
           "current": false,
@@ -806,7 +804,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -814,7 +812,7 @@
         },
         "percentage": false,
         "pointradius": 2,
-        "points": false,
+        "points": true,
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
@@ -823,22 +821,28 @@
         "targets": [
           {
             "refCount": 0,
-            "refId": "C",
-            "target": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, #D)",
-            "targetFull": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower)"
+            "refId": "A",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.upper",
+            "textEditor": false
           },
           {
-            "hide": true,
-            "refCount": -1,
-            "refId": "D",
-            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.lower",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "stats.timers.mc.$realm.story-indexer.fetcher.finish.mean",
+            "textEditor": false
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "fetch time spread seen by importer",
+        "title": "q fetch finish time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -966,6 +970,100 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "description": "",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 40
+        },
+        "id": 40,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "C",
+            "target": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, #D)",
+            "targetFull": "diffSeries(stats.timers.mc.$realm.story-indexer.importer.fetch-ts.upper, stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower)"
+          },
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "D",
+            "target": "stats.timers.mc.$realm.story-indexer.importer.fetch-ts.lower"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "fetch time spread seen by importer",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -1054,6 +1152,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 98
+    "version": 100
   }
 }
