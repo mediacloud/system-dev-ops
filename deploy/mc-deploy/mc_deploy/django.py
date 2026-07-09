@@ -6,9 +6,10 @@ from .base import DeployProtocol
 
 
 # XXX move to web-search/dokku-scripts/deploy.py McWebDeploy class!
-class MCWebMixin(DeployProtocol):
+class SettingsVersionMixin(DeployProtocol):
     """
-    get project VERSION from Django settings.py file
+    get web-search project VERSION from Django settings.py file
+    (this isn't a standard thing to do!)
     """
 
     SETTINGS_FILE: str  # path to settings.py

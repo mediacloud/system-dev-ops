@@ -7,6 +7,7 @@ Deploy an application using Dokku
 
 import argparse
 import base64
+import collections
 import json
 import os
 import socket
@@ -23,7 +24,7 @@ class DokkuDeploy(BaseDeploy):
     DEPLOY_HASH_VAR = "DEPLOYMENT_HASH"  # config varname
 
     DOKKU_B64_SETTINGS = True  # safety first! may not be needed w/o shell
-    DOKKU_SCALE: list[str] = []  # list of "name=count"
+    DOKKU_SCALE: dict[str, int]  # map process to number of containers
     DOKKU_SERVICES: dict[str, str]  # map plugin to service suffix
     DOKKU_STOP = False
 
@@ -582,11 +583,28 @@ class DokkuDeploy(BaseDeploy):
             print("tagging config as", config_tag)
             self.settings_tag_private_conf(config_tag)
 
-        if self.DOKKU_SCALE:
-            # start non-web processes (only needed first time?)
-            print("scaling up")
-            scale_cmd = ["ps:scale", "--skip-deploy", app] + self.DOKKU_SCALE
-            self.dokku_call(scale_cmd)
+        if self.DOKKU_SCALE:    # only needed once, or on change
+            # get currenc counter counts:
+            procs_curr = collections.Counter()
+            for line in self.dokku_output_lines(["ps:report", app]):
+                toks = line.split()
+                if toks[0] == "Status":
+                    proc = toks[1]
+                    procs_curr[proc] += 1
+
+            # get changes:
+            procs_scale: dict[str, int] = {}
+            for proc, count in self.DOKKU_SCALE:
+                if count != procs_curr[proc]:
+                    procs_scale[proc] = count
+            for proc, count in procs_curr.items():
+                if count > self.DOKKU_SCALE.get(proc, 0):
+                    procs_scale[proc] = 0
+            if procs_scale:
+                scale_cmd = ["ps:scale", app]
+                for proc, count in procs_scale.items():
+                    scale_cmd.append(f"{proc}={count}")
+                self.dokku_call(scale_cmd)
 
         if self.DOKKU_STOP:
             self.dokku_call(["ps:start", app])  # not needed?

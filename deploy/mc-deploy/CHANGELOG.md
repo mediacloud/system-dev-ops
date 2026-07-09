@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.2.0: made DOKKU_SCALE a dict, only run dokku ps:scale when needed
+
 * 0.1.0: linted (run via Makefile), reversed lines in this file,
 	made DOKKU_SERVICES a dict
 
