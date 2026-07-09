@@ -374,9 +374,10 @@ class DokkuDeploy(BaseDeploy):
         cmd = ["config:set", self.inst_name]
         if self.DOKKU_B64_SETTINGS:
             cmd.append("--encoded")
-        if not code_change:
-            # if code has changed, suppress restart,
-            # if code hasn't changed restart is wanted (and you're done)
+        if code_change:
+            # if code has changed, suppress restart
+            # (will restart after code deployed)
+            # if code hasn't changed allow restart (and you're done)
             cmd.append("--no-restart")
         if changes:
             cmd += changes
