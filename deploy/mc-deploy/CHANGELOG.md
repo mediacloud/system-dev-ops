@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.4.2: py.typed committed!
 * 0.4.1: py.typed
 * 0.4.0: DokkuDBDjangoDeploy
 * 0.3.0: implement DokkuDBDeploy w/ real clone and dburl commands
