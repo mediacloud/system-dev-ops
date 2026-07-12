@@ -158,13 +158,6 @@ class BaseDeploy(DeployProtocol):
 
         self.debug("statsd_prefix", self.statsd_prefix)
 
-        # before make_tag
-        self.inst_name = self._id2name(self.inst_id)
-        self.debug("inst_name", self.inst_name)
-
-        self.tag = self.tag_make()
-        self.debug("tag", self.tag)
-
         # port bias is used (if desired) to generate local host
         # ports to access containers (by adding to native or interval port)
         if self.is_prod():
@@ -195,6 +188,14 @@ class BaseDeploy(DeployProtocol):
                 and flavor_bias % 100 == 0
             )
             self.port_bias += flavor_bias
+
+        # before make_tag, after inst_flavor_prefix set:
+        self.inst_name = self._id2name(self.inst_id)
+        self.debug("inst_name", self.inst_name)
+
+        self.tag = self.tag_make()
+        self.debug("tag", self.tag)
+
         self.debug("port_bias", self.port_bias)
 
     def fatal(self, msg: str, quit: bool = False) -> None:

@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.5.1: set inst_name after inst_flavor_prefix set
 * 0.5.0: initial work on docker.py: pull AIRTABLE/TZ settings into base
 	add port_bias (for indexer), make INST_FLAVOR map values a tuple
 
