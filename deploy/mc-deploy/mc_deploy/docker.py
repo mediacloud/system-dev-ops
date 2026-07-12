@@ -8,12 +8,12 @@ both out of compatibility and inertia, at the very least due to no
 overwelming need or desire to change.
 """
 
-import argparse
+# import argparse
 import grp
 import os
 import typing
 
-from .base import BaseDeploy, CmdArgs, CmdParser  # ParserArgs
+from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs
 
 
 class DockerDeploy(BaseDeploy):
@@ -63,6 +63,7 @@ class DockerDeploy(BaseDeploy):
             self.fix_file_owner(f)
             self.proc_call(
                 ["docker", "stack", "config", "-c", self.compose_file],
+                env=self.compose_env,
                 stdout=f,
             )
             os.fchmod(f.fileno(), 0o400)  # user read only
@@ -70,7 +71,10 @@ class DockerDeploy(BaseDeploy):
 
     def docker_compose_build(self) -> None:
         # if dry run, pass --dry-run on command line, always=True to proc_call??
-        self.proc_call(["docker", "compose", "-f", self.compose_file, "build"])
+        self.proc_call(
+            ["docker", "compose", "-f", self.compose_file, "build"],
+            env=self.compose_env,
+        )
 
     def docker_stack_deploy(self) -> int:
         # aka "docker stack up"?
@@ -109,8 +113,16 @@ class DockerDeploy(BaseDeploy):
 
     ################ overrides
 
-    def parser_init(self, ap: argparse.ArgumentParser) -> None:
-        super().parser_init(ap)
+    #    def parser_init(self, ap: argparse.ArgumentParser) -> None:
+    #        super().parser_init(ap)
+
+    def parser_results(self, args: ParserArgs) -> None:
+        """
+        called with result of argparse.parse_args
+        """
+        super().parser_results(args)
+        # XXX maybe init to os.environ?
+        self.compose_env: dict[str, str] | None = None
         self.compose_file = os.path.join(
             self.get_deploy_dir(), self.COMPOSE_FILE
         )
@@ -134,6 +146,7 @@ class DockerDeploy(BaseDeploy):
     def deploy_cmd(self, args: CmdArgs) -> int:
         """Deploy code to docker stack"""
 
+        self.deploy_helper()  # common code
         self.check_root_or_docker()
         self.create_compose_file()
         self.docker_check_compose_file()

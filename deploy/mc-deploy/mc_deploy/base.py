@@ -54,8 +54,8 @@ class BaseDeploy(DeployProtocol):
     INST_BASE: str  # instance name base (dokku app, stack name) -- keep short
 
     # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
-    # NOT FULLY IMPLEMENTED: see get_inst_base/get_inst_type_id
-    INST_FLAVORS: list[str] = []
+    # tuple values are inst_name prefix and port bias
+    INST_FLAVORS: dict[str, tuple[str, int]] = {}
 
     PROJECT_REPO: str
     PUBLIC_DOMAIN = "mediacloud.org"
@@ -79,6 +79,7 @@ class BaseDeploy(DeployProtocol):
         self.private_dir: tempfile.TemporaryDirectory | None = None
         self.settings: dict[str, str | None] = {}  # app/stack settings
         self.inst_flavor = ""
+        self.inst_flavor_prefix = ""
 
     ################ utilities (in alphabetical order!)
 
@@ -164,6 +165,38 @@ class BaseDeploy(DeployProtocol):
         self.tag = self.tag_make()
         self.debug("tag", self.tag)
 
+        # port bias is used (if desired) to generate local host
+        # ports to access containers (by adding to native or interval port)
+        if self.is_prod():
+            self.port_bias = 0
+        elif self.is_staging():
+            self.port_bias = 10
+        else:
+            # developer: default to 20, but to allow multiple
+            # developers on same server, allow alternate values from
+            # environment as {APP}_DEV_PORT_BIAS
+            self.port_bias = int(
+                os.environ.get(f"{self.INST_BASE.upper()}_DEV_PORT_BIAS", 20)
+            )
+            # developer port bias should be a multiple of 10:
+            assert (
+                self.port_bias >= 20
+                and self.port_bias <= 90
+                and self.port_bias % 10 == 0
+            )
+        if self.INST_FLAVORS:
+            ftup = self.INST_FLAVORS[self.inst_flavor]
+            self.inst_flavor_prefix = ftup[0]
+            flavor_bias = ftup[1]
+            # flavor port biases are multiples of 100:
+            assert (
+                flavor_bias >= 0
+                and flavor_bias <= 900
+                and flavor_bias % 100 == 0
+            )
+            self.port_bias += flavor_bias
+        self.debug("port_bias", self.port_bias)
+
     def fatal(self, msg: str, quit: bool = False) -> None:
         sys.stderr.write(msg + "\n")
         if self.dry_run and not quit:
@@ -189,8 +222,8 @@ class BaseDeploy(DeployProtocol):
 
     def get_inst_base(self) -> str:
         base = self.INST_BASE
-        if self.inst_flavor:
-            return f"{self.inst_flavor}-{base}"
+        if self.inst_flavor_prefix:
+            return f"{self.inst_flavor_prefix}{base}"
         return base
 
     def get_login_user(self) -> str:
@@ -357,11 +390,11 @@ class BaseDeploy(DeployProtocol):
         )
         if self.INST_FLAVORS:
             # top level option for create/destroy commands
-            def_flavor = self.INST_FLAVORS[0]
+            def_flavor = next(iter(self.INST_FLAVORS))
             ap.add_argument(
                 "-F",
                 "--flavor",
-                choices=sorted(self.INST_FLAVORS),
+                choices=sorted(self.INST_FLAVORS.keys()),
                 default=def_flavor,
                 help=f"instance flavor (default {def_flavor})",
             )
@@ -391,11 +424,11 @@ class BaseDeploy(DeployProtocol):
             self.dry_run = True
         else:
             self.dry_run = args.dry_run
-        if self.INST_FLAVORS:
-            self.inst_flavor = args.flavor
         self.debug_output = args.debug
         # can now call debug method!!
         self.debug("user", self.user)
+        if self.INST_FLAVORS:
+            self.inst_flavor = args.flavor
 
     @staticmethod
     def _proc_args(cmd: ProcCmd) -> list[str]:
