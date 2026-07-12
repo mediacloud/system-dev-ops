@@ -128,76 +128,6 @@ class BaseDeploy(DeployProtocol):
         if conf != "YES":  # must be exact
             self.fatal("[cancelled]", quit=True)  # never returns
 
-    def deploy_helper(self) -> None:
-        """
-        helper function for deploy commands
-        across classes
-        """
-        if self.test_branch:
-            self.branch = self.test_branch
-        else:
-            self.branch = self.git_branch()
-        self.debug("branch", self.branch)
-
-        if self.branch in ("prod", "staging"):
-            self.inst_type = self.inst_id = self.branch
-        else:
-            self.inst_type = "dev"
-            self.inst_id = self.user  # in case --user option
-
-        self.debug("inst_type", self.inst_type)  # prod/staging/dev
-        self.debug("inst_id", self.inst_id)  # prod/staging/USER
-
-        # naming scheme used across MC projects;
-        # group by user/realm then app/stack
-        inst_base = self.get_inst_base()
-        self.statsd_prefix = f"mc.{self.inst_id}.{inst_base}"
-
-        # allow subclass override of STATSD_HOST
-        self.statsd_url = f"statsd://{self.STATSD_HOST}:8125"
-
-        self.debug("statsd_prefix", self.statsd_prefix)
-
-        # port bias is used (if desired) to generate local host
-        # ports to access containers (by adding to native or interval port)
-        if self.is_prod():
-            self.port_bias = 0
-        elif self.is_staging():
-            self.port_bias = 10
-        else:
-            # developer: default to 20, but to allow multiple
-            # developers on same server, allow alternate values from
-            # environment as {APP}_DEV_PORT_BIAS
-            self.port_bias = int(
-                os.environ.get(f"{self.INST_BASE.upper()}_DEV_PORT_BIAS", 20)
-            )
-            # developer port bias should be a multiple of 10:
-            assert (
-                self.port_bias >= 20
-                and self.port_bias <= 90
-                and self.port_bias % 10 == 0
-            )
-        if self.INST_FLAVORS:
-            ftup = self.INST_FLAVORS[self.inst_flavor]
-            self.inst_flavor_prefix = ftup[0]
-            flavor_bias = ftup[1]
-            # flavor port biases are multiples of 100:
-            assert (
-                flavor_bias >= 0
-                and flavor_bias <= 900
-                and flavor_bias % 100 == 0
-            )
-            self.port_bias += flavor_bias
-
-        # before make_tag, after inst_flavor_prefix set:
-        self.inst_name = self._id2name(self.inst_id)
-        self.debug("inst_name", self.inst_name)
-
-        self.tag = self.tag_make()
-        self.debug("tag", self.tag)
-
-        self.debug("port_bias", self.port_bias)
-
     def fatal(self, msg: str, quit: bool = False) -> None:
         sys.stderr.write(msg + "\n")
         if self.dry_run and not quit:
@@ -611,7 +541,7 @@ class BaseDeploy(DeployProtocol):
 
     def tag_prod(self) -> str:
         # proj_version defined in subclass/mixins!
-        return f"v{self.proj_version()}"
+        return f"{self.inst_flavor_prefix}v{self.proj_version()}"
 
     def tag_staging(self) -> str:
         return f"{self.date_time}-{self.tag_host()}-{self.branch}"
@@ -633,9 +563,158 @@ class BaseDeploy(DeployProtocol):
 
     ################ commands in all versions of code
 
+    def deploy_cmd_init(self, cp: CmdParser) -> None:
+        cp.add_argument(
+            "-u",
+            "--unpushed",
+            action="store_true",
+            help="allow deployment of unpushed dev repo",
+        )
+
+    # deploy_cmd must be supplied (and call deploy_cmd_helper with args)
+
+    def deploy_cmd_helper(self, args: CmdArgs) -> None:
+        """
+        helper function for deploy_cmd across classes
+
+        NOTE!!! Does not check for existing code tag: story-indexer
+        uses unique prod tags, so it wouldn't HURT to move check here??
+        """
+        self.unpushed = args.unpushed
+        if self.test_branch:
+            self.branch = self.test_branch
+        else:
+            self.branch = self.git_branch()
+        self.debug("branch", self.branch)
+
+        if self.branch in ("prod", "staging"):
+            self.inst_type = self.inst_id = self.branch
+        else:
+            self.inst_type = "dev"
+            self.inst_id = self.user  # in case --user option
+
+        self.debug("inst_type", self.inst_type)  # prod/staging/dev
+        self.debug("inst_id", self.inst_id)  # prod/staging/USER
+
+        # naming scheme used across MC projects;
+        # group by user/realm then app/stack
+        inst_base = self.get_inst_base()
+        self.statsd_prefix = f"mc.{self.inst_id}.{inst_base}"
+
+        # allow subclass override of STATSD_HOST
+        self.statsd_url = f"statsd://{self.STATSD_HOST}:8125"
+
+        self.debug("statsd_prefix", self.statsd_prefix)
+
+        # port bias is used (if desired) to generate local host
+        # ports to access containers (by adding to native or interval port)
+        # used only w/ Docker, easiest to create here
+        if self.is_prod():
+            self.port_bias = 0
+        elif self.is_staging():
+            self.port_bias = 10
+        else:
+            # developer: default to 20, but to allow multiple
+            # developers on same server, allow alternate per-user
+            # values from environment as {APP}_DEV_PORT_BIAS
+            self.port_bias = int(
+                os.environ.get(f"{self.INST_BASE.upper()}_DEV_PORT_BIAS", 20)
+            )
+            # developer port bias should be a multiple of 10:
+            assert (
+                self.port_bias >= 20
+                and self.port_bias <= 90
+                and self.port_bias % 10 == 0
+            )
+        if self.INST_FLAVORS:
+            ftup = self.INST_FLAVORS[self.inst_flavor]
+            self.inst_flavor_prefix = ftup[0]
+            flavor_bias = ftup[1]
+            # flavor port biases are multiples of 100:
+            assert (
+                flavor_bias >= 0
+                and flavor_bias <= 900
+                and flavor_bias % 100 == 0
+            )
+            self.port_bias += flavor_bias
+
+        # before make_tag, after inst_flavor_prefix set:
+        self.inst_name = self._id2name(self.inst_id)
+        self.debug("inst_name", self.inst_name)
+
+        self.tag = self.tag_make()
+        self.debug("tag", self.tag)
+        self.debug("port_bias", self.port_bias)
+
+        self.config_tag: str | None = None  # not set for dev
+
+        # Don't push code tags if code not pushed!
+        # --unpushed void where prohibited by law (see below).
+        self.push_tag_to = []  # remotes to push tag to
+        if not self.unpushed:
+            self.push_tag_to.append("origin")
+        self.upstream_remote = self.git_upstream_remote()
+        self.debug("upstream_remote", self.upstream_remote)
+        if self.is_dev():
+            if (
+                self.upstream_remote == "origin"
+                and self.branch == "main"
+                and not self.unpushed
+            ):
+                # code push would overwrite main branch!!!
+                self.fatal(
+                    "Please don't do development on 'main' with {self.UPSTREAM_USER} as origin!"
+                )
+            if self.git_is_current(self.branch, "origin"):
+                print(f"origin/{self.branch} up to date")
+            elif not args.unpushed:
+                self.fatal(f"origin/{self.branch} not up to date.  push!")
+        else:
+            if args.unpushed:
+                self.fatal(
+                    f"cannot use --unpushed with {self.inst_id}", quit=True
+                )
+            if self.upstream_remote is None or not self.upstream_remote:
+                self.fatal("could not find upstream remote")
+                self.upstream_remote = "NOREMOTE"  # dry run
+
+            if (
+                self.upstream_remote
+                and self.upstream_remote not in self.push_tag_to
+            ):  # could be origin!
+                self.push_tag_to.append(self.upstream_remote)
+
+            if self.git_is_current(self.branch, self.upstream_remote):
+                print(f"{self.upstream_remote}/{self.branch} is up to date.")
+            else:
+                # pushing to mediacloud repo NOT optional
+                # for production or staging!!!
+                self.fatal(
+                    f"{self.upstream_remote} {self.branch} branch not up to date. "
+                    f"Run 'git push {self.upstream_remote}' first!"
+                )
+        self.settings_get_new()  # gather new settings (subclass supplied)
+
+    def deploy_cmd_push_tags(self) -> None:
+        # push code tag to external repos:
+        tag = self.tag
+        if self.unpushed and len(self.push_tag_to) > 0:
+            print("--unpushed but push_tag_to is", self.push_tag_to)
+        for remote in self.push_tag_to:
+            print("pushing tag", tag, "to", remote)
+            self.proc_call(
+                ["git", "push", remote, tag],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+        if self.config_tag:
+            print("tagging config as", self.config_tag)
+            self.settings_tag_private_conf(self.config_tag)
+
     def version_cmd(self, args: CmdArgs) -> int:
         """Display deployment package version"""
-        print(self.version())
+        print(__package__, self.version())
         # file whose git hash will be added to DEPLOY_HASH
         # print(self.source_file())
         return 0

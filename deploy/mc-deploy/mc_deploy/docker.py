@@ -146,8 +146,13 @@ class DockerDeploy(BaseDeploy):
     def deploy_cmd(self, args: CmdArgs) -> int:
         """Deploy code to docker stack"""
 
-        self.deploy_helper()  # common code
         self.check_root_or_docker()
+
+        if not self.git_is_clean():
+            # XXX display diffs, or list uncommitted files??
+            self.fatal("local changes not checked in")
+
+        self.deploy_cmd_helper(args)  # common code
         self.create_compose_file()
         self.docker_check_compose_file()
         self.docker_compose_build()

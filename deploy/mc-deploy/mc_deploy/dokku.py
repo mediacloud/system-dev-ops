@@ -432,8 +432,9 @@ class DokkuDeploy(BaseDeploy):
         """Create Dokku app instance"""
         self.check_not_root()  # for ssh keys for dokku & git
         app = self._id2name(args.instance)
+        host = self.dokku_host_fqdn
+        self.confirm(f"(re)create app {app} on {host}? [no] ")
 
-        self.confirm(f"Really create app {app}? [no] ")
         if not self.dokku_app_create(app):
             return 1
         if not self.dokku_services_create(app):
@@ -441,37 +442,34 @@ class DokkuDeploy(BaseDeploy):
 
         self.dokku_fix_git_deploy_branch(app)
 
-        new_hash = (
-            self.deployment_hash()
-        )  # mc-deploy version, git hash of project deploy.py
+        # combination of mc-deploy version, git hash of project deploy.py:
+        new_hash = self.deployment_hash()
         curr_hash = self.dokku_output_one(
             ["config:get", app, self.DEPLOY_HASH_VAR], handle_errors=False
         )
         if new_hash != curr_hash:
-            # speaks for itself:
+            # install new hash without restarting app: value is used
+            # only by deploy command to keep sync between the running
+            # app and the code that created/configured it.
             self.dokku_call(
                 [
                     "config:set",
-                    app,
                     "--no-restart",
+                    app,
                     f"{self.DEPLOY_HASH_VAR}={new_hash}",
                 ]
             )
         return 0
 
     def deploy_cmd_init(self, cp: CmdParser) -> None:
+        super().deploy_cmd_init(cp)
+        # --unpushed supplied by base
         cp.add_argument(
             "--force-push",
             action="store_true",
             help="Use 'git push --force' to dokku",
         )
-        cp.add_argument(
-            "-u",
-            "--unpushed",
-            action="store_true",
-            help="allow deployment of unpushed dev repo",
-        )
-        # XXX take -U --user (need to override get_inst_id unless login_user smashed)
+        # XXX take -U --user (need to override get_inst_id unless login_user smashed)???
 
     def deploy_cmd(self, args: CmdArgs) -> int:  # noqa: C901
         """Push code to Dokku app instance"""
@@ -482,53 +480,14 @@ class DokkuDeploy(BaseDeploy):
             # XXX display diffs, or list uncommitted files??
             self.fatal("local changes not checked in")
 
-        self.deploy_helper()
+        self.deploy_cmd_helper(args)
 
         branch = self.branch
         app = self.inst_name  # Dokku app name
         if not self.dokku_app_exists(app):
             self.fatal(f"App {app} does not exist at {self.dokku_host_fqdn}")
 
-        self.dokku_fix_git_deploy_branch(app)  # remove????
-
-        # Don't push code tags if code not pushed!
-        # --unpushed void where prohibited by law (see below).
-        push_tag_to = []  # remotes to push tag to
-        if not args.unpushed:
-            push_tag_to.append("origin")
-        mcremote = self.git_upstream_remote()
-        self.debug("mcremote", mcremote)
-        if self.is_dev():
-            if mcremote == "origin" and branch == "main" and not args.unpushed:
-                # code push would overwrite main branch!!!
-                self.fatal(
-                    "Please don't do development on 'main' with {self.UPSTREAM_USER} as origin!"
-                )
-            if self.git_is_current(branch, "origin"):
-                print(f"origin/{branch} up to date")
-            elif not args.unpushed:
-                self.fatal(f"origin/{branch} not up to date.  push!")
-        else:
-            if args.unpushed:
-                self.fatal(
-                    f"cannot use --unpushed with {self.inst_id}", quit=True
-                )
-            if mcremote is None or not mcremote:
-                self.fatal("could not find upstream remote")
-                mcremote = "NOREMOTE"  # dry run
-
-            if mcremote and mcremote not in push_tag_to:  # could be origin!
-                push_tag_to.append(mcremote)
-
-            if self.git_is_current(branch, mcremote):
-                print(f"{mcremote}/{branch} is up to date.")
-            else:
-                # pushing to mediacloud repo NOT optional
-                # for production or staging!!!
-                self.fatal(
-                    f"{mcremote} {branch} branch not up to date. "
-                    f"Run 'git push {mcremote}' first!"
-                )
+        self.dokku_fix_git_deploy_branch(app)  # (do only in "create"?)
 
         # git ssh "url" for dokku_ remote (repo contains app name):
         git_ssh_url = f"dokku@{self.dokku_host_fqdn}:{app}"
@@ -554,6 +513,9 @@ class DokkuDeploy(BaseDeploy):
         # get all current settings (used later as well)
         jstr = self.dokku_output_all(f"config:export --format=json {app}")
         curr_settings = json.loads(jstr)
+
+        # check if mc-remote version & hash of deploy.py that
+        # invoked us have changed (if so, need to re-run 'deploy' command)
         curr_hash = curr_settings.get(
             self.DEPLOY_HASH_VAR
         )  # set by create cmd
@@ -563,24 +525,22 @@ class DokkuDeploy(BaseDeploy):
         if curr_hash != expected_hash:
             self.fatal("instance deployment hash mismatch: rerun 'create'")
 
+        # check if code has changed (compare with dokku git remote)
         self.proc_call(["git", "fetch", dokku_remote])
         code_change = not self.git_is_current(
             branch, dokku_remote, self.DOKKU_GIT_BRANCH
         )
 
         tag = self.tag
-        config_tag: str | None = None
         if self.is_prod():
             if code_change:
                 self.git_check_local_tag(tag)  # fatal if exists
-                for remote in [mcremote, dokku_remote]:
+                for remote in [self.upstream_remote, dokku_remote]:
                     self.git_check_remote_tag(remote, tag)  # fatal if exists
-                config_tag = tag
+                self.config_tag = tag
             else:
                 # code tag almost certainly exists; in case conf changed:
-                config_tag = f"{tag}-{self.date_time}"
-
-        self.settings_get_new()  # gather new settings
+                self.config_tag = f"{tag}-{self.date_time}"
 
         # curr_settings fetched up top to verify deploy hash
         conf_changes = self.settings_changes(curr_settings)
@@ -605,8 +565,8 @@ class DokkuDeploy(BaseDeploy):
             # will restart app ONLY if no code change:
             self.settings_apply(conf_changes, code_change)
             if not code_change:
-                if config_tag:
-                    self.settings_tag_private_conf(config_tag)
+                if self.config_tag:
+                    self.settings_tag_private_conf(self.config_tag)
                 sys.stderr.write("Config updated. The End.\n")
                 return 0
 
@@ -615,6 +575,7 @@ class DokkuDeploy(BaseDeploy):
         if self.DOKKU_STOP:
             self.dokku_call(["ps:stop", app])
 
+        ################
         print(f"pushing branch {branch} to {dokku_remote}")
 
         # NOTE: git push will likely complain if developer switches
@@ -630,10 +591,12 @@ class DokkuDeploy(BaseDeploy):
         self.proc_call(push_cmd)
         print("===")  # end of build output
 
+        ################
         # code push succeeded, add local tag:
         print("adding local tag", tag)
         self.proc_call(["git", "tag", tag])
 
+        ################
         # push tag to dokku repo after code pushed
         # (pushing code via tag causes mayhem?)
         print("pushing tag", tag, "to", dokku_remote)
@@ -644,21 +607,7 @@ class DokkuDeploy(BaseDeploy):
             stderr=subprocess.DEVNULL,
         )
 
-        # push code tag to external repos:
-        if args.unpushed and len(push_tag_to) > 0:
-            print("--unpushed but push_tag_to is", push_tag_to)
-        for remote in push_tag_to:
-            print("pushing tag", tag, "to", remote)
-            self.proc_call(
-                ["git", "push", remote, tag],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            # XXX check status!
-
-        if config_tag:
-            print("tagging config as", config_tag)
-            self.settings_tag_private_conf(config_tag)
+        self.deploy_cmd_push_tags()
 
         if self.DOKKU_SCALE:  # only needed once, or on change
             self.dokku_scale(app)
@@ -669,7 +618,7 @@ class DokkuDeploy(BaseDeploy):
         with open("push.log", "a") as f:
             # old format was: "date_time app REMOTE tag"
             # but remote was useless!
-            ct = config_tag or "-"
+            ct = self.config_tag or "-"
             f.write(
                 f"{self.date_time} {app} {self.dokku_host_short} {tag} {ct}\n"
             )
@@ -719,11 +668,18 @@ class DokkuDBDeploy(DokkuDeploy):
             == 0
         )
 
+    def dokku_db_service(self, instance: str) -> str:
+        """
+        take instance id (prod/staging/USER) return database service name
+        """
+        app = self._id2name(instance)
+        return app + self.DOKKU_SERVICES[self.DATABASE]
+
     ################ commands
 
     def clone_cmd_init(self, cp: CmdParser) -> None:
         cp.add_argument(
-            "dest_db_service", help="db service to clone prod database to"
+            "instance", help="db instance (prod/staging/USER) to clone prod database to"
         )
         # maybe take optional source host & service names?
 
@@ -737,7 +693,7 @@ class DokkuDBDeploy(DokkuDeploy):
         self.debug("from_host", from_host)
         self.debug("from_svc", from_svc)
 
-        to_svc = args.dest_db_service
+        to_svc = self.dokku_db_service(args.instance)
         self.debug("to_svc", to_svc)
         self.debug("dokku_host_fqdn", self.dokku_host_fqdn)
 
@@ -779,7 +735,7 @@ class DokkuDBDeploy(DokkuDeploy):
         return (export_status or import_status) == 0
 
     def dburl_cmd_init(self, cp: CmdParser) -> None:
-        cp.add_argument("database_service", help="db service to get URL for")
+        cp.add_argument("instance", help="db instance (dev/prod/USER) to get URL for")
 
     def dburl_cmd(self, args: CmdArgs) -> int:
         """Return DATABASE_URL for local use outside Dokku"""
@@ -787,7 +743,7 @@ class DokkuDBDeploy(DokkuDeploy):
 
         self.check_not_root()  # for ssh keys for dokku & git
 
-        svc = args.database_service
+        svc = self.dokku_db_service(args.instance)
         if not self.dokku_db_exists(svc):
             self.fatal(f"Could not find database {svc}")
 
