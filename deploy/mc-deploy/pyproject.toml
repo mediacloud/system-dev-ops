@@ -10,7 +10,7 @@ authors = [
 
 dependencies = [
     "python-dotenv ~= 1.0.1",
-    "tomli" # installed by pip; will also use tomllib (remove if python >=3.11)
+    "tomli; python_version < '3.11'", # installed by pip? let it decide what version
 ]
 
 [project.optional-dependencies]
