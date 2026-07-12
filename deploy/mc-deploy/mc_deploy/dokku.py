@@ -77,9 +77,13 @@ class DokkuDeploy(BaseDeploy):
         self.dokku_host_short = self.dokku_host_fqdn.split(".")[0]
 
     def tag_host(self) -> str:
+        # also used for AIRTABLE_HARDWARE
         return self.dokku_host_short
 
     ################ utilities
+
+    def airtable_hardware(self) -> str:
+        return self.dokku_host_short
 
     def deployment_hash(self) -> str:
         """
@@ -413,19 +417,11 @@ class DokkuDeploy(BaseDeploy):
 
     def settings_get_new(self) -> None:
         """
-        retrieve all settings: app dependant
+        subclass with additional settings, loading files etc.
         """
+        super().settings_get_new()
         self.settings_add("DOKKU_DEFAULT_CHECKS_WAIT", "5")  # default: 10
         self.settings_add("DOKKU_WAIT_TO_RETIRE", "30")  # default: 60
-        self.settings_add("TZ", "UTC")  # display/log time in UTC
-
-        # from config.sh -- probably applies to Docker too
-        # if we sent to airtable from this script, use the values
-        # but no need to add them to app settings!!!!
-        self.settings_add("AIRTABLE_HARDWARE", self.dokku_host_short)
-        self.settings_add("AIRTABLE_ENV", self.inst_id)  # prod/staging/USER
-        self.settings_add("AIRTABLE_NAME", self.get_inst_base())
-        self.settings_add("SENTRY_ENV", self.inst_id)  # prod/staging/USER
 
     ################ commands
 
@@ -805,15 +801,16 @@ class DokkuDBDeploy(DokkuDeploy):
             if ip and dsn:
                 break
 
-        if ip is None or dsn is None:
+        if not ip or not dsn:
             self.fatal(f"could not find DSN and IP for {svc}")
-            return 1
         self.debug("dsn before:", dsn)
+        assert isinstance(dsn, str)
+        assert isinstance(ip, str)
         dsn = dsn.replace(f"dokku-postgres-{svc}", ip)
         self.debug("dsn after:", dsn)
         if self.SQLALCHEMY2 and dsn.startswith("postgres:"):
             dsn = "postgresql:" + dsn.removeprefix("postgres:")
-        print(dsn)
+        print(dsn)  # for `export DATABASE_URL=$(..../deploy.py dburl)`
         return 0
 
 

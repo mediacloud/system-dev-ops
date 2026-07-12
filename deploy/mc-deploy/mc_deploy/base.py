@@ -502,7 +502,15 @@ class BaseDeploy(DeployProtocol):
         """
         subclass with additional settings, loading files etc.
         """
+        # if this script ever sends directly to airtable,
+        # no need to add them to app settings!!!!
+        self.settings_add("AIRTABLE_HARDWARE", self.tag_host())
+        self.settings_add("AIRTABLE_ENV", self.inst_id)  # prod/staging/USER
+        self.settings_add("AIRTABLE_NAME", self.get_inst_base())
+
         self.settings_add("STATSD_PREFIX", self.statsd_prefix)
+        self.settings_add("SENTRY_ENV", self.inst_id)  # prod/staging/USER
+        self.settings_add("TZ", "UTC")  # display/log time in UTC
 
     def settings_load_file(self, fname: str) -> bool:
         """
@@ -561,6 +569,7 @@ class BaseDeploy(DeployProtocol):
         return self.tag_dev()
 
     def tag_host(self) -> str:
+        # also used for AIRTABLE_HARDWARE
         return self.hostname.split(".")[0]
 
     def tag_dev(self) -> str:
