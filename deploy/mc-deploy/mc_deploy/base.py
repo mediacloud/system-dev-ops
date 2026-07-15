@@ -88,7 +88,7 @@ class BaseDeploy(DeployProtocol):
         self.login_user_params: dict[str, str | int | dict[str, str]] = {}
         self.login_uid = 0
         self.port_bias = 0
-        self.private_dir: tempfile.TemporaryDirectory | None = None
+        self.private_dir: tempfile.TemporaryDirectory[str] | None = None
         self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.settings: dict[str, str | None] = {}  # app/stack settings
         self.uid = os.getuid()
@@ -372,8 +372,7 @@ class BaseDeploy(DeployProtocol):
             help="test deployment code (impl. --dry-run)",
         )
 
-        scp = ap.add_subparsers(help="command", dest="command", required=True)
-        self.init_command_parsers(scp)
+        self.init_command_parsers(ap)
 
     def parser_results(self, args: ParserArgs) -> None:
         """
@@ -826,7 +825,8 @@ class BaseDeploy(DeployProtocol):
 
     ################ top level
 
-    def init_command_parsers(self, scp: SubCommandParser) -> None:
+    def init_command_parsers(self, ap: argparse.ArgumentParser) -> None:
+        scp = ap.add_subparsers(help="command", dest="command", required=True)
         for attr in sorted(dir(self)):
             if attr.endswith("_cmd"):
                 cmd = attr[:-4]  # trim _cmd
