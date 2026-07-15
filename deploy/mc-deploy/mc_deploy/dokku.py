@@ -415,11 +415,11 @@ class DokkuDeploy(BaseDeploy):
             changes.append(f"{var}={value}")
         return changes
 
-    def settings_get_new(self) -> None:
+    def settings_get_new(self, args: ParserArgs) -> None:
         """
         subclass with additional settings, loading files etc.
         """
-        super().settings_get_new()
+        super().settings_get_new(args)
         self.settings_add("DOKKU_DEFAULT_CHECKS_WAIT", "5")  # default: 10
         self.settings_add("DOKKU_WAIT_TO_RETIRE", "30")  # default: 60
 
@@ -679,7 +679,8 @@ class DokkuDBDeploy(DokkuDeploy):
 
     def clone_cmd_init(self, cp: CmdParser) -> None:
         cp.add_argument(
-            "instance", help="db instance (prod/staging/USER) to clone prod database to"
+            "instance",
+            help="db instance (prod/staging/USER) to clone prod database to",
         )
         # maybe take optional source host & service names?
 
@@ -735,7 +736,9 @@ class DokkuDBDeploy(DokkuDeploy):
         return (export_status or import_status) == 0
 
     def dburl_cmd_init(self, cp: CmdParser) -> None:
-        cp.add_argument("instance", help="db instance (dev/prod/USER) to get URL for")
+        cp.add_argument(
+            "instance", help="db instance (dev/prod/USER) to get URL for"
+        )
 
     def dburl_cmd(self, args: CmdArgs) -> int:
         """Return DATABASE_URL for local use outside Dokku"""

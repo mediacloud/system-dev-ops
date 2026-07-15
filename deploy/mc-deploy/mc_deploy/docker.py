@@ -46,11 +46,7 @@ class DockerDeploy(BaseDeploy):
         self.fatal("must be root, or member of 'docker' group")
         # here on dry-run
 
-    def create_compose_file(self) -> None:
-        # can legitimately be empty!
-        return
-
-    def docker_check_compose_file(self) -> None:
+    def docker_compose_file_check(self) -> None:
         """
         get docker to dump out compose file with interpolations
         "for the record".
@@ -67,6 +63,10 @@ class DockerDeploy(BaseDeploy):
                 stdout=f,
             )
             os.fchmod(f.fileno(), 0o400)  # user read only
+        return
+
+    def docker_compose_file_create(self) -> None:
+        # can legitimately be empty!
         return
 
     def docker_compose_build(self) -> None:
@@ -152,9 +152,9 @@ class DockerDeploy(BaseDeploy):
             # XXX display diffs, or list uncommitted files??
             self.fatal("local changes not checked in")
 
-        self.deploy_cmd_helper(args)  # common code
-        self.create_compose_file()
-        self.docker_check_compose_file()
+        self.deploy_cmd_helper(args)
+        self.docker_compose_file_create()
+        self.docker_compose_file_check()
         self.docker_compose_build()
         if args.build_only:
             return 0

@@ -10,12 +10,13 @@ import getpass  # getuser
 import importlib.metadata  # version
 import inspect  # getsourcefile
 import os
+import pwd
 import socket
 import subprocess
 import sys
 import tempfile
 import time
-from typing import Any, Callable, Protocol, TypeAlias
+from typing import Any, Callable, NamedTuple, Protocol, TypeAlias
 
 # PyPI
 import dotenv
@@ -27,6 +28,15 @@ SubCommandParser: TypeAlias = argparse._SubParsersAction
 
 # allow process methods to take str or argv
 ProcCmd: TypeAlias = str | list[str]
+
+
+class Flavor(NamedTuple):
+    """
+    for values in INST_FLAVORS dict
+    """
+
+    prefix: str
+    bias: int
 
 
 class DeployProtocol(Protocol):
@@ -55,7 +65,7 @@ class BaseDeploy(DeployProtocol):
 
     # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
     # tuple values are inst_name prefix and port bias
-    INST_FLAVORS: dict[str, tuple[str, int]] = {}
+    INST_FLAVORS: dict[str, Flavor] = {}
 
     PROJECT_REPO: str
     PUBLIC_DOMAIN = "mediacloud.org"
@@ -76,8 +86,12 @@ class BaseDeploy(DeployProtocol):
         self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.hostname = socket.gethostname().lower()  # may not be FQDN
         self.login_user = self.user = self.get_login_user()
+        self.login_user_params: dict[str, str | int | dict[str, str]] = {}
+        self.login_uid = 0
+        self.port_bias = 0
         self.private_dir: tempfile.TemporaryDirectory | None = None
         self.settings: dict[str, str | None] = {}  # app/stack settings
+        self.uid = os.getuid()
         self.inst_flavor = ""
         self.inst_flavor_prefix = ""
 
@@ -95,13 +109,13 @@ class BaseDeploy(DeployProtocol):
         print("DEBUG:", " ".join(str(x) for x in args))
 
     def check_not_root(self) -> None:
-        if os.getuid() != 0:
+        if self.uid != 0:
             return
         self.fatal("must not be run as root")
         # may return in dry runs
 
     def check_is_root(self) -> None:
-        if os.getuid() == 0:
+        if self.uid == 0:
             return
         self.fatal("must be run as root")
         # may return in dry runs
@@ -152,6 +166,9 @@ class BaseDeploy(DeployProtocol):
         return os.path.dirname(src)
 
     def get_inst_base(self) -> str:
+        # PLEASE do not override!!!
+        # naming scheme used across MC projects;
+        # group by user/realm then app/stack
         base = self.INST_BASE
         if self.inst_flavor_prefix:
             return f"{self.inst_flavor_prefix}{base}"
@@ -183,7 +200,10 @@ class BaseDeploy(DeployProtocol):
 
     def git_branch(self) -> str:
         """return branch name of current checkout"""
-        return self.proc_output_one("git branch --show-current")
+        # NOTE: does not need to be run as login user
+        return self.proc_output_one(
+            "git branch --show-current", as_login_user=True
+        )
 
     def _git_bad_version(self, where: str) -> None:
         self.fatal(
@@ -194,6 +214,7 @@ class BaseDeploy(DeployProtocol):
         status = self.proc_call(
             f"git show-ref --verify --quiet refs/tags/{tag}",
             always=True,
+            as_login_user=True,
             handle_errors=False,
         )
         if status == 0:  # found
@@ -203,7 +224,7 @@ class BaseDeploy(DeployProtocol):
     def git_check_remote_tag(self, remote: str, tag: str) -> None:
         # https://stackoverflow.com/questions/5549479/git-check-if-commit-xyz-in-remote-repo
         status = self.proc_call(
-            ["git", "fetch", remote, tag],
+            ["fetch", remote, tag],
             handle_errors=False,
             stdout=subprocess.DEVNULL,
         )
@@ -214,7 +235,8 @@ class BaseDeploy(DeployProtocol):
     def git_file_hash(self, fname: str) -> str:
         """return git hash of one file"""
         hash = self.proc_output_one(
-            "git log -n1 --oneline --no-abbrev-commit " f"--format=%h {fname}"
+            "git log -n1 --oneline --no-abbrev-commit " f"--format=%h {fname}",
+            as_login_user=True,
         )
         if hash:
             return hash
@@ -225,7 +247,10 @@ class BaseDeploy(DeployProtocol):
         """return whether working directory is 'clean' (fully committed)"""
         return (
             self.proc_call(
-                "git diff --quiet", always=True, handle_errors=False
+                "git diff --quiet",
+                always=True,
+                as_login_user=True,
+                handle_errors=False,
             )
             == 0
         )
@@ -241,6 +266,7 @@ class BaseDeploy(DeployProtocol):
         sts = self.proc_call(
             f"git diff --quiet {branch} {remote}/{remote_branch} --",
             always=True,
+            as_login_user=True,
             handle_errors=False,
             stderr=subprocess.DEVNULL,
         )
@@ -249,11 +275,16 @@ class BaseDeploy(DeployProtocol):
     def git_remotes(self) -> dict[str, str]:
         """return cached dict of remote URLs by remote name"""
         if not self._remotes:
-            for remote in self.proc_output_lines("git remote -v"):
+            for remote in self.proc_output_lines(
+                "git remote -v", as_login_user=True
+            ):
                 if "\t" in remote and remote.endswith("(push)"):
                     name, url = remote.split("\t")
                     self._remotes[name] = url
         return self._remotes
+
+    def git_revision_hash(self) -> str:
+        return self.proc_output_one("git rev-parse HEAD", as_login_user=True)
 
     def git_upstream_remote(self) -> str:
         """
@@ -278,8 +309,8 @@ class BaseDeploy(DeployProtocol):
         """
         return an instance name given an "instance id"
 
-        *PLEASE* don't alter/overwrite this: all projects using this
-        convention (dev/staging instances grouped together)
+        *PLEASE* don't alter/overwrite this so projects use the
+        same convention (dev/staging instances grouped together)
         """
         base = self.get_inst_base()
         if id == "prod":
@@ -384,6 +415,8 @@ class BaseDeploy(DeployProtocol):
         """
         args = self._proc_args(cmd)
         handle_errors = kws.pop("handle_errors", True)
+        if kws.pop("as_login_user", False):  # and self.uid == 0:
+            kws.update(self._proc_login_user_params())
         try:
             self.debug("proc_output_all", cmd)
             # from subprocess.getstatusoutput WITHOUT shell=True!!
@@ -441,6 +474,9 @@ class BaseDeploy(DeployProtocol):
         if self.dry_run and not always:
             print("dry run, ignoring", " ".join(args))
             return 0
+        if kws.pop("as_login_user", False) and self.uid == 0:
+            kws.update(self._proc_login_user_params())
+
         # avoid passing tainted data to shell (and additional overhead)
         status = subprocess.call(args, shell=False, **kws)
         self.debug("proc_call", cmd, "->", status)
@@ -448,6 +484,32 @@ class BaseDeploy(DeployProtocol):
             acmd = " ".join(args)
             self.fatal(f"{acmd} exited with status {status}")
         return status
+
+    def _proc_login_user_params(self) -> dict[str, int | str | dict[str, str]]:
+        """
+        return cached dict of Popen class keyword parameters
+        to run a command as the original login user
+        (for access to github via ~user/.ssh/id_xxx key file)
+        and anything that might alter the state (create files)
+        in the checked out .git tree.
+        """
+        if not self.login_user_params:
+            # get login user passwd entry;
+            # _could_ throw an exception, but you're SOL.
+            pw = pwd.getpwnam(self.login_user)
+            self.login_user_params = {  # Popen params
+                "env": {
+                    "HOME": pw.pw_dir,
+                    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin",
+                    "USER": self.login_user,
+                },
+                # fails w/ PermissionError:
+                # "extra_groups": os.getgrouplist(self.login_user, pw.pw_gid),
+                "group": pw.pw_gid,
+                "user": pw.pw_uid,
+            }
+            self.login_uid = pw.pw_uid
+        return self.login_user_params
 
     def proj_version(self) -> str:
         raise NotImplementedError("use a mixin!")
@@ -457,12 +519,18 @@ class BaseDeploy(DeployProtocol):
 
     def settings_add(self, key: str, value: str) -> None:
         """
-        helper for settings_get_new
+        set a default, or override a value
         """
         assert isinstance(value, str)
         self.settings[key] = value
 
-    def settings_get_new(self) -> None:
+    def settings_del(self, key: str) -> None:
+        """
+        remove a setting value
+        """
+        self.settings.pop(key, None)
+
+    def settings_get_new(self, args: ParserArgs) -> None:
         """
         subclass with additional settings, loading files etc.
         """
@@ -473,7 +541,10 @@ class BaseDeploy(DeployProtocol):
         self.settings_add("AIRTABLE_NAME", self.get_inst_base())
 
         self.settings_add("STATSD_PREFIX", self.statsd_prefix)
-        self.settings_add("SENTRY_ENV", self.inst_id)  # prod/staging/USER
+        if self.is_prod():
+            self.settings_add("SENTRY_ENV", "production")
+        elif self.is_staging():
+            self.settings_add("SENTRY_ENV", "staging")
         self.settings_add("TZ", "UTC")  # display/log time in UTC
 
     def settings_load_file(self, fname: str) -> bool:
@@ -482,8 +553,8 @@ class BaseDeploy(DeployProtocol):
         """
         if not os.path.exists(fname):
             return False
+        self.debug("loading", fname)
         self.settings.update(dotenv.dotenv_values(fname))
-        self.debug("loaded", fname)
         return True
 
     def settings_load_private_files(
@@ -494,28 +565,56 @@ class BaseDeploy(DeployProtocol):
         """
         url = self.git_upstream_url(repo)
         self.private_dir = tempfile.TemporaryDirectory(
-            ignore_cleanup_errors=True  # may cleanup twice
+            dir=self.get_deploy_dir(),
+            ignore_cleanup_errors=True,  # may cleanup twice
+            prefix="conf-",
         )
-        atexit.register(self.private_dir.cleanup)
-        os.chmod(self.private_dir.name, 0o700)  # make private
+        if os.getuid() == 0:
+            # change directory ownership to login user
+            # (in case cleanup fails).
+            # directory created mode 700, so group doesn't matter
+            self._proc_login_user_params()  # get login_uid
+            assert self.login_uid != 0
+            os.chown(self.private_dir.name, uid=self.login_uid, gid=-1)
+        atexit.register(self.settings_private_cleanup)  # bound method
         self.proc_call(
-            ["git", "clone", url], cwd=self.private_dir.name, always=True
+            ["git", "clone", url],
+            always=True,
+            as_login_user=True,
+            cwd=self.private_dir.name,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         for fname in fnames:  # may read prod, then staging for overrides
             path = os.path.join(self.private_dir.name, repo, fname)
-            if not os.path.exists(path):
-                self.fatal(f"could not find {path}")
-            self.settings.update(dotenv.dotenv_values(os.path.join(path)))
-        # cloned repo kept around for later tagging (see below)
+            if not self.settings_load_file(path):
+                self.fatal(f"could not load {fname}")
+        # cloned repo kept around for later tagging
+        # (see settings_tag_private_conf below)
+
+    def settings_private_cleanup(self) -> None:
+        """
+        here from atexit
+        """
+        # RACE here if threaded!!!
+        if self.private_dir:
+            self.debug("cleaning up private dir", self.private_dir.name)
+            self.private_dir.cleanup()
+            self.private_dir = None
 
     def settings_tag_private_conf(self, tag: str) -> None:
         self.debug("config tag:", tag)
         assert isinstance(self.private_dir, tempfile.TemporaryDirectory)
-        self.proc_call(["git", "tag", tag], cwd=self.private_dir.name)
+        self.proc_call(
+            ["git", "tag", tag], as_login_user=True, cwd=self.private_dir.name
+        )
+
         # freshly cloned above, so remote always "origin"
         self.debug("pushing config tag")
         self.proc_call(
-            ["git", "push", "origin", tag], cwd=self.private_dir.name
+            ["git", "push", "origin", tag],
+            as_login_user=True,
+            cwd=self.private_dir.name,
         )
 
     def source_file(self) -> str | None:
@@ -577,7 +676,7 @@ class BaseDeploy(DeployProtocol):
         """
         helper function for deploy_cmd across classes
 
-        NOTE!!! Does not check for existing code tag: story-indexer
+        NOTE!!! Does not pre-check for existing code tag: story-indexer
         uses unique prod tags, so it wouldn't HURT to move check here??
         """
         self.unpushed = args.unpushed
@@ -596,8 +695,10 @@ class BaseDeploy(DeployProtocol):
         self.debug("inst_type", self.inst_type)  # prod/staging/dev
         self.debug("inst_id", self.inst_id)  # prod/staging/USER
 
-        # naming scheme used across MC projects;
-        # group by user/realm then app/stack
+        if self.INST_FLAVORS:
+            ftup = self.INST_FLAVORS[args.flavor]
+            self.inst_flavor_prefix = ftup.prefix
+
         inst_base = self.get_inst_base()
         self.statsd_prefix = f"mc.{self.inst_id}.{inst_base}"
 
@@ -620,17 +721,13 @@ class BaseDeploy(DeployProtocol):
             self.port_bias = int(
                 os.environ.get(f"{self.INST_BASE.upper()}_DEV_PORT_BIAS", 20)
             )
-            # developer port bias should be a multiple of 10:
-            assert (
-                self.port_bias >= 20
-                and self.port_bias <= 90
-                and self.port_bias % 10 == 0
-            )
+            assert self.port_bias >= 20 and self.port_bias <= 90
+
         if self.INST_FLAVORS:
             ftup = self.INST_FLAVORS[self.inst_flavor]
-            self.inst_flavor_prefix = ftup[0]
-            flavor_bias = ftup[1]
-            # flavor port biases are multiples of 100:
+            flavor_bias = ftup.bias
+            # flavor port biases are multiples of 100
+            # (use 200 if Elastic search present: it uses 9200 + 9300!)
             assert (
                 flavor_bias >= 0
                 and flavor_bias <= 900
@@ -638,12 +735,6 @@ class BaseDeploy(DeployProtocol):
             )
             self.port_bias += flavor_bias
 
-        # before make_tag, after inst_flavor_prefix set:
-        self.inst_name = self._id2name(self.inst_id)
-        self.debug("inst_name", self.inst_name)
-
-        self.tag = self.tag_make()
-        self.debug("tag", self.tag)
         self.debug("port_bias", self.port_bias)
 
         self.config_tag: str | None = None  # not set for dev
@@ -693,7 +784,15 @@ class BaseDeploy(DeployProtocol):
                     f"{self.upstream_remote} {self.branch} branch not up to date. "
                     f"Run 'git push {self.upstream_remote}' first!"
                 )
-        self.settings_get_new()  # gather new settings (subclass supplied)
+
+        # before make_tag, after inst_flavor_prefix set:
+        self.inst_name = self._id2name(self.inst_id)
+        self.debug("inst_name", self.inst_name)
+
+        self.tag = self.tag_make()
+        self.debug("tag", self.tag)
+
+        self.settings_get_new(args)  # gather new settings (subclass supplied)
 
     def deploy_cmd_push_tags(self) -> None:
         # push code tag to external repos:
@@ -704,6 +803,7 @@ class BaseDeploy(DeployProtocol):
             print("pushing tag", tag, "to", remote)
             self.proc_call(
                 ["git", "push", remote, tag],
+                as_login_user=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
