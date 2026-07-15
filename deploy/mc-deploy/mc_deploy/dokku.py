@@ -40,9 +40,19 @@ class DokkuDeploy(BaseDeploy):
     DOKKU_STORAGE_HOME = "/var/lib/dokku/data/storage"  # odd this is needed!
     DOKKU_STORAGE_MOUNT_POINT = "/app/data"  # reasonable default!
 
-    # DJANGO only??
+    # server w/ publicly visible apps: must be: lower case, canonical
+    # internal name!  ALSO needs to be the cannonical name ON the
+    # host!  At least at UMass, Docker can't be run on a "bastion"
+    # server; it messes up DNS resolution, so the public Dokku server
+    # is "inside" and the bastion has firewall rules to "dnat"
+    # incomming packets on public ports to the corresponding port on
+    # the internal server.  Proxies for internal web services can be
+    # created using rss-fetcher/dokku-scripts/http-proxy.sh
+    # (which could be replaced by a sub-command in this class!)
     PUBLIC_HOST = "tarbell.angwin"
-    PUBLIC_NAME: str  # w/o PUBLIC_DOMAIN appended
+
+    PUBLIC_NAME = ""  # w/o PUBLIC_DOMAIN appended
+    STAGING_PUBLIC_NAME = ""  # w/o PUBLIC_DOMAIN appended
 
     ################ overrides of base methods
 
@@ -66,6 +76,11 @@ class DokkuDeploy(BaseDeploy):
             help=f"Dokku server to deploy to (default {self.fqdn})",
             default=self.fqdn,
         )
+
+        # here rather than overloading __init__:
+        self._app_vhosts: list[str] = []
+        self._dokku_plugins: list[str] = []
+        self._need_cerd = False
 
     def parser_results(self, args: ParserArgs) -> None:
         """
@@ -112,12 +127,7 @@ class DokkuDeploy(BaseDeploy):
         return self.dokku_call(["--force", "apps:create", app]) == 0
 
     def dokku_app_exists(self, app: str) -> bool:
-        return (
-            self.dokku_call(
-                ["apps:exists", app], always=True, stderr=subprocess.DEVNULL
-            )
-            == 0
-        )
+        return self.dokku_call_null(["apps:exists", app], always=True) == 0
 
     def _dokku_ssh_args(
         self, cmd: list[str], *, host: str | None = None
@@ -156,13 +166,64 @@ class DokkuDeploy(BaseDeploy):
         self.debug("dokku_call", cmd, "->", status)
         return status
 
+    def dokku_call_null(self, cmd: ProcCmd, **kws: Any) -> int:
+        """
+        run a dokku command via ssh, send all output to /dev/null
+        (always via ssh to allow configuring remote server)
+        """
+        if "stdout" not in kws:
+            kws["stdout"] = subprocess.DEVNULL
+        if "stderr" not in kws:
+            kws["stderr"] = subprocess.DEVNULL
+        return self.dokku_call(cmd, **kws)
+
+    def dokku_cert_check(self, app: str) -> bool:
+        # once letencrypt active, ALL apps must have a cert
+        if not self.dokku_is_public_host():
+            return True  # white lie
+
+        public = f".{self.PUBLIC_DOMAIN}"
+        for vhost in self.dokku_domains_vhosts(app):
+            if vhost.endswith(public):
+                return self.dokku_cert_enable(app)
+        return True
+
+    def dokku_cert_enable(self, app: str) -> bool:
+        # once letencrypt enabled, ALL apps must have a cert
+        if not self.dokku_is_public_host():
+            return True  # white lie
+
+        if not self.dokku_plugin_enabled("letsencrypt"):
+            self.fatal("letsencrypt not present/enabled on public host")
+
+        # "letsencrypt:active app" outputs "true" or nothing?
+        resp = self.dokku_output_one(["letsencrypt:active", app])
+        if resp and resp[0] == "true":
+            self.fatal("letsencrypt not active on public host")
+
+        return self.dokku_call(["letsencrypt:enable", app]) == 0
+
     def dokku_domains_add(self, app: str, domains: list[str]) -> bool:
-        return self.dokku_call(["domains:add", app] + domains) == 0
+        if self.dokku_call(["domains:add", app] + domains) == 0:
+            self._app_vhosts = []  # force refresh
+            return True
+        return False
+
+    def dokku_domains_check(self, app: str, hosts: list[str]) -> None:
+        curr_vhosts = self.dokku_domains_vhosts(app)
+        add = []
+        for h in hosts:
+            if h not in curr_vhosts:
+                add.append(h)
+        if add:
+            self.dokku_domains_add(app, add)
 
     def dokku_domains_vhosts(self, app: str) -> list[str]:
         """
         return currently configured virtual hosts routed to app
         """
+        if self._app_vhosts:
+            return self._app_vhosts
         for line in self.dokku_output_lines(["domains:report", app]):
             line = line.strip()
             if line.startswith("Domains app vhosts:"):
@@ -239,6 +300,8 @@ class DokkuDeploy(BaseDeploy):
         (always via ssh to allow configuring remote server)
         """
         output = self.dokku_output_all(cmd, **kws)
+        if output and output[-1] == "\n":
+            output = output[:-1]  # remove trailing newline
         return output.split("\n")
 
     def dokku_output_one(self, cmd: ProcCmd, **kws: Any) -> str:
@@ -250,6 +313,16 @@ class DokkuDeploy(BaseDeploy):
         if not lines:
             return ""
         return lines[0]
+
+    def dokku_plugin_enabled(self, plugin: str) -> bool:
+        # dokku plugin:installed requires root, but plugin:list does not!!
+        if not self._dokku_plugins:
+            # "lists active plugins"
+            for line in self.dokku_output_lines("plugin:list"):
+                toks = line.strip().split()
+                # toks[2] always "enabled", not checking to be less fragile
+                self._dokku_plugins.append(toks[0])
+        return plugin in self._dokku_plugins
 
     def dokku_scale(self, app: str) -> None:
         # get current counter counts:
@@ -279,11 +352,13 @@ class DokkuDeploy(BaseDeploy):
             self.dokku_call(scale_cmd)
 
     def dokku_service_create(self, plugin: str, name: str, app: str) -> bool:
+        if not self.dokku_plugin_enabled(plugin):
+            self.fatal(f"plugin {plugin} not enabled")
         if plugin == "storage":
             return self.dokku_storage_create(name, app)
         if self.dokku_service_exists(plugin, name):
             print(plugin, "service", name, "already exists")
-        elif self.dokku_call(f"{plugin:create} {name}") == 0:  # loud for now
+        elif self.dokku_call(f"{plugin}:create {name}") == 0:  # loud for now
             print(plugin, "service", name, "created")
         else:
             print(plugin, "service", name, "create failed")
@@ -313,26 +388,23 @@ class DokkuDeploy(BaseDeploy):
         return True
 
     def dokku_service_exists(self, plugin: str, name: str) -> bool:
-        return (
-            self.dokku_call(
-                f"{plugin}:exists {name}",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            == 0
-        )
+        return self.dokku_call_null(f"{plugin}:exists {name}") == 0
+
+    def dokku_is_public_host(self) -> bool:
+        """
+        return True if on the host serving public apps,
+        means that all apps will be HTTPS and need a cert
+        """
+        return self.dokku_host_fqdn == self.PUBLIC_HOST
 
     def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
-        return (
-            self.dokku_call(
-                f"{plugin}:linked {name} {app}",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            == 0
-        )
+        return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
 
     def dokku_services_create(self, app: str) -> bool:
+        for plugin in self.DOKKU_SERVICES.keys():
+            if not self.dokku_plugin_enabled(plugin):
+                self.fatal(f"plugin {plugin} not enabled")
+
         for plugin, suffix in self.DOKKU_SERVICES.items():
             if not self.dokku_service_create(plugin, app + suffix, app):
                 return False
@@ -353,7 +425,7 @@ class DokkuDeploy(BaseDeploy):
             self.dokku_call(f"storage:ensure-directory {name}")
 
         expect = f"{stdir}:{self.DOKKU_STORAGE_MOUNT_POINT}"
-        mounts = self.dokku_output_lines(f"storage:list {app}")
+        mounts = self.dokku_output_lines(["storage:list", app])
         if expect in mounts:
             print(
                 "storage directory",
@@ -371,7 +443,7 @@ class DokkuDeploy(BaseDeploy):
         return self.dokku_call(f"storage:mount {app} {expect}") == 0
 
     def dokku_storage_destroy(self, name: str) -> bool:
-        # leave storage in place
+        print("leaving", name, "storage in place")
         return True
 
     def settings_apply(self, changes: list[str], code_change: bool) -> bool:
@@ -432,8 +504,12 @@ class DokkuDeploy(BaseDeploy):
         """Create Dokku app instance"""
         self.check_not_root()  # for ssh keys for dokku & git
         app = self._id2name(args.instance)
+        if self.dokku_app_exists(app):
+            action = "refresh"
+        else:
+            action = "create"
         host = self.dokku_host_fqdn
-        self.confirm(f"(re)create app {app} on {host}? [no] ")
+        self.confirm(f"{action} app {app} on {host}? [no] ")
 
         if not self.dokku_app_create(app):
             return 1
@@ -459,6 +535,23 @@ class DokkuDeploy(BaseDeploy):
                     f"{self.DEPLOY_HASH_VAR}={new_hash}",
                 ]
             )
+
+        if self.dokku_is_public_host():
+            # check that vhosts/certs present for forseeable domain names:
+            # check if self.DOKKU_SERVICES["web"] set and non-zero?
+            # does not handle flavors (prepend prefix to public_name???)
+            check: list[str] = []
+            if args.instance == "prod":
+                if self.PUBLIC_NAME:
+                    check = [f"{self.PUBLIC_NAME}.{self.PUBLIC_DOMAIN}"]
+            elif args.instance == "staging":
+                if self.STAGING_PUBLIC_NAME:
+                    check = [
+                        f"{self.STAGING_PUBLIC_NAME}.{self.PUBLIC_DOMAIN}"
+                    ]
+            if check:
+                self.dokku_domains_check(app, check)
+
         return 0
 
     def deploy_cmd_init(self, cp: CmdParser) -> None:
@@ -555,6 +648,7 @@ class DokkuDeploy(BaseDeploy):
             self.confirm("No code changes; apply config changes? [no] ")
             # here on dry-run
         elif not code_change:
+            # XXX check certs?
             sys.stderr.write("No code or config changes. Done.\n")
             return 0
 
@@ -568,6 +662,7 @@ class DokkuDeploy(BaseDeploy):
                 if self.config_tag:
                     self.settings_tag_private_conf(self.config_tag)
                 sys.stderr.write("Config updated. The End.\n")
+                # XXX check certs?
                 return 0
 
         assert code_change
@@ -622,6 +717,9 @@ class DokkuDeploy(BaseDeploy):
             f.write(
                 f"{self.date_time} {app} {self.dokku_host_short} {tag} {ct}\n"
             )
+
+        self.dokku_cert_check(app)
+
         return 0
 
     def destroy_cmd_init(self, cp: CmdParser) -> None:
@@ -631,6 +729,9 @@ class DokkuDeploy(BaseDeploy):
         """Destroy Dokku app instance"""
         self.check_not_root()  # for ssh keys for dokku & git
         app = self._id2name(args.instance)
+        if not self.dokku_app_exists(app):
+            print(app, "not found")
+            return 1
         self.confirm(f"Really destroy app {app}? [no]")
         if not self.dokku_services_destroy(app):
             return 1
@@ -659,9 +760,8 @@ class DokkuDBDeploy(DokkuDeploy):
 
     def dokku_db_exists(self, svc: str, host: str | None = None) -> bool:
         return (
-            self.dokku_call(
+            self.dokku_call_null(
                 [f"{self.DATABASE}:exists", svc],
-                stdout=subprocess.DEVNULL,  # for dburl cmd
                 host=host,
                 always=True,
             )
@@ -716,13 +816,13 @@ class DokkuDBDeploy(DokkuDeploy):
             ),
             shell=False,
             stdin=subprocess.DEVNULL,  # allow backgrounding
-            stdout=subprocess.PIPE,
+            stdout=subprocess.PIPE,  # create output pipe
         )
 
         import_proc = subprocess.Popen(
             self._dokku_ssh_args([f"{dbtype}:import", to_svc]),
             shell=False,
-            stdin=export_proc.stdout,
+            stdin=export_proc.stdout,  # take input from export pipe
         )
         # so export proc is only writer, and import_proc sees EOF:
         if export_proc.stdout is not None:
@@ -769,7 +869,7 @@ class DokkuDBDeploy(DokkuDeploy):
         self.debug("dsn after:", dsn)
         if self.SQLALCHEMY2 and dsn.startswith("postgres:"):
             dsn = "postgresql:" + dsn.removeprefix("postgres:")
-        print(dsn)  # for `export DATABASE_URL=$(..../deploy.py dburl)`
+        print(dsn)  # for `export DATABASE_URL=$(..../deploy.py dburl USER)`
         return 0
 
 
@@ -781,17 +881,11 @@ class DokkuDBDjangoDeploy(DokkuDBDeploy):
     def settings_changed(self) -> None:
         """
         called when settings have changed;
-        update app domains
+        check ALLOWED_HOSTS in app vhost list
         """
+        super().settings_changed()
         app = self.inst_name
         allowed = self.settings["ALLOWED_HOSTS"]
         if not allowed:
             return
-        curr_vhosts = self.dokku_domains_vhosts(app)
-        hosts = allowed.split(",")
-        add = []
-        for h in hosts:
-            if h not in curr_vhosts:
-                add.append(h)
-        if add:
-            self.dokku_domains_add(app, add)
+        self.dokku_domains_check(app, allowed.split(","))
