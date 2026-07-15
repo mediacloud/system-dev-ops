@@ -57,6 +57,9 @@ class DockerDeploy(BaseDeploy):
         dump_file = f"{self.compose_file}.save-{self.tag}"
         with open(dump_file, "w") as f:
             self.fix_file_owner(f)
+            # old versions of stack command may exit w/ status 125
+            # if that happens, pass handle_errors=False and
+            # give a more helpful message?
             self.proc_call(
                 ["docker", "stack", "config", "-c", self.compose_file],
                 always=True,
