@@ -54,11 +54,12 @@ class DockerDeploy(BaseDeploy):
         [Phil: I don't trust that this will NEVER be broken, so the
         file is only kept for reference, NOT used as input!!]
         """
-        dump_file = f"{self.compose_file}.{self.tag}"
+        dump_file = f"{self.compose_file}.save-{self.tag}"
         with open(dump_file, "w") as f:
             self.fix_file_owner(f)
             self.proc_call(
                 ["docker", "stack", "config", "-c", self.compose_file],
+                always=True,
                 env=self.compose_env,
                 stdout=f,
             )
@@ -121,7 +122,6 @@ class DockerDeploy(BaseDeploy):
         called with result of argparse.parse_args
         """
         super().parser_results(args)
-        # XXX maybe init to os.environ?
         self.compose_env: dict[str, str] | None = None
         self.compose_file = os.path.join(
             self.get_deploy_dir(), self.COMPOSE_FILE
@@ -130,17 +130,13 @@ class DockerDeploy(BaseDeploy):
     ################ commands
 
     def deploy_cmd_init(self, cp: CmdParser) -> None:
+        super().deploy_cmd_init(cp)
+        # --unpushed supplied by base
         cp.add_argument(
             "-b",
             "--build-only",
             action="store_true",
             help="build docker image then quit",
-        )
-        cp.add_argument(
-            "-u",
-            "--unpushed",
-            action="store_true",
-            help="allow deployment of unpushed dev repo",
         )
 
     def deploy_cmd(self, args: CmdArgs) -> int:

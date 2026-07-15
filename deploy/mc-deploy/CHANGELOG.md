@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.7.1: flavor related tweaking
 * 0.7.0: Docker work; settings_get_new takes args
 	Flavor tuple, as_login_user argument
 

@@ -76,24 +76,22 @@ class BaseDeploy(DeployProtocol):
     # VENVDIR = "venv"
 
     def __init__(self) -> None:
-        self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = (
-            {}
-        )  # map command name to method
+        # map command name to method:
+        self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = {}
+        self._conf_loaded = False  # true if config file read attempted
         self.date_time = self.get_date_time()
         self.debug_output = False  # for early debug calls
         self.deploy_dir = self.get_deploy_dir()
         self.dry_run = False  # for any initial proc_ calls
-        self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.hostname = socket.gethostname().lower()  # may not be FQDN
         self.login_user = self.user = self.get_login_user()
         self.login_user_params: dict[str, str | int | dict[str, str]] = {}
         self.login_uid = 0
         self.port_bias = 0
         self.private_dir: tempfile.TemporaryDirectory | None = None
+        self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.settings: dict[str, str | None] = {}  # app/stack settings
         self.uid = os.getuid()
-        self.inst_flavor = ""
-        self.inst_flavor_prefix = ""
 
     ################ utilities (in alphabetical order!)
 
@@ -170,7 +168,7 @@ class BaseDeploy(DeployProtocol):
         # naming scheme used across MC projects;
         # group by user/realm then app/stack
         base = self.INST_BASE
-        if self.inst_flavor_prefix:
+        if self.INST_FLAVORS and self.inst_flavor_prefix:
             return f"{self.inst_flavor_prefix}{base}"
         return base
 
@@ -551,6 +549,7 @@ class BaseDeploy(DeployProtocol):
         """
         helper for settings_get_new
         """
+        self._conf_loaded = True  # for assertions
         if not os.path.exists(fname):
             return False
         self.debug("loading", fname)
@@ -640,7 +639,11 @@ class BaseDeploy(DeployProtocol):
 
     def tag_prod(self) -> str:
         # proj_version defined in subclass/mixins!
-        return f"{self.inst_flavor_prefix}v{self.proj_version()}"
+        if self.INST_FLAVORS:
+            prefix = self.inst_flavor_prefix
+        else:
+            prefix = ""
+        return f"{prefix}v{self.proj_version()}"
 
     def tag_staging(self) -> str:
         return f"{self.date_time}-{self.tag_host()}-{self.branch}"
@@ -785,14 +788,16 @@ class BaseDeploy(DeployProtocol):
                     f"Run 'git push {self.upstream_remote}' first!"
                 )
 
+        self.settings_get_new(args)  # gather new settings (subclass supplied)
+
         # before make_tag, after inst_flavor_prefix set:
+        if self.INST_FLAVORS:
+            assert self.inst_flavor_prefix != "NOTSET"
         self.inst_name = self._id2name(self.inst_id)
         self.debug("inst_name", self.inst_name)
 
         self.tag = self.tag_make()
         self.debug("tag", self.tag)
-
-        self.settings_get_new(args)  # gather new settings (subclass supplied)
 
     def deploy_cmd_push_tags(self) -> None:
         # push code tag to external repos:
