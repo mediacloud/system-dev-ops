@@ -7,6 +7,7 @@ Base class for mediacloud deployment
 import argparse
 import atexit
 import getpass  # getuser
+import importlib  # mc-manage
 import importlib.metadata  # version
 import inspect  # getsourcefile
 import os
@@ -62,21 +63,29 @@ class BaseDeploy(DeployProtocol):
     Only subclass this if you're not using Dokku or Docker!!
     """
 
+    CONFIG_REPO: str | None = None
+
     INST_BASE: str  # instance name base (dokku app, stack name) -- keep short
 
     # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
     # tuple values are inst_name prefix and port bias
+    # MOST stacks don't need this; not tested with Dokku!
     INST_FLAVORS: dict[str, Flavor] = {}
 
     PROJECT_REPO: str
     PUBLIC_DOMAIN = "mediacloud.org"
-    # PUBLIC_SERVER = "tarbell"
     STATSD_HOST = "tarbell.angwin"
     UPSTREAM_HOST = "git@github.com"  # remote URL prefix for github ssh
     UPSTREAM_USER = "mediacloud"  # owner user/organization
-    # VENVDIR = "venv"
 
     def __init__(self) -> None:
+        # both module and file have hyphen!  if this ever becomes
+        # the only way the code is called, move the code into a
+        # file in this repo?
+        self.mc_manage_airtable = importlib.import_module(
+            "mc-manage.airtable-deployment-update"
+        )
+
         # map command name to method:
         self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = {}
         self._conf_loaded = False  # true if config file read attempted
@@ -97,6 +106,36 @@ class BaseDeploy(DeployProtocol):
     ################ utilities (in alphabetical order!)
 
     # try to group related functions with common prefix!
+
+    def airtable_name(self) -> str:
+        return self.PROJECT_REPO
+
+    def airtable_notify(self) -> None:
+        # set in private settings files:
+        base_id = self.settings.get("AIRTABLE_BASE_ID")
+        api_key = self.settings.get("AIRTABLE_API_KEY")
+        if not base_id or not api_key:
+            self.debug("airtable: no base or key")
+            return
+
+        # function expects these in environment!
+        os.environ["MEAG_BASE_ID"] = base_id  # not secret?
+        os.environ["AIRTABLE_API_KEY"] = api_key
+
+        args = {
+            "codebase_name": self.airtable_name(),
+            "deployment_name": self.inst_name,  # app/stack name
+            "environment": self.inst_type,  # prod/staging/dev
+            "version_info": self.airtable_version(),
+            "hardware_names": [self.tag_host()],
+        }
+        if self.dry_run:
+            self.debug("airtable_args", args)
+        else:
+            self.mc_manage_airtable.create_deployment(**args)
+
+    def airtable_version(self) -> str:
+        return self.tag
 
     def debug(self, *args: Any) -> None:
         """
@@ -534,9 +573,9 @@ class BaseDeploy(DeployProtocol):
         """
         # if this script ever sends directly to airtable,
         # no need to add them to app settings!!!!
-        self.settings_add("AIRTABLE_HARDWARE", self.tag_host())
-        self.settings_add("AIRTABLE_ENV", self.inst_id)  # prod/staging/USER
-        self.settings_add("AIRTABLE_NAME", self.get_inst_base())
+        # self.settings_add("AIRTABLE_HARDWARE", self.tag_host())
+        # self.settings_add("AIRTABLE_ENV", self.inst_type)
+        # self.settings_add("AIRTABLE_NAME", self.inst_name)
 
         self.settings_add("STATSD_PREFIX", self.statsd_prefix)
         if self.is_prod():
@@ -852,6 +891,6 @@ class BaseDeploy(DeployProtocol):
         try:
             return cmd_func(args)
         except KeyboardInterrupt:
-            print("")
             # handle control-C at confirm prompt!
+            print("")
             return 1

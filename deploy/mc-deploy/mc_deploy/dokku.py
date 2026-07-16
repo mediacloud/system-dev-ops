@@ -97,9 +97,6 @@ class DokkuDeploy(BaseDeploy):
 
     ################ utilities
 
-    def airtable_hardware(self) -> str:
-        return self.dokku_host_short
-
     def deployment_hash(self) -> str:
         """
         extend (if needed) by appending hashes for state
@@ -474,6 +471,8 @@ class DokkuDeploy(BaseDeploy):
         for var, value in self.settings.items():
             if var.startswith("MCDEPLOY_"):
                 continue  # skip conf for this program!
+            if var.startswith("AIRTABLE_"):
+                continue  # now consumed here!
             if var in curr_settings and curr_settings[var] == value:
                 continue
             self.debug("changed", var, "to", value)
@@ -719,6 +718,7 @@ class DokkuDeploy(BaseDeploy):
             )
 
         self.dokku_cert_check(app)
+        self.airtable_notify()
 
         return 0
 

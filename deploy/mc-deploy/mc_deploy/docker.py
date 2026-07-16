@@ -81,22 +81,23 @@ class DockerDeploy(BaseDeploy):
         )
 
     def docker_stack_deploy(self) -> int:
+        """
+        returns status code
+        """
         # aka "docker stack up"?
         print('(Ignore message "Ignoring unsupported options: build")')
-        return (
-            self.proc_call(
-                [
-                    "docker",
-                    "stack",
-                    "deploy",
-                    "--compose-file",
-                    self.compose_file,
-                    "--detach",  # continue without user
-                    "--prune",  # prune unreferenced services
-                    self.inst_name,
-                ]
-            )
-            == 0
+        return self.proc_call(
+            [
+                "docker",
+                "stack",
+                "deploy",
+                "--compose-file",
+                self.compose_file,
+                "--detach",  # continue without user
+                "--prune",  # prune unreferenced services
+                self.inst_name,
+            ],
+            env=self.compose_env,
         )
 
     def fix_file_owner(self, f: typing.TextIO) -> None:
@@ -158,4 +159,9 @@ class DockerDeploy(BaseDeploy):
         self.docker_compose_build()
         if args.build_only:
             return 0
-        return self.docker_stack_deploy()
+
+        if (ret := self.docker_stack_deploy()) != 0:
+            return ret
+
+        self.airtable_notify()
+        return 0
