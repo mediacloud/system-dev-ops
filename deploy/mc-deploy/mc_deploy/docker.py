@@ -82,6 +82,7 @@ class DockerDeploy(BaseDeploy):
 
     def docker_stack_deploy(self) -> int:
         # aka "docker stack up"?
+        print('(Ignore message "Ignoring unsupported options: build")')
         return (
             self.proc_call(
                 [
