@@ -9,10 +9,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2026-06-26T03:39:30Z",
-    "updatedBy": "admin",
+    "updated": "2026-07-16T20:17:15Z",
+    "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 61,
+    "version": 62,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -1028,7 +1028,7 @@
             {
               "evaluator": {
                 "params": [
-                  10000
+                  20000
                 ],
                 "type": "gt"
               },
@@ -1112,7 +1112,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 10000
+            "value": 20000
           }
         ],
         "timeFrom": null,
@@ -1162,7 +1162,7 @@
             {
               "evaluator": {
                 "params": [
-                  15
+                  30
                 ],
                 "type": "gt"
               },
@@ -1246,7 +1246,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 15
+            "value": 30
           }
         ],
         "timeFrom": null,
@@ -1583,6 +1583,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 61
+    "version": 62
   }
 }
