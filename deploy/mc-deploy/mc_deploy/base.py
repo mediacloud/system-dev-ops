@@ -26,7 +26,8 @@ CmdParser: TypeAlias = argparse.ArgumentParser  # xxx_cmd_init arg
 ParserArgs: TypeAlias = argparse.Namespace
 SubCommandParser: TypeAlias = argparse._SubParsersAction
 
-# allow process methods to take str or argv
+# allow process methods to take str or argv.  if an argument has a
+# space in it, you MUST pass the arguments as a list, without quoting.
 ProcCmd: TypeAlias = str | list[str]
 
 
