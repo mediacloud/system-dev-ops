@@ -63,8 +63,6 @@ class BaseDeploy(DeployProtocol):
     Only subclass this if you're not using Dokku or Docker!!
     """
 
-    CONFIG_REPO: str | None = None
-
     INST_BASE: str  # instance name base (dokku app, stack name) -- keep short
 
     # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
@@ -94,11 +92,13 @@ class BaseDeploy(DeployProtocol):
         self.deploy_dir = self.get_deploy_dir()
         self.dry_run = False  # for any initial proc_ calls
         self.hostname = socket.gethostname().lower()  # may not be FQDN
+        self.ignore_no_changes = False
         self.login_user = self.user = self.get_login_user()
         self.login_user_params: dict[str, str | int | dict[str, str]] = {}
         self.login_uid = 0
         self.port_bias = 0
         self.private_dir: tempfile.TemporaryDirectory[str] | None = None
+        self.private_repo: str | None = None
         self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.settings: dict[str, str | None] = {}  # app/stack settings
         self.uid = os.getuid()
@@ -262,7 +262,7 @@ class BaseDeploy(DeployProtocol):
     def git_check_remote_tag(self, remote: str, tag: str) -> None:
         # https://stackoverflow.com/questions/5549479/git-check-if-commit-xyz-in-remote-repo
         status = self.proc_call(
-            ["fetch", remote, tag],
+            ["git", "fetch", remote, tag],
             handle_errors=False,
             stdout=subprocess.DEVNULL,
         )
@@ -388,6 +388,11 @@ class BaseDeploy(DeployProtocol):
         ap.add_argument(
             "-d", "--debug", action="store_true", help="debug deployment code"
         )
+        ap.add_argument(
+            "--ignore-no-changes",
+            action="store_true",
+            help="continue dry-run if no code or config changes",
+        )
         if self.INST_FLAVORS:
             # top level option for create/destroy commands
             def_flavor = next(iter(self.INST_FLAVORS))
@@ -423,6 +428,12 @@ class BaseDeploy(DeployProtocol):
             self.dry_run = True
         else:
             self.dry_run = args.dry_run
+        if args.ignore_no_changes:
+            if args.dry_run:
+                self.ignore_no_changes = True
+            else:
+                self.fatal("--ignore-no-changes ignored without dry-run")
+                # not reached, since not a dry run?!
         self.debug_output = args.debug
         # can now call debug method!!
         self.debug("user", self.user)
@@ -469,9 +480,8 @@ class BaseDeploy(DeployProtocol):
             c2 = " ".join(args)
             if handle_errors:
                 self.fatal(f"'{c2}' failed with status {ex.returncode}")
-                return "ERROR"
-            else:
-                return ""
+                # here in a dry run
+            return "ERROR"
 
     def proc_output_lines(self, cmd: ProcCmd, **kws: Any) -> list[str]:
         """
@@ -615,6 +625,8 @@ class BaseDeploy(DeployProtocol):
             assert self.login_uid != 0
             os.chown(self.private_dir.name, uid=self.login_uid, gid=-1)
         atexit.register(self.settings_private_cleanup)  # bound method
+        self.private_repo = repo
+        print("cloning", url)
         self.proc_call(
             ["git", "clone", url],
             always=True,
@@ -624,6 +636,7 @@ class BaseDeploy(DeployProtocol):
             stderr=subprocess.DEVNULL,
         )
         for fname in fnames:  # may read prod, then staging for overrides
+            print("loading", repo, fname)
             path = os.path.join(self.private_dir.name, repo, fname)
             if not self.settings_load_file(path):
                 self.fatal(f"could not load {fname}")
@@ -641,10 +654,16 @@ class BaseDeploy(DeployProtocol):
             self.private_dir = None
 
     def settings_tag_private_conf(self, tag: str) -> None:
-        self.debug("config tag:", tag)
+        print("adding config tag", tag)
         assert isinstance(self.private_dir, tempfile.TemporaryDirectory)
         self.proc_call(
             ["git", "tag", tag], as_login_user=True, cwd=self.private_dir.name
+        )
+        print("pushing config tag", tag)
+        self.proc_call(
+            ["git", "push", "origin", tag],
+            as_login_user=True,
+            cwd=self.private_dir.name,
         )
 
         # freshly cloned above, so remote always "origin"
@@ -796,7 +815,7 @@ class BaseDeploy(DeployProtocol):
             ):
                 # code push would overwrite main branch!!!
                 self.fatal(
-                    "Please don't do development on 'main' with {self.UPSTREAM_USER} as origin!"
+                    f"Please don't do development on 'main' with {self.UPSTREAM_USER} as origin!"
                 )
             if self.git_is_current(self.branch, "origin"):
                 print(f"origin/{self.branch} up to date")
@@ -852,8 +871,8 @@ class BaseDeploy(DeployProtocol):
                 stderr=subprocess.DEVNULL,
             )
 
-        if self.config_tag:
-            print("tagging config as", self.config_tag)
+        if self.private_repo and self.config_tag:
+            print("tagging", self.private_repo, "as", self.config_tag)
             self.settings_tag_private_conf(self.config_tag)
 
     def version_cmd(self, args: CmdArgs) -> int:
@@ -869,7 +888,7 @@ class BaseDeploy(DeployProtocol):
         scp = ap.add_subparsers(help="command", dest="command", required=True)
         for attr in sorted(dir(self)):
             if attr.endswith("_cmd"):
-                cmd = attr[:-4]  # trim _cmd
+                cmd = attr[:-4].replace("_", "-")  # trim _cmd, change _ to -
                 func = getattr(self, attr)  # get bound method
                 self.cmd_funcs[cmd] = func
                 cp = scp.add_parser(cmd, help=func.__doc__)

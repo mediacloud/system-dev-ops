@@ -1,5 +1,16 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.7.2: cleanup, staging fixes
+	+ removed CONFIG_REPO in favor of private_repo
+	+ added --ignore-new-changes
+	+ fixed git_check_remote_tag
+	+ log private repo clone, config files loaded
+	+ push private_conf repo tag!!
+	+ autohyphenate command names
+	+ linted
+	+ dokku: always use ssh BatchMode=yes
+	+ add/use dokku_check_host, dokku_version, dokku-version command
+	+ dokku: tag config in staging
 * 0.7.1: flavor related tweaking
 * 0.7.0: Docker work; settings_get_new takes args
 	Flavor tuple, as_login_user argument

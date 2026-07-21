@@ -5,6 +5,8 @@ Deploy an application using Dokku
 # NOTE!!! change projects to dokku cronjobs (in app.json) before projects switch
 # (to avoid needing to be root to drop files in /etc/cron.d)
 
+# XXX add "configure" command?? factor config_tag out of deploy_cmd?
+
 import argparse
 import base64
 import json
@@ -50,8 +52,9 @@ class DokkuDeploy(BaseDeploy):
     # created using rss-fetcher/dokku-scripts/http-proxy.sh
     # (which could be replaced by a sub-command in this class!)
     PUBLIC_HOST = "tarbell.angwin"
-
     PUBLIC_NAME = ""  # w/o PUBLIC_DOMAIN appended
+    SERVER_HOST = PUBLIC_HOST  # prod db location
+
     STAGING_PUBLIC_NAME = ""  # w/o PUBLIC_DOMAIN appended
 
     ################ overrides of base methods
@@ -80,7 +83,7 @@ class DokkuDeploy(BaseDeploy):
         # here rather than overloading __init__:
         self._app_vhosts: list[str] = []
         self._dokku_plugins: list[str] = []
-        self._need_cerd = False
+        self.config_tag = None
 
     def parser_results(self, args: ParserArgs) -> None:
         """
@@ -127,18 +130,29 @@ class DokkuDeploy(BaseDeploy):
         return self.dokku_call_null(["apps:exists", app], always=True) == 0
 
     def _dokku_ssh_args(
-        self, cmd: list[str], *, host: str | None = None
+        self,
+        cmd: list[str],
+        *,
+        host: str | None = None,
+        no_input: bool = True,
     ) -> list[str]:
         """
         the ONE place to create an argv for ssh'ing
         SHOULD ALWAYS use shell=False for safety!!
         alt host for db check on source server for clone
         """
+        assert isinstance(cmd, list)
         if host is None:
             host = self.dokku_host_fqdn
         ssh_user = f"dokku@{host}"
+        # BatchMode=yes: don't prompt for password
         # authorized_keys runs dokku as shell, so no "dokku" command needed!
-        return ["ssh", ssh_user] + cmd
+        args = ["ssh", "-o", "BatchMode=yes"]
+        if no_input:
+            args.append("-n")
+        args.append(ssh_user)
+        args += cmd
+        return args
 
     def dokku_call(self, cmd: ProcCmd, **kws: Any) -> int:
         """
@@ -199,6 +213,17 @@ class DokkuDeploy(BaseDeploy):
             self.fatal("letsencrypt not active on public host")
 
         return self.dokku_call(["letsencrypt:enable", app]) == 0
+
+    def dokku_check_host(self, host: str, what: str = "") -> None:
+        if what:
+            what += " "
+
+        vers = self.dokku_version(host)
+        if vers == "NOVERS":
+            self.fatal(f"could not access dokku at {what}host {host}")
+            # here in dry run
+        else:
+            print(f"{what}host", host, "dokku version", vers)
 
     def dokku_domains_add(self, app: str, domains: list[str]) -> bool:
         if self.dokku_call(["domains:add", app] + domains) == 0:
@@ -327,8 +352,9 @@ class DokkuDeploy(BaseDeploy):
         for line in self.dokku_output_lines(["ps:scale", app]):
             if line.startswith("-") or line.startswith("proctype"):
                 continue
-            proc, cstr = line.split(" ", 1)
-            procs_curr[proc.removesuffix(":")] = int(cstr)
+            if line and line != "ERROR":
+                proc, cstr = line.split(" ", 1)
+                procs_curr[proc.removesuffix(":")] = int(cstr)
 
         # get changes:
         procs_scale: dict[str, int] = {}
@@ -443,6 +469,23 @@ class DokkuDeploy(BaseDeploy):
         print("leaving", name, "storage in place")
         return True
 
+    def dokku_version(self, host: str, handle_errors: bool = True) -> str:
+        """
+        for testing ssh keys.
+        will return ERROR on error!
+        """
+        line = self.proc_output_one(
+            self._dokku_ssh_args(["version"], host=host), handle_errors=False
+        )
+
+        toks = line.split()
+        if len(toks) >= 3 and toks[0] == "dokku" and toks[1] == "version":
+            return toks[2]
+        if handle_errors:
+            self.fatal(f"could not get dokku version from {host}")
+            # here in dry run
+        return "NOVERS"  # dry-run
+
     def settings_apply(self, changes: list[str], code_change: bool) -> bool:
         cmd = ["config:set", self.inst_name]
         if self.DOKKU_B64_SETTINGS:
@@ -501,7 +544,9 @@ class DokkuDeploy(BaseDeploy):
 
     def create_cmd(self, args: CmdArgs) -> int:
         """Create Dokku app instance"""
-        self.check_not_root()  # for ssh keys for dokku & git
+        self.check_not_root()  # use user ssh keys for dokku & git
+
+        self.dokku_check_host(self.dokku_host_fqdn)
         app = self._id2name(args.instance)
         if self.dokku_app_exists(app):
             action = "refresh"
@@ -566,7 +611,7 @@ class DokkuDeploy(BaseDeploy):
     def deploy_cmd(self, args: CmdArgs) -> int:  # noqa: C901
         """Push code to Dokku app instance"""
 
-        self.check_not_root()  # for ssh keys for dokku & git
+        self.check_not_root()  # use user ssh keys for dokku & git
 
         if not self.git_is_clean():
             # XXX display diffs, or list uncommitted files??
@@ -604,7 +649,10 @@ class DokkuDeploy(BaseDeploy):
 
         # get all current settings (used later as well)
         jstr = self.dokku_output_all(f"config:export --format=json {app}")
-        curr_settings = json.loads(jstr)
+        if jstr in ("", "ERROR"):
+            curr_settings = {}
+        else:
+            curr_settings = json.loads(jstr)
 
         # check if mc-remote version & hash of deploy.py that
         # invoked us have changed (if so, need to re-run 'deploy' command)
@@ -619,12 +667,12 @@ class DokkuDeploy(BaseDeploy):
 
         # check if code has changed (compare with dokku git remote)
         self.proc_call(["git", "fetch", dokku_remote])
-        code_change = not self.git_is_current(
+        code_change = self.ignore_no_changes or not self.git_is_current(
             branch, dokku_remote, self.DOKKU_GIT_BRANCH
         )
 
         tag = self.tag
-        if self.is_prod():
+        if self.is_prod_staging():
             if code_change:
                 self.git_check_local_tag(tag)  # fatal if exists
                 for remote in [self.upstream_remote, dokku_remote]:
@@ -703,6 +751,9 @@ class DokkuDeploy(BaseDeploy):
 
         self.deploy_cmd_push_tags()
 
+        if self.config_tag is not None:
+            self.settings_tag_private_conf(self.config_tag)
+
         if self.DOKKU_SCALE:  # only needed once, or on change
             self.dokku_scale(app)
 
@@ -727,7 +778,8 @@ class DokkuDeploy(BaseDeploy):
 
     def destroy_cmd(self, args: CmdArgs) -> int:
         """Destroy Dokku app instance"""
-        self.check_not_root()  # for ssh keys for dokku & git
+        self.check_not_root()  # use user ssh keys for dokku & git
+        self.dokku_check_host(self.dokku_host_fqdn)
         app = self._id2name(args.instance)
         if not self.dokku_app_exists(app):
             print(app, "not found")
@@ -786,23 +838,27 @@ class DokkuDBDeploy(DokkuDeploy):
 
     def clone_cmd(self, args: CmdArgs) -> int:
         """Clone production database for dev/staging"""
-        self.check_not_root()  # for ssh keys for dokku & git
+        self.check_not_root()  # use user ssh keys for dokku & git
 
         dbtype = self.DATABASE
         from_svc = self.get_inst_base() + self.DOKKU_SERVICES[dbtype]
-        from_host = self.PUBLIC_HOST
+        from_host = self.SERVER_HOST
         self.debug("from_host", from_host)
         self.debug("from_svc", from_svc)
+        self.dokku_check_host(from_host, what="source")
 
         to_svc = self.dokku_db_service(args.instance)
+        to_host = self.dokku_host_fqdn
         self.debug("to_svc", to_svc)
-        self.debug("dokku_host_fqdn", self.dokku_host_fqdn)
+        self.debug("to_host", to_host)
+        self.dokku_check_host(to_host, what="destination")
 
+        print("checking source database", from_svc)
         if not self.dokku_db_exists(from_svc, host=from_host):
             self.fatal(
                 f"Could not find source database {from_host}:{from_svc}"
             )
-
+        print("checking destination database", to_svc)
         if not self.dokku_db_exists(to_svc):
             self.fatal(f"Could not find dest database {to_svc}")
 
@@ -820,7 +876,7 @@ class DokkuDBDeploy(DokkuDeploy):
         )
 
         import_proc = subprocess.Popen(
-            self._dokku_ssh_args([f"{dbtype}:import", to_svc]),
+            self._dokku_ssh_args([f"{dbtype}:import", to_svc], no_input=False),
             shell=False,
             stdin=export_proc.stdout,  # take input from export pipe
         )
@@ -844,7 +900,7 @@ class DokkuDBDeploy(DokkuDeploy):
         """Return DATABASE_URL for local use outside Dokku"""
         # see web-search/dokku-scripts/outside for use case!!
 
-        self.check_not_root()  # for ssh keys for dokku & git
+        self.check_not_root()  # use user ssh keys for dokku & git
 
         svc = self.dokku_db_service(args.instance)
         if not self.dokku_db_exists(svc):
@@ -870,6 +926,13 @@ class DokkuDBDeploy(DokkuDeploy):
         if self.SQLALCHEMY2 and dsn.startswith("postgres:"):
             dsn = "postgresql:" + dsn.removeprefix("postgres:")
         print(dsn)  # for `export DATABASE_URL=$(..../deploy.py dburl USER)`
+        return 0
+
+    def dokku_version_cmd(self, args: CmdArgs) -> int:
+        """
+        test ssh key, display dokku version
+        """
+        print(self.dokku_version(args.host))
         return 0
 
 

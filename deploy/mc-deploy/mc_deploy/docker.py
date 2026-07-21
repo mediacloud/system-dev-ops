@@ -8,6 +8,8 @@ both out of compatibility and inertia, at the very least due to no
 overwelming need or desire to change.
 """
 
+# XXX does not call git_is_current, honor --ignore-no-changes!
+
 # import argparse
 import grp
 import os
