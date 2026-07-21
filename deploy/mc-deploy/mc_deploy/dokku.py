@@ -14,7 +14,7 @@ import os
 import socket
 import subprocess
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs, ProcCmd
 
@@ -581,18 +581,19 @@ class DokkuDeploy(BaseDeploy):
             )
 
         if self.dokku_is_public_host():
-            # check that vhosts/certs present for forseeable domain names:
+            # check that vhosts/certs present for *BASIC* DNS names:
             # check if self.DOKKU_SERVICES["web"] set and non-zero?
-            # does not handle flavors (prepend prefix to public_name???)
+            # See AllowedHostsMixin (not just for Django hosts) for
+            # more domain names.
             check: list[str] = []
             if args.instance == "prod":
                 if self.PUBLIC_NAME:
-                    check = [f"{self.PUBLIC_NAME}.{self.PUBLIC_DOMAIN}"]
+                    check.append("{self.PUBLIC_NAME}.{self.PUBLIC_DOMAIN}")
             elif args.instance == "staging":
                 if self.STAGING_PUBLIC_NAME:
-                    check = [
+                    check.append(
                         f"{self.STAGING_PUBLIC_NAME}.{self.PUBLIC_DOMAIN}"
-                    ]
+                    )
             if check:
                 self.dokku_domains_check(app, check)
 
@@ -797,10 +798,16 @@ class DokkuDeploy(BaseDeploy):
         return 1
 
 
-class DokkuDBDeploy(DokkuDeploy):
+if TYPE_CHECKING:
+    DokkuMixinBase = DokkuDeploy
+else:
+    DokkuMixinBase = object
+
+
+class DokkuDBMixin(DokkuMixinBase):
     """
-    base for an app w/ a postgres database service
-    (should be a mixin, but easier not to)
+    mixin for app w/ a postgres database service
+    (can override plugin name by defining DATABASE)
     """
 
     # this code probably not portable, but at least
@@ -895,7 +902,10 @@ class DokkuDBDeploy(DokkuDeploy):
         )
 
     def dburl_cmd(self, args: CmdArgs) -> int:
-        """Return DATABASE_URL for local use outside Dokku"""
+        """
+        Return DATABASE_URL for local use outside Dokku
+        ie; `export DATABASE_URL=$(..../deploy.py dburl USER)`
+        """
         # see web-search/dokku-scripts/outside for use case!!
 
         self.check_not_root()  # use user ssh keys for dokku & git
@@ -923,7 +933,7 @@ class DokkuDBDeploy(DokkuDeploy):
         self.debug("dsn after:", dsn)
         if self.SQLALCHEMY2 and dsn.startswith("postgres:"):
             dsn = "postgresql:" + dsn.removeprefix("postgres:")
-        print(dsn)  # for `export DATABASE_URL=$(..../deploy.py dburl USER)`
+        print(dsn)
         return 0
 
     def dokku_version_cmd(self, args: CmdArgs) -> int:
@@ -934,10 +944,38 @@ class DokkuDBDeploy(DokkuDeploy):
         return 0
 
 
-class DokkuDBDjangoDeploy(DokkuDBDeploy):
+class AllowedHostsMixin(DokkuMixinBase):
     """
-    (should be a mixin, but easier not to)
+    Mixin for apps honoring ALLOWED_HOSTS environment variable.
+    Django doesn't pick up ALLOWED_HOSTS from the environment by
+    default; it's done in web-search/mcweb/settings.py
+
+    Even if the app doesn't need/honor ALLOWED_HOSTS, it configures
+    Dokku domain routing for canonical names.
     """
+
+    # enable if public host has a wildcard A record for
+    # *.HOSTNAME.PUBLIC_DOMAIN
+    DOKKU_HOST_PUBLIC: bool = True
+
+    def deploy_cmd_helper(self, args: CmdArgs) -> None:
+        app = self.inst_name
+        allowed: list[str] = []
+
+        if self.is_prod():
+            allowed.append(f"{self.PUBLIC_NAME}.{self.PUBLIC_DOMAIN}")
+            if self.DOKKU_HOST_PUBLIC:  # have public wildcard?
+                allowed.append(
+                    f"{app}.{self.dokku_host_short}.{self.PUBLIC_DOMAIN}"
+                )
+        else:
+            # private/local name w/ internal domain:
+            allowed.append(f"{app}.{self.dokku_host_fqdn}")
+            if self.is_staging() and self.STAGING_PUBLIC_NAME:
+                allowed.append(
+                    f"{self.STAGING_PUBLIC_NAME}.{self.PUBLIC_DOMAIN}"
+                )
+        self.settings_add("ALLOWED_HOSTS", ",".join(allowed))
 
     def settings_changed(self) -> None:
         """
@@ -950,3 +988,11 @@ class DokkuDBDjangoDeploy(DokkuDBDeploy):
         if not allowed:
             return
         self.dokku_domains_check(app, allowed.split(","))
+
+
+class DokkuDBDeploy(DokkuDBMixin, DokkuDeploy):
+    """temp for backwards compat"""
+
+
+class DokkuDBDjangoDeploy(AllowedHostsMixin, DokkuDBDeploy):
+    """temp for backwards compat"""
