@@ -634,10 +634,12 @@ class BaseDeploy(DeployProtocol):
             cwd=self.private_dir.name,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            umask=0o077,  # no permissions for you!
         )
+        self.private_repo_dir = os.path.join(self.private_dir.name, repo)
         for fname in fnames:  # may read prod, then staging for overrides
             print("loading", repo, fname)
-            path = os.path.join(self.private_dir.name, repo, fname)
+            path = os.path.join(self.private_repo_dir, fname)
             if not self.settings_load_file(path):
                 self.fatal(f"could not load {fname}")
         # cloned repo kept around for later tagging
@@ -656,22 +658,14 @@ class BaseDeploy(DeployProtocol):
     def settings_tag_private_conf(self, tag: str) -> None:
         print("adding config tag", tag)
         assert isinstance(self.private_dir, tempfile.TemporaryDirectory)
-        self.proc_call(
-            ["git", "tag", tag], as_login_user=True, cwd=self.private_dir.name
-        )
-        print("pushing config tag", tag)
-        self.proc_call(
-            ["git", "push", "origin", tag],
-            as_login_user=True,
-            cwd=self.private_dir.name,
-        )
-
+        dir_name = self.private_repo_dir
+        self.proc_call(["git", "tag", tag], as_login_user=True, cwd=dir_name)
         # freshly cloned above, so remote always "origin"
-        self.debug("pushing config tag")
+        self.debug("pushing config tag:")
         self.proc_call(
             ["git", "push", "origin", tag],
             as_login_user=True,
-            cwd=self.private_dir.name,
+            cwd=dir_name,
         )
 
     def source_file(self) -> str | None:
