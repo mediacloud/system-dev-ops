@@ -959,6 +959,7 @@ class AllowedHostsMixin(DokkuMixinBase):
     DOKKU_HOST_PUBLIC: bool = True
 
     def deploy_cmd_helper(self, args: CmdArgs) -> None:
+        super().deploy_cmd_helper(args)
         app = self.inst_name
         allowed: list[str] = []
 
