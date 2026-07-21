@@ -852,6 +852,9 @@ class BaseDeploy(DeployProtocol):
         self.debug("tag", self.tag)
 
     def deploy_cmd_push_tags(self) -> None:
+        """
+        push code (and possibly config) tag to remotes
+        """
         # push code tag to external repos:
         tag = self.tag
         if self.unpushed and len(self.push_tag_to) > 0:

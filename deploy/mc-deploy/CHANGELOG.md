@@ -1,6 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
-* 0.7.3: final(?) staging fix: add private_repo_dir
+* 0.7.4: remove extra settings_tag_private_conf() call!
+* 0.7.3: staging fix: add private_repo_dir
 * 0.7.2: cleanup, staging fixes
 	+ removed CONFIG_REPO in favor of private_repo
 	+ added --ignore-new-changes

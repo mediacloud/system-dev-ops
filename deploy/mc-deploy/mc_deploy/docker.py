@@ -9,6 +9,7 @@ overwelming need or desire to change.
 """
 
 # XXX does not call git_is_current, honor --ignore-no-changes!
+# XXX does not call deploy_cmd_push_tags
 
 # import argparse
 import grp

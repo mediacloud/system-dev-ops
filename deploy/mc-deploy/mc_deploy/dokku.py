@@ -749,10 +749,8 @@ class DokkuDeploy(BaseDeploy):
             stderr=subprocess.DEVNULL,
         )
 
+        # calls settings_tag_private_conf if needed:
         self.deploy_cmd_push_tags()
-
-        if self.config_tag is not None:
-            self.settings_tag_private_conf(self.config_tag)
 
         if self.DOKKU_SCALE:  # only needed once, or on change
             self.dokku_scale(app)
