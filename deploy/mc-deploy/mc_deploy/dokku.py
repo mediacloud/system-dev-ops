@@ -124,7 +124,7 @@ class DokkuDeploy(BaseDeploy):
         return self.dokku_call(["apps:create", app]) == 0
 
     def dokku_app_destroy(self, app: str) -> bool:
-        return self.dokku_call(["--force", "apps:create", app]) == 0
+        return self.dokku_call(["--force", "apps:destroy", app]) == 0
 
     def dokku_app_exists(self, app: str) -> bool:
         return self.dokku_call_null(["apps:exists", app], always=True) == 0
@@ -151,6 +151,7 @@ class DokkuDeploy(BaseDeploy):
         if no_input:
             args.append("-n")
         args.append(ssh_user)
+        args.append("--")       # end of ssh options
         args += cmd
         return args
 
