@@ -989,11 +989,3 @@ class AllowedHostsMixin(DokkuMixinBase):
         if not allowed:
             return
         self.dokku_domains_check(app, allowed.split(","))
-
-
-class DokkuDBDeploy(DokkuDBMixin, DokkuDeploy):
-    """temp for backwards compat"""
-
-
-class DokkuDBDjangoDeploy(AllowedHostsMixin, DokkuDBDeploy):
-    """temp for backwards compat"""
