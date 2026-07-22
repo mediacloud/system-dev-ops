@@ -265,6 +265,7 @@ class BaseDeploy(DeployProtocol):
             ["git", "fetch", remote, tag],
             handle_errors=False,
             stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         if status == 0:  # found
             # report using helper for common formatting
@@ -807,9 +808,10 @@ class BaseDeploy(DeployProtocol):
                 and self.branch == "main"
                 and not self.unpushed
             ):
-                # code push would overwrite main branch!!!
+                # Telling user to push would overwrite main repo main branch,
+                # dev deployment tags would end up in main repo!!
                 self.fatal(
-                    f"Please don't do development on 'main' with {self.UPSTREAM_USER} as origin!"
+                    f"Use 'deploy --unpushed' on main branch with origin {self.UPSTREAM_USER}!"
                 )
             if self.git_is_current(self.branch, "origin"):
                 print(f"origin/{self.branch} up to date")
