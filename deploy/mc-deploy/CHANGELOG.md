@@ -1,4 +1,4 @@
-ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
+ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
 * 0.9.2: add mc-deploy.release.ReleaseMixin to release this!!!
 	top level release.py just mixes ingredients!
