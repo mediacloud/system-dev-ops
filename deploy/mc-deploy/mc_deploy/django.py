@@ -2,10 +2,10 @@
 ideally, mixins for Django projects
 """
 
-from .base import DeployProtocol
+from .base import DeployMixinBase
 
 
-class SettingsVersionMixin(DeployProtocol):
+class SettingsVersionMixin(DeployMixinBase):
     """
     get web-search project VERSION from Django settings.py file
     (this isn't a standard thing to do!)

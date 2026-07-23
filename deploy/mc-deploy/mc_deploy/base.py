@@ -2,8 +2,6 @@
 Base class for mediacloud deployment
 """
 
-# XXX TODO: add airtable utility functions???
-
 import argparse
 import atexit
 import getpass  # getuser
@@ -17,7 +15,13 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import Any, Callable, NamedTuple, Protocol, TypeAlias
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    NamedTuple,
+    TypeAlias,
+)
 
 # PyPI
 import dotenv
@@ -41,23 +45,7 @@ class Flavor(NamedTuple):
     bias: int
 
 
-class DeployProtocol(Protocol):
-    """base for mixins"""
-
-    def check_not_root(self) -> None: ...
-
-    def check_is_root(self) -> None: ...
-
-    def debug(self, *args: Any) -> None: ...
-
-    def fatal(self, msg: str, quit: bool = False) -> None: ...
-
-    def proj_version(self) -> str: ...
-
-    def proj_version_location(self) -> str: ...
-
-
-class BaseDeploy(DeployProtocol):
+class BaseDeploy:
     """
     base class for deploy scripts;
     Only subclass this if you're not using Dokku or Docker!!
@@ -912,3 +900,9 @@ class BaseDeploy(DeployProtocol):
             # handle control-C at confirm prompt!
             print("")
             return 1
+
+
+if TYPE_CHECKING:
+    DeployMixinBase = BaseDeploy
+else:
+    DeployMixinBase = object

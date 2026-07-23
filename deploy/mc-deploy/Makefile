@@ -9,6 +9,10 @@ lint:	install
 
 install: venv/.pyproject
 
+# tag and push using mc-deploy itself!
+release: lint
+	venv/bin/python release.py release
+
 venv/.pyproject: pyproject.toml
 	python -m venv venv
 	cmp pyproject.toml venv/.pyproject || \

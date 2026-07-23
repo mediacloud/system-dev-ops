@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.9.2: add mc-deploy.release.ReleaseMixin to release this!!!
+	top level release.py just mixes ingredients!
 * 0.9.1: moved version command to Base, add host to dokku_service_exists,
 	comments, flushed dokku_db_exists, enable mypy strict
 * 0.9.0: run docker in deploy dir, add dokku_service_dsn, CacheMixin

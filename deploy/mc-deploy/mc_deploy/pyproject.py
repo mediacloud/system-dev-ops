@@ -11,10 +11,10 @@ except ModuleNotFoundError:
     # in Python 3.11
     import tomllib  # type: ignore[import-not-found,no-redef]
 
-from .base import DeployProtocol
+from .base import DeployMixinBase
 
 
-class PyProjectMixin(DeployProtocol):
+class PyProjectMixin(DeployMixinBase):
     """
     get project version from pyproject.toml
     """
