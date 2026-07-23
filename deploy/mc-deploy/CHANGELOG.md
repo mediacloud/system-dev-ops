@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, add/push mc-deploy-X.Y.Z tag to github
 
+* 0.9.0: run docker in deploy dir, add dokku_service_dsn, CacheMixin
+
 * 0.8.0: mixins (including AllowedHosts, from web-search)
 
 * 0.7.4: remove extra settings_tag_private_conf() call!

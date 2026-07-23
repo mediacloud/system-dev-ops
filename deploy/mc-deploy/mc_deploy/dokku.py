@@ -151,7 +151,7 @@ class DokkuDeploy(BaseDeploy):
         if no_input:
             args.append("-n")
         args.append(ssh_user)
-        args.append("--")       # end of ssh options
+        args.append("--")  # end of ssh options
         args += cmd
         return args
 
@@ -303,6 +303,13 @@ class DokkuDeploy(BaseDeploy):
         """
         return f"dokku_{self.inst_id}"
 
+    def dokku_is_public_host(self) -> bool:
+        """
+        return True if on the host serving public apps,
+        means that all apps will be HTTPS and need a cert
+        """
+        return self.dokku_host_fqdn == self.PUBLIC_HOST
+
     def dokku_output_all(self, cmd: ProcCmd, **kws: Any) -> str:
         """
         run a dokku command via ssh capturing output, return all as one string
@@ -411,15 +418,45 @@ class DokkuDeploy(BaseDeploy):
                     return False
         return True
 
+    def dokku_service_dsn(self, plugin: str, name: str) -> str:
+        """
+        return DSN (URL) given a plugin and service name
+        works for postgres and redis in dokku 0.34.9
+        """
+        if not self.dokku_service_exists(plugin, name):
+            # XXX raise exception?
+            self.fatal(f"Could not find {plugin} {name}", quit=True)
+
+        dsn = ip = None
+        for line in self.dokku_output_lines([f"{plugin}:info", name]):
+            line = line.strip()
+            if line.startswith("Dsn:"):
+                dsn = line.split()[1]
+            elif line.startswith("Internal ip:"):
+                ip = line.split()[2]
+            if ip and dsn:
+                break
+
+        if not ip or not dsn:
+            # XXX raise exception?
+            self.fatal(f"could not find DSN and IP for {name}", quit=True)
+        self.debug("dsn before:", dsn)
+        assert isinstance(dsn, str)
+        assert isinstance(ip, str)
+        dsn = dsn.replace(f"dokku-{plugin}-{name}", ip)
+        return dsn
+
     def dokku_service_exists(self, plugin: str, name: str) -> bool:
         return self.dokku_call_null(f"{plugin}:exists {name}") == 0
 
-    def dokku_is_public_host(self) -> bool:
+    def dokku_service_name(self, plugin: str, instance: str) -> str:
         """
-        return True if on the host serving public apps,
-        means that all apps will be HTTPS and need a cert
+        take plugin name (eg postgres, redis)
+        take instance id (prod/staging/USER)
+        return service name (eg USER-mcweb-db)
         """
-        return self.dokku_host_fqdn == self.PUBLIC_HOST
+        app = self._id2name(instance)
+        return app + self.DOKKU_SERVICES[plugin]
 
     def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
         return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
@@ -826,13 +863,6 @@ class DokkuDBMixin(DokkuMixinBase):
             == 0
         )
 
-    def dokku_db_service(self, instance: str) -> str:
-        """
-        take instance id (prod/staging/USER) return database service name
-        """
-        app = self._id2name(instance)
-        return app + self.DOKKU_SERVICES[self.DATABASE]
-
     ################ commands
 
     def clone_cmd_init(self, cp: CmdParser) -> None:
@@ -853,7 +883,7 @@ class DokkuDBMixin(DokkuMixinBase):
         self.debug("from_svc", from_svc)
         self.dokku_check_host(from_host, what="source")
 
-        to_svc = self.dokku_db_service(args.instance)
+        to_svc = self.dokku_service_name(dbtype, args.instance)
         to_host = self.dokku_host_fqdn
         self.debug("to_svc", to_svc)
         self.debug("to_host", to_host)
@@ -905,36 +935,13 @@ class DokkuDBMixin(DokkuMixinBase):
     def dburl_cmd(self, args: CmdArgs) -> int:
         """
         Return DATABASE_URL for local use outside Dokku
-        ie; `export DATABASE_URL=$(..../deploy.py dburl USER)`
+        ie; `export DATABASE_URL=$(..../deploy.py dburl dev/prod/USER)`
         """
         # see web-search/dokku-scripts/outside for use case!!
 
         self.check_not_root()  # use user ssh keys for dokku & git
-
-        svc = self.dokku_db_service(args.instance)
-        if not self.dokku_db_exists(svc):
-            self.fatal(f"Could not find database {svc}")
-
-        dsn = ip = None
-        for line in self.dokku_output_lines([f"{self.DATABASE}:info", svc]):
-            line = line.strip()
-            if line.startswith("Dsn:"):
-                dsn = line.split()[1]
-            elif line.startswith("Internal ip:"):
-                ip = line.split()[2]
-            if ip and dsn:
-                break
-
-        if not ip or not dsn:
-            self.fatal(f"could not find DSN and IP for {svc}")
-        self.debug("dsn before:", dsn)
-        assert isinstance(dsn, str)
-        assert isinstance(ip, str)
-        dsn = dsn.replace(f"dokku-postgres-{svc}", ip)
-        self.debug("dsn after:", dsn)
-        if self.SQLALCHEMY2 and dsn.startswith("postgres:"):
-            dsn = "postgresql:" + dsn.removeprefix("postgres:")
-        print(dsn)
+        svc = self.dokku_service_name(self.DATABASE, args.instance)
+        print(self.dokku_service_dsn(self.DATABASE, svc))
         return 0
 
     def dokku_version_cmd(self, args: CmdArgs) -> int:
@@ -990,3 +997,25 @@ class AllowedHostsMixin(DokkuMixinBase):
         if not allowed:
             return
         self.dokku_domains_check(app, allowed.split(","))
+
+
+class DokkuCacheMixin(DokkuMixinBase):
+    CACHE = "redis"
+
+    def cache_url_cmd_init(self, cp: CmdParser) -> None:
+        cp.add_argument(
+            "instance",
+            help=f"{self.CACHE} instance (dev/prod/USER) to get URL for",
+        )
+
+    def cache_url_cmd(self, args: CmdArgs) -> int:
+        """
+        Return URL for local use outside Dokku
+        ie; `export REDIS_URL=$(..../deploy.py cache-url dev/prod/USER)`
+        """
+        # see web-search/dokku-scripts/outside for use case!!
+
+        self.check_not_root()  # use user ssh keys for dokku & git
+        svc = self.dokku_service_name(self.CACHE, args.instance)
+        print(self.dokku_service_dsn(self.CACHE, svc))
+        return 0
