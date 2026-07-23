@@ -57,15 +57,19 @@ class DockerDeploy(BaseDeploy):
         [Phil: I don't trust that this will NEVER be broken, so the
         file is only kept for reference, NOT used as input!!]
         """
-        dump_file = f"{self.compose_file}.save-{self.tag}"
+        deploy_dir = self.get_deploy_dir()
+        dump_file = os.path.join(
+            deploy_dir, f"{self.COMPOSE_FILE}.save-{self.tag}"
+        )
         with open(dump_file, "w") as f:
             self.fix_file_owner(f)
             # old versions of stack command may exit w/ status 125
             # if that happens, pass handle_errors=False and
             # give a more helpful message?
             self.proc_call(
-                ["docker", "stack", "config", "-c", self.compose_file],
+                ["docker", "stack", "config", "-c", self.COMPOSE_FILE],
                 always=True,
+                cwd=deploy_dir,
                 env=self.compose_env,
                 stdout=f,
             )
@@ -79,7 +83,8 @@ class DockerDeploy(BaseDeploy):
     def docker_compose_build(self) -> None:
         # if dry run, pass --dry-run on command line, always=True to proc_call??
         self.proc_call(
-            ["docker", "compose", "-f", self.compose_file, "build"],
+            ["docker", "compose", "-f", self.COMPOSE_FILE, "build"],
+            cwd=self.get_deploy_dir(),
             env=self.compose_env,
         )
 
@@ -95,11 +100,12 @@ class DockerDeploy(BaseDeploy):
                 "stack",
                 "deploy",
                 "--compose-file",
-                self.compose_file,
+                self.COMPOSE_FILE,
                 "--detach",  # continue without user
                 "--prune",  # prune unreferenced services
                 self.inst_name,
             ],
+            cwd=self.get_deploy_dir(),
             env=self.compose_env,
         )
 
@@ -131,9 +137,6 @@ class DockerDeploy(BaseDeploy):
         """
         super().parser_results(args)
         self.compose_env: dict[str, str] | None = None
-        self.compose_file = os.path.join(
-            self.get_deploy_dir(), self.COMPOSE_FILE
-        )
 
     ################ commands
 
