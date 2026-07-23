@@ -1,6 +1,6 @@
 [project]
 name = "mc-deploy"
-version = "0.9.0"	     # ALSO: update CHANGELOG.md & github tag!
+version = "0.9.1"	     # ALSO: update CHANGELOG.md & github tag!
 description='Media Cloud Extensible Deployment Tools'
 readme = "README.md"
 requires-python = ">=3.10"
@@ -52,6 +52,9 @@ disallow_any_generics = true
 disallow_subclassing_any = true
 warn_redundant_casts = true
 warn_unused_configs = true
+
+# added 7/23/2026; will no doubt, return with jaws wide open:
+strict = true
 
 # look for local stubs to PyPI packages in top level stubs directory
 mypy_path = "stubs"

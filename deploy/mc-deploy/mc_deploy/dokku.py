@@ -21,11 +21,30 @@ from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs, ProcCmd
 
 class DokkuDeploy(BaseDeploy):
     DEPLOY_DIR = "dokku-scripts"
-    DEPLOY_HASH_VAR = "DEPLOYMENT_HASH"  # config varname
 
-    DOKKU_B64_SETTINGS = True  # safety first! may not be needed w/o shell
-    DOKKU_SCALE: dict[str, int]  # map process to number of containers
-    DOKKU_SERVICES: dict[str, str]  # map plugin to service suffix
+    # Dokku config varname for self.deployment_hash() value (mc-deploy
+    # version plus git hash of DEPLOY_DIR/deploy.py file that
+    # subclassed this class).  This is set by "create" command and
+    # checked by "deploy" command to make sure any changes in the
+    # deploy script (ie; new services) have been reflected in the
+    # running/nacent Dokku app.
+    DEPLOY_HASH_VAR = "DEPLOYMENT_HASH"
+
+    # True to pass config values to config:set base64 encoded.
+    # This is CRITICAL to avoid madness when the shell is involved.
+    # May not be needed, but sanity first!
+    DOKKU_B64_SETTINGS = True
+
+    # Map of process (Procfile) names to number of containers ("dynos"):
+    DOKKU_SCALE: dict[str, int]
+
+    # Map plugin name to service name suffix:
+    DOKKU_SERVICES: dict[str, str]
+
+    # If True, issue ps:stop before deploying.  For rss-fetcher this
+    # avoids the fetcher inserting new rows when the new version
+    # includes a migration!  The rss-fetcher isn't critical to user
+    # experience, so safety first!
     DOKKU_STOP = False
 
     # NOTE! pushing tag first time causes mayhem (reported by Rahul at
@@ -98,7 +117,7 @@ class DokkuDeploy(BaseDeploy):
         # also used for AIRTABLE_HARDWARE
         return self.dokku_host_short
 
-    ################ utilities
+    ################ utilities (in alphabetical order)
 
     def deployment_hash(self) -> str:
         """
@@ -446,8 +465,19 @@ class DokkuDeploy(BaseDeploy):
         dsn = dsn.replace(f"dokku-{plugin}-{name}", ip)
         return dsn
 
-    def dokku_service_exists(self, plugin: str, name: str) -> bool:
-        return self.dokku_call_null(f"{plugin}:exists {name}") == 0
+    def dokku_service_exists(
+        self, plugin: str, name: str, host: str | None = None
+    ) -> bool:
+        """
+        host argument for testing if source/remote DB exists
+        for DB clone command
+        """
+        return (
+            self.dokku_call_null(
+                f"{plugin}:exists {name}", always=True, host=host
+            )
+            == 0
+        )
 
     def dokku_service_name(self, plugin: str, instance: str) -> str:
         """
@@ -575,7 +605,7 @@ class DokkuDeploy(BaseDeploy):
         self.settings_add("DOKKU_DEFAULT_CHECKS_WAIT", "5")  # default: 10
         self.settings_add("DOKKU_WAIT_TO_RETIRE", "30")  # default: 60
 
-    ################ commands
+    ################ commands (in alphabetical order)
 
     def create_cmd_init(self, cp: CmdParser) -> None:
         cp.add_argument("instance", help="prod/staging/USER")
@@ -620,7 +650,7 @@ class DokkuDeploy(BaseDeploy):
 
         if self.dokku_is_public_host():
             # check that vhosts/certs present for *BASIC* DNS names:
-            # check if self.DOKKU_SERVICES["web"] set and non-zero?
+            # check if self.DOKKU_SCALE["web"] set and non-zero?
             # See AllowedHostsMixin (not just for Django hosts) for
             # more domain names.
             check: list[str] = []
@@ -821,7 +851,7 @@ class DokkuDeploy(BaseDeploy):
         if not self.dokku_app_exists(app):
             print(app, "not found")
             return 1
-        self.confirm(f"Really destroy app {app}? [no]")
+        self.confirm(f"Really destroy app {app}? [no] ")
         if not self.dokku_services_destroy(app):
             return 1
         if not self.dokku_app_destroy(app):
@@ -834,6 +864,13 @@ class DokkuDeploy(BaseDeploy):
         # so command is same for Dokku and swarm stacks
         self.fatal("use deploy command!")
         return 1
+
+    def dokku_version_cmd(self, args: CmdArgs) -> int:
+        """
+        test ssh key, display dokku version
+        """
+        print(self.dokku_version(args.host))
+        return 0
 
 
 if TYPE_CHECKING:
@@ -848,22 +885,11 @@ class DokkuDBMixin(DokkuMixinBase):
     (can override plugin name by defining DATABASE)
     """
 
-    # this code probably not portable, but at least
-    # this string isn't wired in!!
+    # not tested with anything but postgres!!
     DATABASE = "postgres"  # plugin name
-    SQLALCHEMY2 = False
+    SQLALCHEMY2 = False  # URL crockery
 
-    def dokku_db_exists(self, svc: str, host: str | None = None) -> bool:
-        return (
-            self.dokku_call_null(
-                [f"{self.DATABASE}:exists", svc],
-                host=host,
-                always=True,
-            )
-            == 0
-        )
-
-    ################ commands
+    ################ commands (in alphabetical order)
 
     def clone_cmd_init(self, cp: CmdParser) -> None:
         cp.add_argument(
@@ -889,13 +915,22 @@ class DokkuDBMixin(DokkuMixinBase):
         self.debug("to_host", to_host)
         self.dokku_check_host(to_host, what="destination")
 
-        print("checking source database", from_svc)
-        if not self.dokku_db_exists(from_svc, host=from_host):
+        print(
+            "checking source",
+            self.DATABASE,
+            "database",
+            from_svc,
+            "on",
+            from_host,
+        )
+        if not self.dokku_service_exists(
+            self.DATABASE, from_svc, host=from_host
+        ):
             self.fatal(
                 f"Could not find source database {from_host}:{from_svc}"
             )
-        print("checking destination database", to_svc)
-        if not self.dokku_db_exists(to_svc):
+        print("checking destination", self.DATABASE, "database", to_svc)
+        if not self.dokku_service_exists(self.DATABASE, to_svc):
             self.fatal(f"Could not find dest database {to_svc}")
 
         if self.dry_run:
@@ -942,13 +977,6 @@ class DokkuDBMixin(DokkuMixinBase):
         self.check_not_root()  # use user ssh keys for dokku & git
         svc = self.dokku_service_name(self.DATABASE, args.instance)
         print(self.dokku_service_dsn(self.DATABASE, svc))
-        return 0
-
-    def dokku_version_cmd(self, args: CmdArgs) -> int:
-        """
-        test ssh key, display dokku version
-        """
-        print(self.dokku_version(args.host))
         return 0
 
 

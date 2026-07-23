@@ -9,7 +9,10 @@ overwelming need or desire to change.
 """
 
 # XXX does not call git_is_current, honor --ignore-no-changes!
-# XXX does not call deploy_cmd_push_tags
+# WISH: do clean "clone -b BRANCH URL" (in tempdir) from:
+#       local repo (dirname(deploy_dir)) if dev & --unpushed
+#       origin repo URL if dev
+#       mcrepo URL if prod/staging
 
 # import argparse
 import grp
