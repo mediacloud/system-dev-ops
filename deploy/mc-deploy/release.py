@@ -9,6 +9,7 @@ class MCDeployDeploy(PyProjectMixin, ReleaseMixin, BaseDeploy):
     """
     All ingredients in Mixins!!
     """
+    # tag specific to contents of THIS directory in a larger repo
     TAG_PREFIX = "mc-deploy-"
 
 mdd = MCDeployDeploy()
