@@ -10,10 +10,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2026-04-12T17:22:51Z",
-    "updatedBy": "phil.budne@gmail.com",
+    "updated": "2026-07-24T01:14:31Z",
+    "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 33,
+    "version": 36,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -46,7 +46,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
-    "iteration": 1776014492594,
+    "iteration": 1784855355650,
     "links": [],
     "panels": [
       {
@@ -332,8 +332,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate",
-            "textEditor": true
+            "target": "aliasByNode(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate, 7)",
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -481,6 +481,7 @@
       {
         "aliasColors": {},
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -528,7 +529,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.stories.*.rate"
+            "target": "aliasByNode(stats.counters.mc.$realm.rss-fetcher.fetcher.stories.*.rate, 7)"
           }
         ],
         "thresholds": [],
@@ -575,6 +576,7 @@
       {
         "aliasColors": {},
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -613,7 +615,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.adjust.*.rate",
+            "target": "aliasByNode(stats.counters.mc.$realm.rss-fetcher.fetcher.adjust.*.rate, 7)",
             "textEditor": false
           }
         ],
@@ -700,19 +702,19 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.lower",
+            "target": "aliasByNode(stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.lower, -1)",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper_90",
+            "target": "aliasByNode(stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper_90, -1)",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "C",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper",
+            "target": "aliasByNode(stats.timers.mc.$realm.rss-fetcher.fetcher.story.save.upper, -1)",
             "textEditor": false
           }
         ],
@@ -801,7 +803,7 @@
             "refCount": 0,
             "refId": "A",
             "target": "stats.counters.mc.$realm.rss-fetcher.server.api.requests.name_server.*.*.status_*.rate",
-            "textEditor": true
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -1030,6 +1032,7 @@
           "stats.counters.mc.prod.rss-fetcher.fetcher.hunter.get_ready.count": "green"
         },
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -1068,7 +1071,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.rss-fetcher.fetcher.hunter.*.rate"
+            "target": "aliasByNode(stats.counters.mc.$realm.rss-fetcher.fetcher.hunter.*.rate, -2)"
           }
         ],
         "thresholds": [],
@@ -1202,6 +1205,7 @@
       {
         "aliasColors": {},
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -1249,7 +1253,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.rss-fetcher.gen_rss.stories.*.count"
+            "target": "aliasByNode(stats.counters.mc.$realm.rss-fetcher.gen_rss.stories.*.count, 7)"
           }
         ],
         "thresholds": [],
@@ -1421,8 +1425,15 @@
         "steppedLine": false,
         "targets": [
           {
+            "refCount": 0,
             "refId": "A",
             "target": "stats.gauges.mc.$realm.story-indexer.rss-puller.stories.max-id",
+            "textEditor": true
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.max-id",
             "textEditor": true
           }
         ],
@@ -1431,6 +1442,93 @@
         "timeRegions": [],
         "timeShift": null,
         "title": "Max Story-id",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 61
+        },
+        "id": 44,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stor*.count",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Story count",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1531,6 +1629,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 33
+    "version": 36
   }
 }

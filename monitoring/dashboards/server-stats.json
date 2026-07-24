@@ -1,5 +1,6 @@
 {
   "meta": {
+    "isStarred": true,
     "type": "db",
     "canSave": true,
     "canEdit": true,
@@ -9,10 +10,10 @@
     "url": "/d/dG5Q_MJIz/server-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-03-15T22:08:11Z",
-    "updated": "2025-07-18T22:46:33Z",
-    "updatedBy": "phil.budne@gmail.com",
+    "updated": "2026-07-24T01:24:28Z",
+    "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 32,
+    "version": 33,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -126,7 +127,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.systems.cpu.pct.*"
+            "target": "aliasByNode(stats.gauges.mc.systems.cpu.pct.*, 6)"
           }
         ],
         "thresholds": [
@@ -225,7 +226,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.systems.load.15.*"
+            "target": "aliasByNode(stats.gauges.mc.systems.load.15.*, 6)"
           }
         ],
         "thresholds": [],
@@ -406,7 +407,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.systems.swap.pct.*",
+            "target": "aliasByNode(stats.gauges.mc.systems.swap.pct.*, 6)",
             "textEditor": false
           }
         ],
@@ -532,7 +533,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.systems.disk.pct.*.*"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.pct.*.*, 6)"
           }
         ],
         "thresholds": [
@@ -627,7 +628,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "scale(nonNegativeDerivative(stats.gauges.mc.systems.cpu.state.*.iowait), 10)"
+            "target": "aliasByNode(scale(nonNegativeDerivative(stats.gauges.mc.systems.cpu.state.*.iowait), 10), 6)"
           }
         ],
         "thresholds": [],
@@ -713,7 +714,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.count.read.*.*data)"
+            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.count.read.*.*data), 8)"
           }
         ],
         "thresholds": [],
@@ -799,7 +800,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.count.write.*.*data)"
+            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.count.write.*.*data), 8)"
           }
         ],
         "thresholds": [],
@@ -885,7 +886,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.time.read.*.*data)"
+            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.time.read.*.*data), 8)"
           }
         ],
         "thresholds": [],
@@ -971,7 +972,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.time.write.*.*data)"
+            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.time.write.*.*data), 8)"
           }
         ],
         "thresholds": [],
@@ -1376,6 +1377,6 @@
     "timezone": "",
     "title": "Server stats",
     "uid": "dG5Q_MJIz",
-    "version": 32
+    "version": 33
   }
 }

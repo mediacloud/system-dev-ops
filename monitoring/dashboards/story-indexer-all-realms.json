@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2026-06-02T16:31:22Z",
-    "updatedBy": "phil.budne@gmail.com",
+    "updated": "2026-07-24T01:00:53Z",
+    "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 80,
+    "version": 81,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,12 +40,13 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1780415847748,
+    "iteration": 1784853783588,
     "links": [],
     "panels": [
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -86,7 +87,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.*",
+            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.*, -1)",
             "textEditor": false
           }
         ],
@@ -134,6 +135,7 @@
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -173,7 +175,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.*.sent-msgs.*.rate",
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.*.sent-msgs.*.rate, -2)",
             "textEditor": false
           }
         ],
@@ -352,7 +354,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.docker-stats.service.running.*er",
+            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.docker-stats.service.running.*er, -1)",
             "textEditor": false
           }
         ],
@@ -442,13 +444,13 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.*queuer.stories.*.rate",
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.*queuer.stories.*, -2)",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.counters.mc.$realm.story-indexer.*puller.stories.status_*.rate",
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.*puller.stories.status_*.rate, -2)",
             "textEditor": false
           }
         ],
@@ -541,7 +543,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.*.message.stat_{error,retry*}.count",
+            "target": "aliasByNode(stats.timers.mc.$realm.story-indexer.*.message.stat_{error,retry*}.count, -2)",
             "textEditor": false
           }
         ],
@@ -683,6 +685,7 @@
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -723,12 +726,12 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.parser.extract.*.mean"
+            "target": "aliasByNode(stats.timers.mc.$realm.story-indexer.parser.extract.*.mean, -2)"
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.story-indexer.parser.encoding.mean"
+            "target": "aliasByNode(stats.timers.mc.$realm.story-indexer.parser.encoding.mean, -2)"
           }
         ],
         "thresholds": [],
@@ -782,6 +785,7 @@
           "stats.counters.mc.staging.story-indexer.parser.stories.status_no-decode.rate": "dark-yellow"
         },
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -820,7 +824,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.parser.stories.*.rate",
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.parser.stories.*.rate, -2)",
             "textEditor": false
           }
         ],
@@ -868,6 +872,7 @@
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -891,6 +896,7 @@
         },
         "lines": false,
         "linewidth": 1,
+        "maxDataPoints": "",
         "nullPointMode": "null",
         "options": {
           "dataLinks": []
@@ -907,7 +913,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.*.message.stat_ok.mean"
+            "target": "aliasByNode(stats.timers.mc.$realm.story-indexer.*.message.stat_ok.mean, -4)"
           }
         ],
         "thresholds": [],
@@ -960,6 +966,7 @@
           "stats.counters.mc.staging.story-indexer.importer.imported-stories.status_failed.rate": "red"
         },
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -1000,7 +1007,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.importer.stories.*.rate",
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.importer.stories.*.rate, -2)",
             "textEditor": false
           }
         ],
@@ -1087,7 +1094,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.*-in",
+            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.*-in, -1)",
             "textEditor": false
           }
         ],
@@ -1310,6 +1317,7 @@
       {
         "aliasColors": {},
         "bars": true,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -1348,7 +1356,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.pipeview.crumbs.*.rate"
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.pipeview.crumbs.*.rate, -2)"
           }
         ],
         "thresholds": [],
@@ -1622,22 +1630,22 @@
         "steppedLine": false,
         "targets": [
           {
-            "refCount": 1,
+            "refCount": -1,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*",
-            "textEditor": true
+            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*, -1)",
+            "textEditor": false
           },
           {
-            "refCount": 1,
+            "refCount": -1,
             "refId": "B",
             "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in",
-            "textEditor": true
+            "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "C",
             "target": "alias(sumSeries(#A,#B),'total')",
-            "targetFull": "alias(sumSeries(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*,stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in),'total')",
+            "targetFull": "alias(sumSeries(aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*, -1),stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in),'total')",
             "textEditor": true
           }
         ],
@@ -1820,6 +1828,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 80
+    "version": 81
   }
 }
