@@ -23,8 +23,9 @@ class ReleaseMixin(DeployMixinBase):
             self.fatal("local changes not checked in")
 
         branch = self.git_branch()
-        if branch != "main":
-            self.fatal("must release from main branch!")
+        main = "main"  # one place
+        if branch != main:
+            self.fatal(f"must release from {main} branch!")
 
         vers = self.proj_version()
         tag = f"{self.TAG_PREFIX}{vers}"
@@ -32,11 +33,11 @@ class ReleaseMixin(DeployMixinBase):
         self.git_check_local_tag(tag)  # fatal if exists
         self.git_check_remote_tag(remote, tag)  # fatal if exists
         self.proc_call(["git", "tag", tag])
-        self.proc_call(["git", "push", remote, "main", tag])
+        self.proc_call(["git", "push", remote, main, tag])
         if self.LATEST:
-            prefix = tag.rsplit(".", 1)[0]
+            prefix = tag.rsplit(".", 1)[0]  # remove .LAST
             if "." not in prefix:
-                prefix = tag
+                prefix = tag  # version had only one dot
             latest = f"{prefix}.latest"
             # .latest requires force, so do it separately:
             self.proc_call(["git", "tag", "-f", latest])  # overwrite .latest
