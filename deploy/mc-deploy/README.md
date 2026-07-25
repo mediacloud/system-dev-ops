@@ -63,3 +63,20 @@ This Python code is a result of bottom-up translation, and is not a
 from-scratch rearchitecture, so some of the jankiness of having
 evolved over time may remain.  The process was pain{ful,staking}
 nonetheless: shell-one liners often take multiple lines of Python.
+
+# Working on this package
+
+NOTE!  It's used in a variety of settings (rss-fetcher, story-indexer,
+mc-deploy, hopefully more), so it's hard to test changes!
+
+Makefile encapsulates so common development tasks:
+
+* make -- gives help
+* make install -- installs dev environment
+* make lint -- runs formatting, type checks
+* make release -- lint, check version, add tag and push to github
+* make clean -- remove development environment
+
+Using pre-commit would likely effect the entire repo, so it's been
+avoided (so far), but "make lint" runs the full gauntlet as
+story-indexer (with some stricter settings).

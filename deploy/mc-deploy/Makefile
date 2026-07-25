@@ -1,4 +1,12 @@
-# basic mypy linting (no autocommit gauntlet, yet)
+# not (yet) using pre-commit; would apply to entire repo!
+
+help:
+	@echo Usage:
+	@echo "make install -- installs dev environment"
+	@echo "make lint -- runs formatting, type checks"
+	@echo "make release -- add tag and push to github"
+	@echo "make clean -- remove development environment"
+	@echo "make help -- this message!"
 
 # story-indexer order: black, mypy, flake8, isort
 lint:	install
@@ -13,6 +21,7 @@ install: venv/.pyproject
 release: lint
 	venv/bin/python release.py release
 
+# pip install -e not perfect; "installs" package in venv
 venv/.pyproject: pyproject.toml
 	python -m venv venv
 	cmp pyproject.toml venv/.pyproject || \
