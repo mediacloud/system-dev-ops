@@ -10,10 +10,10 @@
     "url": "/d/dG5Q_MJIz/server-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-03-15T22:08:11Z",
-    "updated": "2026-07-24T01:24:28Z",
+    "updated": "2026-07-24T04:01:57Z",
     "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 33,
+    "version": 34,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -533,7 +533,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(stats.gauges.mc.systems.disk.pct.*.*, 6)"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.pct.*.*, 6, 7)"
           }
         ],
         "thresholds": [
@@ -1377,6 +1377,6 @@
     "timezone": "",
     "title": "Server stats",
     "uid": "dG5Q_MJIz",
-    "version": 33
+    "version": 34
   }
 }

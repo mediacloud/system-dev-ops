@@ -10,10 +10,10 @@
     "url": "/d/sWyOqlVVk/rss-fetcher",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-09T07:10:36Z",
-    "updated": "2026-07-24T01:14:31Z",
+    "updated": "2026-07-24T16:34:58Z",
     "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 36,
+    "version": 39,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -46,12 +46,13 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 1,
-    "iteration": 1784855355650,
+    "iteration": 1784910470484,
     "links": [],
     "panels": [
       {
         "aliasColors": {},
         "bars": false,
+        "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
@@ -109,28 +110,22 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.db.ready",
-            "textEditor": true
-          },
-          {
-            "refCount": 0,
-            "refId": "C",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.db.running",
-            "textEditor": true
+            "target": "aliasByNode(stats.gauges.mc.$realm.rss-fetcher.fetcher.db.*, 6, 7)",
+            "textEditor": false
           },
           {
             "hide": false,
             "refCount": 0,
             "refId": "B",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.on_hand",
-            "textEditor": true
+            "target": "alias(stats.gauges.mc.$realm.rss-fetcher.fetcher.on_hand, 'on-hand')",
+            "textEditor": false
           },
           {
             "hide": false,
             "refCount": 0,
             "refId": "D",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.hunter.blocked",
-            "textEditor": true
+            "target": "alias(stats.gauges.mc.$realm.rss-fetcher.fetcher.hunter.blocked, 'hunter-blocked')",
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -226,18 +221,12 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.upper"
+            "target": "aliasByNode(stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.upper, -1)"
           },
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.lower"
-          },
-          {
-            "hide": true,
-            "refCount": 0,
-            "refId": "C",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.mean"
+            "target": "aliasByNode(stats.timers.mc.$realm.rss-fetcher.fetcher.start_delay.lower, -1)"
           }
         ],
         "thresholds": [],
@@ -332,7 +321,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate, 7)",
+            "target": "aliasSub(aliasByNode(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.*.rate, 7), 'stat_(.*)', '\\1')",
             "textEditor": false
           }
         ],
@@ -434,7 +423,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.timers.mc.$realm.rss-fetcher.fetcher.total.*.upper"
+            "target": "aliasByNode(stats.timers.mc.$realm.rss-fetcher.fetcher.total.*.upper, 7)"
           }
         ],
         "thresholds": [],
@@ -892,7 +881,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.fetcher.workers.*",
+            "target": "aliasByNode(stats.gauges.mc.$realm.rss-fetcher.fetcher.workers.*, 7)",
             "textEditor": false
           }
         ],
@@ -1592,12 +1581,12 @@
               "value": "prod"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "staging",
               "value": "staging"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "pbudne",
               "value": "pbudne"
             }
@@ -1629,6 +1618,6 @@
     "timezone": "",
     "title": "rss-fetcher",
     "uid": "sWyOqlVVk",
-    "version": 36
+    "version": 39
   }
 }

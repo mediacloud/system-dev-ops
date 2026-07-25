@@ -10,10 +10,10 @@
     "url": "/d/YyR-mfpIk/story-indexer-all-realms",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-02-01T03:10:21Z",
-    "updated": "2026-07-24T01:00:53Z",
+    "updated": "2026-07-24T15:31:46Z",
     "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 81,
+    "version": 95,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 10,
-    "iteration": 1784853783588,
+    "iteration": 1784867159137,
     "links": [],
     "panels": [
       {
@@ -50,7 +50,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "",
+        "description": "in: ready for processing;\ndelay: 60 minute retry delay;\nquar: failed after multiple retries\nfast: delayed two minutes for fast retry",
         "fill": 0,
         "fillGradient": 0,
         "gridPos": {
@@ -87,7 +87,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.*, -1)",
+            "target": "aliasSub(aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.*, -1), 'name_(.*)', '\\1')",
             "textEditor": false
           }
         ],
@@ -175,7 +175,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.*.sent-msgs.*.rate, -2)",
+            "target": "aliasSub(aliasByNode(stats.counters.mc.$realm.story-indexer.*.sent-msgs.*.rate, 5, 7), '(.*).dest_(.*)', '\\1>\\2')",
             "textEditor": false
           }
         ],
@@ -265,7 +265,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.timers.mc.$realm.story-indexer.*.main_loop.upper"
+            "target": "aliasByNode(stats.timers.mc.$realm.story-indexer.*.main_loop.upper, 5)"
           }
         ],
         "thresholds": [],
@@ -354,7 +354,7 @@
           {
             "refCount": 0,
             "refId": "A",
-            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.docker-stats.service.running.*er, -1)",
+            "target": "aliasSub(aliasSub(aliasByNode(stats.gauges.mc.$realm.story-indexer.docker-stats.service.running.*er, -1), '^name_(.*)', '\\1'), '(.*)-worker', '\\1')",
             "textEditor": false
           }
         ],
@@ -543,7 +543,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(stats.timers.mc.$realm.story-indexer.*.message.stat_{error,retry*}.count, -2)",
+            "target": "aliasSub(aliasByNode(stats.timers.mc.$realm.story-indexer.*.message.stat_{error,retry*}.count, 5, 7), '(.*).stat_(.*)', '\\1.\\2')",
             "textEditor": false
           }
         ],
@@ -637,7 +637,7 @@
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.counters.mc.$realm.story-indexer.*fetcher.stories.*.rate",
+            "target": "aliasSub(aliasByNode(stats.counters.mc.$realm.story-indexer.*fetcher.stories.*.rate, -2), 'status_(.*)', '\\1')",
             "textEditor": false
           }
         ],
@@ -824,7 +824,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.parser.stories.*.rate, -2)",
+            "target": "aliasSub(aliasByNode(stats.counters.mc.$realm.story-indexer.parser.stories.*.rate, -2), '^status_(.*)', '\\1')",
             "textEditor": false
           }
         ],
@@ -1321,6 +1321,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
+        "description": "Shows where in the pipeline stories STOPPED being processed\n",
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
@@ -1445,8 +1446,8 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.counters.mc.$realm.story-indexer.*.check-output.status*.count",
-            "textEditor": true
+            "target": "aliasByNode(stats.counters.mc.$realm.story-indexer.*.check-output.status*.count, -2)",
+            "textEditor": false
           }
         ],
         "thresholds": [],
@@ -1497,7 +1498,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "description": "NOTE!  rss-fetcher max id is polled: only checked every five minutes, and subtraction result may be negative!\n",
+        "description": "Available rss-fetcher max-id is polled every five minutes\n",
         "fill": 1,
         "fillGradient": 0,
         "gridPos": {
@@ -1632,20 +1633,20 @@
           {
             "refCount": -1,
             "refId": "A",
-            "target": "aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*, -1)",
+            "target": "aliasSub(aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*, -1), 'name_(.*)', '\\1')",
             "textEditor": false
           },
           {
             "refCount": -1,
             "refId": "B",
-            "target": "stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in",
+            "target": "alias(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in, 'fetcher-in.unacked')",
             "textEditor": false
           },
           {
             "refCount": 0,
             "refId": "C",
             "target": "alias(sumSeries(#A,#B),'total')",
-            "targetFull": "alias(sumSeries(aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*, -1),stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in),'total')",
+            "targetFull": "alias(sumSeries(aliasSub(aliasByNode(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.ready.name_fetcher-*, -1), 'name_(.*)', '\\1'),alias(stats.gauges.mc.$realm.story-indexer.rabbitmq-stats.queues.unacked.name_fetcher-in, 'fetcher-in.unacked')),'total')",
             "textEditor": true
           }
         ],
@@ -1828,6 +1829,6 @@
     "timezone": "",
     "title": "story-indexer (all realms)",
     "uid": "YyR-mfpIk",
-    "version": 81
+    "version": 95
   }
 }
