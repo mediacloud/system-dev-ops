@@ -69,7 +69,7 @@ nonetheless: shell-one liners often take multiple lines of Python.
 NOTE!  It's used in a variety of settings (rss-fetcher, story-indexer,
 mc-deploy, hopefully more), so it's hard to test changes!
 
-Makefile encapsulates so common development tasks:
+Makefile encapsulates common development jobs:
 
 * make -- gives help
 * make install -- installs dev environment
