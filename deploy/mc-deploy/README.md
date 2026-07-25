@@ -74,8 +74,11 @@ Makefile encapsulates so common development tasks:
 * make -- gives help
 * make install -- installs dev environment
 * make lint -- runs formatting, type checks
-* make release -- lint, check version, add tag and push to github
 * make clean -- remove development environment
+* make release -- lint, check version, add tag and push to github
+
+"make release" requires that the version pyproject has been updated,
+and will run lint first!
 
 Using pre-commit would likely effect the entire repo, so it's been
 avoided (so far), but "make lint" runs the full gauntlet as
