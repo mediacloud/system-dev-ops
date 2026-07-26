@@ -167,6 +167,7 @@ class DockerDeploy(BaseDeploy):
             self.fix_file_owner(f, False)  # owned by user; not private
             ct = self.config_tag or "-"
             # story-indexer/deploy.sh put in remote rather than host
+            # (but it wasn't terribly useful)
             host = self.tag_host()
             f.write(
                 f"{self.date_time} {self.inst_name} {host} {self.tag} {ct}\n"
