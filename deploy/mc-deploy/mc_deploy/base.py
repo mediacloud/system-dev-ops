@@ -621,8 +621,8 @@ class BaseDeploy:
         """
         helper for settings_get_new
         """
-        if not repo.endswith("-config"):  # TEMP
-            repo += "-config"  # TEMP
+        if not repo.endswith("-config"):
+            repo += "-config"  # always?
         url = self.git_upstream_url(repo)
         if self.private_dir is None:
             self.private_dir = tempfile.TemporaryDirectory(
