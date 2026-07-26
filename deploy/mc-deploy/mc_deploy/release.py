@@ -3,6 +3,7 @@ plugin used to release this package!!!
 """
 
 from .base import CmdArgs, DeployMixinBase
+from .manage.release import create_release
 
 
 class ReleaseMixin(DeployMixinBase):
@@ -42,4 +43,22 @@ class ReleaseMixin(DeployMixinBase):
             # .latest requires force, so do it separately:
             self.proc_call(["git", "tag", "-f", latest])  # overwrite .latest
             self.proc_call(["git", "push", "-f", remote, latest])
+
+        if not self.dry_run:
+            self.settings_load_private_files("management", ["env.sh"])
+            base_id = self.settings.get("AIRTABLE_BASE_ID")
+            api_key = self.settings.get("AIRTABLE_API_KEY")
+
+            if base_id and api_key:
+                create_release(
+                    codebase_name=self.airtable_name(),
+                    version_info=tag,
+                    api_key=api_key,
+                    base_id=base_id,
+                )
+            else:
+                self.warning(
+                    "release reporting skipped (missing AIRTABLE_API_KEY or AIRTABLE_BASE_ID)"
+                )
+
         return 0

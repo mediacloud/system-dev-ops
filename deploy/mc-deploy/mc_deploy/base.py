@@ -5,7 +5,6 @@ Base class for mediacloud deployment
 import argparse
 import atexit
 import getpass  # getuser
-import importlib  # import mc-manage
 import importlib.metadata  # version
 import inspect  # getsourcefile
 import os
@@ -26,6 +25,9 @@ from typing import (
 
 # PyPI
 import dotenv
+
+# mc-manage
+from .manage.deployment import create_deployment
 
 CmdArgs: TypeAlias = argparse.Namespace  # xxx_cmd arg
 CmdParser: TypeAlias = argparse.ArgumentParser  # xxx_cmd_init arg
@@ -111,28 +113,16 @@ class BaseDeploy:
             )
             return
 
-        # mc-manage expects these in environment!
-        os.environ["MEAG_BASE_ID"] = base_id  # not secret?
-        os.environ["AIRTABLE_API_KEY"] = api_key
-
-        args = {
-            "codebase_name": self.airtable_name(),
-            "deployment_name": self.inst_name,  # app/stack name
-            "environment": self.inst_type,  # prod/staging/dev
-            "version_info": self.airtable_version(),
-            "hardware_names": [self.tag_host()],
-        }
-
-        # both module and file have hyphen!  if this ever becomes the
-        # only way the code is called, move the code into a file in
-        # this repo (that doesn't require setting environment variables)?!
-        airtable_update = importlib.import_module(
-            "mc-manage.airtable-deployment-update"
-        )
-
-        self.debug("airtable_args", args)
         if not self.dry_run:
-            airtable_update.create_deployment(**args)
+            create_deployment(
+                codebase_name=self.airtable_name(),
+                deployment_name=self.inst_name,  # app/stack name
+                environment=self.inst_type,  # prod/staging/dev
+                version_info=self.airtable_version(),
+                hardware_names=[self.tag_host()],
+                api_key=api_key,
+                base_id=base_id,
+            )
 
     def airtable_version(self) -> str:
         return self.tag

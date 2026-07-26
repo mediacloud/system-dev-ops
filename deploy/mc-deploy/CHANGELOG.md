@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.11.2: added mc-manage functions to mc_deploy/manage/
+* 0.11.1: tried unlocking mc-manage
 * 0.11.0: more docker work:
 	docker image/tag functions/members
 	pulled "clean" check to base

@@ -1,6 +1,6 @@
 [project]
 name = "mc-deploy"
-version = "0.11.1"     # ALSO: update CHANGELOG.md, run "make release"
+version = "0.11.2"     # ALSO: update CHANGELOG.md, run "make release"
 description='Media Cloud Extensible Deployment Tools'
 readme = "README.md"
 requires-python = ">=3.10"
@@ -9,10 +9,7 @@ authors = [
 ]
 
 dependencies = [
-    # if/once mc-deploy used for all projects, copy code into base.py?
-    # version not locked (unlkely to change) because different projects
-    # have different locked versions!
-    "mc-manage @ git+https://github.com/mediacloud/mc-manage",
+    "pyairtable == 2.3.*",
     "python-dotenv ~= 1.0.1",
     "tomli; python_version < '3.11'", # installed by pip? let it decide what version
 ]
