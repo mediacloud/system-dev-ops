@@ -5,7 +5,7 @@ Base class for mediacloud deployment
 import argparse
 import atexit
 import getpass  # getuser
-import importlib  # mc-manage
+import importlib  # import mc-manage
 import importlib.metadata  # version
 import inspect  # getsourcefile
 import os
@@ -20,6 +20,7 @@ from typing import (
     Any,
     Callable,
     NamedTuple,
+    TextIO,
     TypeAlias,
 )
 
@@ -43,6 +44,11 @@ class Flavor(NamedTuple):
 
     prefix: str
     bias: int
+
+
+class PrivateRepo(NamedTuple):
+    repo: str  # repo name
+    dir: str  # full path to cloned repo
 
 
 class BaseDeploy:
@@ -83,13 +89,14 @@ class BaseDeploy:
         self.ignore_no_changes = False
         self.login_user = self.user = self.get_login_user()
         self.login_user_params: dict[str, str | int | dict[str, str]] = {}
-        self.login_uid = 0
+        self._login_uid = -1
         self.port_bias = 0
+        # directory for cloned private repos:
         self.private_dir: tempfile.TemporaryDirectory[str] | None = None
-        self.private_repo: str | None = None
+        self.private_repos: list[PrivateRepo] = []
         self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.settings: dict[str, str | None] = {}  # app/stack settings
-        self.uid = os.getuid()
+        self.uid = os.getuid()  # cheap, but checked multiple places
 
     ################ utilities (in alphabetical order!)
 
@@ -135,13 +142,13 @@ class BaseDeploy:
         print("DEBUG:", " ".join(str(x) for x in args))
 
     def check_not_root(self) -> None:
-        if self.uid != 0:
+        if self.uid != 0:  # not root
             return
         self.fatal("must not be run as root")
         # may return in dry runs
 
     def check_is_root(self) -> None:
-        if self.uid == 0:
+        if self.uid == 0:  # are root
             return
         self.fatal("must be run as root")
         # may return in dry runs
@@ -175,6 +182,14 @@ class BaseDeploy:
             return
         sys.exit(1)
 
+    def fix_file_owner(self, f: TextIO, private: bool) -> None:
+        fd = f.fileno()
+        if self.uid == 0:
+            os.fchown(fd, self.get_login_uid(), -1)  # change owner only
+
+        if private:
+            os.fchmod(fd, 0o600)  # 0o600 is user read/write ONLY
+
     @staticmethod
     def get_date_time() -> str:
         # avoid datetime package and timezone miasma
@@ -199,6 +214,12 @@ class BaseDeploy:
         if self.INST_FLAVORS and self.inst_flavor_prefix:
             return f"{self.inst_flavor_prefix}{base}"
         return base
+
+    def get_login_uid(self) -> int:
+        if self._login_uid == -1:  # uninitialized
+            self._proc_login_user_params()
+        assert self._login_uid > 0
+        return self._login_uid
 
     def get_login_user(self) -> str:
         """
@@ -452,7 +473,7 @@ class BaseDeploy:
         """
         args = self._proc_args(cmd)
         handle_errors = kws.pop("handle_errors", True)
-        if kws.pop("as_login_user", False):  # and self.uid == 0:
+        if kws.pop("as_login_user", False):  # XXX and self.uid == 0: ???
             kws.update(self._proc_login_user_params())
         try:
             self.debug("proc_output_all", cmd)
@@ -530,21 +551,21 @@ class BaseDeploy:
         in the checked out .git tree.
         """
         if not self.login_user_params:
-            # get login user passwd entry;
-            # _could_ throw an exception, but you're SOL.
+            # get login user passwd entry (may raise KeyError)
             pw = pwd.getpwnam(self.login_user)
             self.login_user_params = {  # Popen params
                 "env": {
                     "HOME": pw.pw_dir,
+                    # BLEH: OK on Ubuntu 20.04
                     "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin",
                     "USER": self.login_user,
                 },
-                # fails w/ PermissionError:
-                # "extra_groups": os.getgrouplist(self.login_user, pw.pw_gid),
+                # os.getgrouplist(self.login_user, pw.pw_gid)
+                # (for "extra_groups") fails w/ PermissionError
                 "group": pw.pw_gid,
                 "user": pw.pw_uid,
             }
-            self.login_uid = pw.pw_uid
+            self._login_uid = pw.pw_uid
         return self.login_user_params
 
     def proj_version(self) -> str:
@@ -600,21 +621,23 @@ class BaseDeploy:
         """
         helper for settings_get_new
         """
+        if not repo.endswith("-config"):  # TEMP
+            repo += "-config"  # TEMP
         url = self.git_upstream_url(repo)
-        self.private_dir = tempfile.TemporaryDirectory(
-            dir=self.get_deploy_dir(),
-            ignore_cleanup_errors=True,  # may cleanup twice
-            prefix="conf-",
-        )
-        if os.getuid() == 0:
-            # change directory ownership to login user
-            # (in case cleanup fails).
-            # directory created mode 700, so group doesn't matter
-            self._proc_login_user_params()  # get login_uid
-            assert self.login_uid != 0
-            os.chown(self.private_dir.name, uid=self.login_uid, gid=-1)
-        atexit.register(self.settings_private_cleanup)  # bound method
-        self.private_repo = repo
+        if self.private_dir is None:
+            self.private_dir = tempfile.TemporaryDirectory(
+                dir=self.get_deploy_dir(),
+                ignore_cleanup_errors=True,  # may cleanup twice
+                prefix="conf-",
+            )
+            if self.uid == 0:  # root?
+                # change directory ownership to login user
+                # (in case cleanup fails).
+                # directory created mode 700, so group doesn't matter
+                os.chown(
+                    self.private_dir.name, uid=self.get_login_uid(), gid=-1
+                )
+            atexit.register(self.settings_private_cleanup)  # bound method
         print("cloning", url)
         self.proc_call(
             ["git", "clone", url],
@@ -625,10 +648,12 @@ class BaseDeploy:
             stderr=subprocess.DEVNULL,
             umask=0o077,  # no permissions for you!
         )
-        self.private_repo_dir = os.path.join(self.private_dir.name, repo)
+        dir = os.path.join(self.private_dir.name, repo)
+        self.private_repos.append(PrivateRepo(repo, dir))
+
         for fname in fnames:  # may read prod, then staging for overrides
             print("loading", repo, fname)
-            path = os.path.join(self.private_repo_dir, fname)
+            path = os.path.join(dir, fname)
             if not self.settings_load_file(path):
                 self.fatal(f"could not load {fname}")
         # cloned repo kept around for later tagging
@@ -645,17 +670,16 @@ class BaseDeploy:
             self.private_dir = None
 
     def settings_tag_private_conf(self, tag: str) -> None:
-        print("adding config tag", tag)
         assert isinstance(self.private_dir, tempfile.TemporaryDirectory)
-        dir_name = self.private_repo_dir
-        self.proc_call(["git", "tag", tag], as_login_user=True, cwd=dir_name)
-        # freshly cloned above, so remote always "origin"
-        self.debug("pushing config tag:")
-        self.proc_call(
-            ["git", "push", "origin", tag],
-            as_login_user=True,
-            cwd=dir_name,
-        )
+        for pr in self.private_repos:
+            print("tagging", pr.repo, "with", tag)
+            self.proc_call(["git", "tag", tag], as_login_user=True, cwd=pr.dir)
+            # freshly cloned above, so remote always "origin"
+            self.proc_call(
+                ["git", "push", "origin", tag],
+                as_login_user=True,
+                cwd=pr.dir,
+            )
 
     def source_file(self) -> str | None:
         """
@@ -702,9 +726,12 @@ class BaseDeploy:
                 self.fatal(f"could not get {__package__} version")
             return "NOVERS"  # for dry-run
 
+    def warning(self, msg: str) -> None:
+        sys.stderr.write(f"WARNING: {msg}\n")
+
     # PLEASE: add new utilities above *** IN ALPHABETICAL ORDER ***
 
-    ################ commands in all versions of code
+    ################ commands in all versions of code (in alphabetical order)
 
     def deploy_cmd_init(self, cp: CmdParser) -> None:
         cp.add_argument(
@@ -858,15 +885,49 @@ class BaseDeploy:
                 stderr=subprocess.DEVNULL,
             )
 
-        if self.private_repo and self.config_tag:
-            print("tagging", self.private_repo, "as", self.config_tag)
+        if self.private_repos and self.config_tag:
             self.settings_tag_private_conf(self.config_tag)
+
+    def deploy_cmd_requirements(self) -> None:
+        """
+        called to regenerate requirements files before dirty checks,
+        in case output needs to be committed.
+
+        Originally just called "make requirements", but make depends
+        on the "modified time" of the files to decide whether
+        something needs updating, which git does NOT preserve (all
+        files get the timestamp of when the repo was cloned, or
+        updated from a pull) so the requirements files would be
+        (re)generated on a freshly cloned repo (or on ANY change to
+        pyproject.toml), which would introduce more churn than seems
+        prudent.
+
+        This hook added for sous-chef-kitchen, where sous-chef repo
+        (used in generated "flow" requirements file) is a VERY likely
+        reason for deployment, and if the requirements file is not
+        regenerated, would be for nought.  For now just adding a
+        comment in the sous-chef-kitchen pyproject file to run
+        "make requirements".
+
+        A safer (but complex) method would be to make a hash of the
+        (sorted) requirements (and their sections) extracted from
+        pyproject which is dropped in a comment at the end of the
+        generated requirements/lock files and to check (here?) that
+        the hash in the generated files still matches up with the
+        freshly generated hash, and if not regenerate the output files(*)
+        with new hashes at the end.
+
+        But how to regenerate? Have an overridable method (that calls
+        "make requirements" by default)?  *OR* could look at a class
+        variable that says what sections in pyproject go into each
+        generated file, so the hash only changes when the actual
+        inputs have changed!
+        """
+        return
 
     def version_cmd(self, args: CmdArgs) -> int:
         """Display deployment package version"""
         print(__package__, self.version())
-        # file whose git hash will be added to DEPLOY_HASH
-        # print(self.source_file())
         return 0
 
     ################ top level

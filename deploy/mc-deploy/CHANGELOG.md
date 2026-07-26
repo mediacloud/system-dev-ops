@@ -1,5 +1,13 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.10.0: allow multiple private repos for sous-chef-kitchen
+	create docker deploy.log,
+	moved fix_file_owner to base,
+	add get_login_uid()
+	use self.uid rather than calling os.getuid()
+	add warning method
+	take private repo prefix (could be subdir someday!)
+
 * 0.9.2: add mc-deploy.release.ReleaseMixin to release this!!!
 	top level release.py just mixes ingredients!
 * 0.9.1: moved version command to Base, add host to dokku_service_exists,

@@ -682,6 +682,8 @@ class DokkuDeploy(BaseDeploy):
 
         self.check_not_root()  # use user ssh keys for dokku & git
 
+        self.deploy_cmd_requirements()  # before clean check!
+
         if not self.git_is_clean():
             # XXX display diffs, or list uncommitted files??
             self.fatal("local changes not checked in")
@@ -827,7 +829,7 @@ class DokkuDeploy(BaseDeploy):
         if self.DOKKU_STOP:
             self.dokku_call(["ps:start", app])  # not needed?
 
-        with open("push.log", "a") as f:
+        with open("push.log", "a") as f:  # at top level
             # old format was: "date_time app REMOTE tag"
             # but remote was useless!
             ct = self.config_tag or "-"

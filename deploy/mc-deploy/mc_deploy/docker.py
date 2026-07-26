@@ -17,7 +17,6 @@ overwelming need or desire to change.
 # import argparse
 import grp
 import os
-import typing
 
 from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs
 
@@ -36,7 +35,7 @@ class DockerDeploy(BaseDeploy):
         """
         check if user is root or in docker group
         """
-        if os.getuid() == 0:
+        if self.uid == 0:
             return  # OK, root
         try:
             dgroup = grp.getgrnam("docker")
@@ -65,7 +64,7 @@ class DockerDeploy(BaseDeploy):
             deploy_dir, f"{self.COMPOSE_FILE}.save-{self.tag}"
         )
         with open(dump_file, "w") as f:
-            self.fix_file_owner(f)
+            self.fix_file_owner(f, True)  # keep private
             # old versions of stack command may exit w/ status 125
             # if that happens, pass handle_errors=False and
             # give a more helpful message?
@@ -112,16 +111,6 @@ class DockerDeploy(BaseDeploy):
             env=self.compose_env,
         )
 
-    def fix_file_owner(self, f: typing.TextIO) -> None:
-        fd = f.fileno()
-        os.fchmod(fd, 0o600)  # user read/write
-        if os.getuid() == 0:  # currently root
-            try:
-                uid = int(os.environ["SUDO_UID"])
-                os.fchown(fd, uid, -1)  # change owner only
-            except (KeyError, TypeError, OSError):
-                pass
-
     #   def parser_results(self, args: ParserArgs) -> None:
     #       """
     #       handle values from options added by init_parser
@@ -158,6 +147,8 @@ class DockerDeploy(BaseDeploy):
 
         self.check_root_or_docker()
 
+        self.deploy_cmd_requirements()  # before clean check!
+
         if not self.git_is_clean():
             # XXX display diffs, or list uncommitted files??
             self.fatal("local changes not checked in")
@@ -171,6 +162,15 @@ class DockerDeploy(BaseDeploy):
 
         if (ret := self.docker_stack_deploy()) != 0:
             return ret
+
+        with open(os.path.join(self.deploy_dir, "deploy.log"), "a") as f:
+            self.fix_file_owner(f, False)  # owned by user; not private
+            ct = self.config_tag or "-"
+            # story-indexer/deploy.sh put in remote rather than host
+            host = self.tag_host()
+            f.write(
+                f"{self.date_time} {self.inst_name} {host} {self.tag} {ct}\n"
+            )
 
         self.airtable_notify()
         return 0
