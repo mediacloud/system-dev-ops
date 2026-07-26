@@ -1,22 +1,22 @@
 """
-Deploy a docker stack using swarms
+Deploy a docker stack using swarms using a single image
 
 We do not currently depend on multi-server swarms, but we initially
 thought story-indexer would (both for load distribution and
-reliability, but it never panned out that way), nonetheless we persist
-both out of compatibility and inertia, at the very least due to no
-overwelming need or desire to change.
+reliability, but it never did), nonetheless we persist both out of
+compatibility and inertia, at the very least due to no overwelming
+need or desire to change.
 """
 
 # XXX does not call git_is_current, honor --ignore-no-changes!
 # WISH: do clean "clone -b BRANCH URL" (in tempdir) from:
 #       local repo (dirname(deploy_dir)) if dev & --unpushed
 #       origin repo URL if dev
-#       mcrepo URL if prod/staging
+#       upstream URL if prod/staging
 
-# import argparse
 import grp
 import os
+import re
 
 from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs
 
@@ -28,6 +28,8 @@ class DockerDeploy(BaseDeploy):
     """"""
 
     COMPOSE_FILE = "docker-compose.yml"
+    IMAGE_NAME: str  # use self.image_name!!
+    IMAGE_REPO = ""  # aka registry!
 
     ################ utilities
 
@@ -90,6 +92,24 @@ class DockerDeploy(BaseDeploy):
             env=self.compose_env,
         )
 
+    def docker_image_full(self) -> str:
+        reg = self.docker_image_repo()
+        if reg and not reg.endswith("/"):
+            reg += "/"
+        return f"{reg}{self.image_name}:{self.image_tag}"
+
+    def docker_image_name(self) -> str:
+        """override as needed; used to set self.image_name"""
+        return self.IMAGE_NAME
+
+    def docker_image_repo(self) -> str:
+        """override as needed; used to set self.image_full"""
+        return self.IMAGE_REPO
+
+    def docker_image_tag(self, tag: str) -> str:
+        """override as needed; used to set self.image_tag"""
+        return re.sub(r"[^a-zA-Z0-9_.-]", "_", tag)
+
     def docker_stack_deploy(self) -> int:
         """
         returns status code
@@ -111,17 +131,7 @@ class DockerDeploy(BaseDeploy):
             env=self.compose_env,
         )
 
-    #   def parser_results(self, args: ParserArgs) -> None:
-    #       """
-    #       handle values from options added by init_parser
-    #       """
-    #       super().parser_results(args)
-    #       ....
-
     ################ overrides
-
-    #    def parser_init(self, ap: argparse.ArgumentParser) -> None:
-    #        super().parser_init(ap)
 
     def parser_results(self, args: ParserArgs) -> None:
         """
@@ -149,11 +159,11 @@ class DockerDeploy(BaseDeploy):
 
         self.deploy_cmd_requirements()  # before clean check!
 
-        if not self.git_is_clean():
-            # XXX display diffs, or list uncommitted files??
-            self.fatal("local changes not checked in")
-
         self.deploy_cmd_helper(args)
+
+        self.image_tag = self.docker_image_tag(self.tag)
+        self.image_name = self.docker_image_name()
+        self.image_full = self.docker_image_full()
         self.docker_compose_file_create()
         self.docker_compose_file_check()
         self.docker_compose_build()

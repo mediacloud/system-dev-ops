@@ -71,13 +71,6 @@ class BaseDeploy:
     UPSTREAM_USER = "mediacloud"  # owner user/organization
 
     def __init__(self) -> None:
-        # both module and file have hyphen!  if this ever becomes
-        # the only way the code is called, move the code into a
-        # file in this repo?
-        self.mc_manage_airtable = importlib.import_module(
-            "mc-manage.airtable-deployment-update"
-        )
-
         # map command name to method:
         self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = {}
         self._conf_loaded = False  # true if config file read attempted
@@ -106,14 +99,19 @@ class BaseDeploy:
         return self.PROJECT_REPO
 
     def airtable_notify(self) -> None:
+        if self.is_dev():
+            return
+
         # set in private settings files:
         base_id = self.settings.get("AIRTABLE_BASE_ID")
         api_key = self.settings.get("AIRTABLE_API_KEY")
         if not base_id or not api_key:
-            self.debug("airtable: no base or key")
+            self.warning(
+                "deployment reporting skipped (missing AIRTABLE_API_KEY or AIRTABLE_BASE_ID)"
+            )
             return
 
-        # function expects these in environment!
+        # mc-manage expects these in environment!
         os.environ["MEAG_BASE_ID"] = base_id  # not secret?
         os.environ["AIRTABLE_API_KEY"] = api_key
 
@@ -124,10 +122,17 @@ class BaseDeploy:
             "version_info": self.airtable_version(),
             "hardware_names": [self.tag_host()],
         }
-        if self.dry_run:
-            self.debug("airtable_args", args)
-        else:
-            self.mc_manage_airtable.create_deployment(**args)
+
+        # both module and file have hyphen!  if this ever becomes the
+        # only way the code is called, move the code into a file in
+        # this repo (that doesn't require setting environment variables)?!
+        airtable_update = importlib.import_module(
+            "mc-manage.airtable-deployment-update"
+        )
+
+        self.debug("airtable_args", args)
+        if not self.dry_run:
+            airtable_update.create_deployment(**args)
 
     def airtable_version(self) -> str:
         return self.tag
@@ -750,6 +755,11 @@ class BaseDeploy:
         NOTE!!! Does not pre-check for existing code tag: story-indexer
         uses unique prod tags, so it wouldn't HURT to move check here??
         """
+
+        if not self.git_is_clean():
+            # XXX display diffs, or list uncommitted files??
+            self.fatal("local changes not checked in")
+
         self.unpushed = args.unpushed
         if self.test_branch:
             self.branch = self.test_branch

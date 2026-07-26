@@ -1,5 +1,10 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.11.0: more docker work:
+	docker image/tag functions/members
+	pulled "clean" check to base
+	cleanup
+
 * 0.10.0: allow multiple private repos for sous-chef-kitchen
 	create docker deploy.log,
 	moved fix_file_owner to base,

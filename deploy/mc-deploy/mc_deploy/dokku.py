@@ -684,10 +684,6 @@ class DokkuDeploy(BaseDeploy):
 
         self.deploy_cmd_requirements()  # before clean check!
 
-        if not self.git_is_clean():
-            # XXX display diffs, or list uncommitted files??
-            self.fatal("local changes not checked in")
-
         self.deploy_cmd_helper(args)
 
         branch = self.branch
