@@ -15,5 +15,8 @@ class MCDeployDeploy(PyProjectMixin, ReleaseMixin, BaseDeploy):
     def airtable_name(self) -> str:
         return "mc-deploy"
 
+    # currently sends mc-deploy-vX.Y.Z tag to airtable; could override
+    # airtable_version() to return f"v{self.proj_version()}"
+
 mdd = MCDeployDeploy()
 mdd.run()
