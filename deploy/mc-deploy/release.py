@@ -12,5 +12,8 @@ class MCDeployDeploy(PyProjectMixin, ReleaseMixin, BaseDeploy):
     # tag specific to contents of THIS directory in a larger repo
     TAG_PREFIX = "mc-deploy-"
 
+    def airtable_name(self) -> str:
+        return "mc-deploy"
+
 mdd = MCDeployDeploy()
 mdd.run()

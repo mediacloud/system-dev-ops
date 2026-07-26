@@ -1,6 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
-* 0.11.2: added mc-manage functions to mc_deploy/manage/
+* 0.11.3: add airtable_name method to mc-manage/release.py
+* 0.11.2: add files from mc-manage
 * 0.11.1: tried unlocking mc-manage
 * 0.11.0: more docker work:
 	docker image/tag functions/members
