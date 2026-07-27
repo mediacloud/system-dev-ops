@@ -59,18 +59,24 @@ class BaseDeploy:
     Only subclass this if you're not using Dokku or Docker!!
     """
 
-    INST_BASE: str  # instance name base (dokku app, stack name) -- keep short
+    GIT_DEFAULT_REMOTE = "origin"  # remote create by "git clone"
+    GIT_HOST = "github.com"
 
-    # FLAVORS to allow multiple types of an app to be launched (eg hist-indexer)
-    # tuple values are inst_name prefix and port bias
-    # MOST stacks don't need this; not tested with Dokku!
+    # per-project instance name base (dokku app, stack name) -- keep short
+    INST_BASE: str
+
+    # FLAVORS to allow multiple types of an app to be launched (eg
+    # hist-indexer) tuple values are inst_name prefix and port bias
+    # MOST stacks don't need this; not debugged with Dokku!
     INST_FLAVORS: dict[str, Flavor] = {}
 
-    PROJECT_REPO: str
-    PUBLIC_DOMAIN = "mediacloud.org"
+    PRIVATE_URL_PREFIX = f"git@{GIT_HOST}:"  # may be github specific!!
+    PROJECT_REPO: str  # project repo name
+    PROJECT_OWNER = "mediacloud"  # official repo user/organization
+    PUBLIC_DOMAIN = "mediacloud.org"  # domain for public services
+    PUBLIC_URL_PREFIX = f"https://{GIT_HOST}/"  # may be github specific!!
+
     STATSD_HOST = "tarbell.angwin"
-    UPSTREAM_HOST = "git@github.com"  # remote URL prefix for github ssh
-    UPSTREAM_USER = "mediacloud"  # owner user/organization
 
     def __init__(self) -> None:
         # map command name to method:
@@ -101,6 +107,7 @@ class BaseDeploy:
         return self.PROJECT_REPO
 
     def airtable_notify(self) -> None:
+        """notify of a deployment"""
         if self.is_dev():
             return
 
@@ -315,6 +322,23 @@ class BaseDeploy:
         )
         return sts == 0
 
+    def git_origin_remote(self) -> str:
+        if self.is_dev():
+            return self.GIT_DEFAULT_REMOTE  # for developers who have forked
+        else:
+            return self.git_upstream_remote()
+
+    def git_public_url(self, remote: str) -> str:
+        """
+        return public url for a git remote
+        """
+        remotes = self.git_remotes()
+        if remote not in remotes:
+            self.fatal(f"could not find git remote {remote}", quit=True)
+        return remotes[remote].replace(
+            self.PRIVATE_URL_PREFIX, self.PUBLIC_URL_PREFIX
+        )
+
     def git_remotes(self) -> dict[str, str]:
         """return cached dict of remote URLs by remote name"""
         if not self._remotes:
@@ -331,11 +355,12 @@ class BaseDeploy:
 
     def git_upstream_remote(self) -> str:
         """
-        return name of git "remote" belonging to project owner
+        return name of git "remote" of "official" repo
         (must be current for staging and production deploys).
         Must NOT be an https URL so tags can be pushed.
         """
         prefix = self.git_upstream_url("")  # ssh "url"
+
         for name, url in self.git_remotes().items():
             if url.startswith(prefix):
                 return name
@@ -344,9 +369,10 @@ class BaseDeploy:
 
     def git_upstream_url(self, repo: str) -> str:
         """
-        return git URL for home repo
+        return git remote URL for official repo (suitable for push)
+        may be github specific!
         """
-        return f"{self.UPSTREAM_HOST}:{self.UPSTREAM_USER}/{repo}"
+        return f"{self.PRIVATE_URL_PREFIX}{self.PROJECT_OWNER}/{repo}"
 
     def _id2name(self, id: str) -> str:
         """
@@ -669,9 +695,9 @@ class BaseDeploy:
         for pr in self.private_repos:
             print("tagging", pr.repo, "with", tag)
             self.proc_call(["git", "tag", tag], as_login_user=True, cwd=pr.dir)
-            # freshly cloned above, so remote always "origin"
+            # freshly cloned above, so always default remote
             self.proc_call(
-                ["git", "push", "origin", tag],
+                ["git", "push", self.GIT_DEFAULT_REMOTE, tag],
                 as_login_user=True,
                 cwd=pr.dir,
             )
@@ -813,23 +839,27 @@ class BaseDeploy:
         # Don't push code tags if code not pushed!
         # --unpushed void where prohibited by law (see below).
         self.push_tag_to = []  # remotes to push tag to
+
+        # XXX leverage git_origin_remote??
+
+        origin = self.GIT_DEFAULT_REMOTE
         if not self.unpushed:
-            self.push_tag_to.append("origin")
-        self.upstream_remote = self.git_upstream_remote()
+            self.push_tag_to.append(origin)
+        self.upstream_remote = self.git_upstream_remote()  # to official repo
         self.debug("upstream_remote", self.upstream_remote)
         if self.is_dev():
             if (
-                self.upstream_remote == "origin"
+                self.upstream_remote == origin
                 and self.branch == "main"
                 and not self.unpushed
             ):
                 # Telling user to push would overwrite main repo main branch,
                 # dev deployment tags would end up in main repo!!
                 self.fatal(
-                    f"Use 'deploy --unpushed' on main branch with origin {self.UPSTREAM_USER}!"
+                    f"Use 'deploy --unpushed' on main branch with {origin} from {self.PROJECT_OWNER}!"
                 )
-            if self.git_is_current(self.branch, "origin"):
-                print(f"origin/{self.branch} up to date")
+            if self.git_is_current(self.branch, origin):
+                print(f"{origin}/{self.branch} up to date")
             elif not args.unpushed:
                 self.fatal(f"origin/{self.branch} not up to date.  push!")
         else:

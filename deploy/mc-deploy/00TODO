@@ -1,3 +1,6 @@
+add settings_default(list[ST])??
+Use ST's w/ dokku too???????????
+
 WISH:
 
 table (dict of NamedTuples) of variables to transfer to jinja or

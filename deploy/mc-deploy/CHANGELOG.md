@@ -1,5 +1,9 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.12.0: work on sous-chef-kitchen deploy.py (second Docker project)
+	much const renaming, cleanup, write_deploy_log()
+	pulled Check enum up to base, add SettingsTuple, docker_settings()
+
 * 0.11.3: add airtable_name method to mc-manage/release.py
 * 0.11.2: add files from mc-manage
 * 0.11.1: tried unlocking mc-manage

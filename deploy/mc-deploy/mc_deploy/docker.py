@@ -17,8 +17,36 @@ need or desire to change.
 import grp
 import os
 import re
+from enum import Enum
+from typing import NamedTuple, TypeAlias
 
 from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs
+
+DockerEnv: TypeAlias = dict[str, str]
+
+
+class Check(Enum):
+    """
+    value checks for settings passed as jinja template vars
+    or via _docker_env
+    """
+
+    INT = "int"
+    BOOL = "bool"  # only with jinja
+    STR = "str"
+    ALLOW_EMPTY = "allow-empty"
+    PROD = "prod"  # allow empty unless production
+    # XXX add entry for not transfered (for internal use only)???
+
+
+class ST(NamedTuple):
+    """
+    settings tuple
+    """
+
+    name: str
+    check: Check = Check.STR
+    default: str = ""
 
 
 class DockerDeploy(BaseDeploy):
@@ -30,6 +58,8 @@ class DockerDeploy(BaseDeploy):
     COMPOSE_FILE = "docker-compose.yml"
     IMAGE_NAME: str  # use self.image_name!!
     IMAGE_REPO = ""  # aka registry!
+
+    _docker_env: DockerEnv | None
 
     ################ utilities
 
@@ -74,7 +104,7 @@ class DockerDeploy(BaseDeploy):
                 ["docker", "stack", "config", "-c", self.COMPOSE_FILE],
                 always=True,
                 cwd=deploy_dir,
-                env=self.compose_env,
+                env=self._docker_env,
                 stdout=f,
             )
             os.fchmod(f.fileno(), 0o400)  # user read only
@@ -89,14 +119,14 @@ class DockerDeploy(BaseDeploy):
         self.proc_call(
             ["docker", "compose", "-f", self.COMPOSE_FILE, "build"],
             cwd=self.get_deploy_dir(),
-            env=self.compose_env,
+            env=self._docker_env,
         )
 
-    def docker_image_full(self) -> str:
+    def docker_image_full(self, suffix: str = "") -> str:
         reg = self.docker_image_repo()
         if reg and not reg.endswith("/"):
             reg += "/"
-        return f"{reg}{self.image_name}:{self.image_tag}"
+        return f"{reg}{self.image_name}{suffix}:{self.image_tag}"
 
     def docker_image_name(self) -> str:
         """override as needed; used to set self.image_name"""
@@ -109,6 +139,35 @@ class DockerDeploy(BaseDeploy):
     def docker_image_tag(self, tag: str) -> str:
         """override as needed; used to set self.image_tag"""
         return re.sub(r"[^a-zA-Z0-9_.-]", "_", tag)
+
+    def docker_settings(self, vars: list[ST]) -> None:
+        """
+        transfer values from settings to environment passed to docker
+        commands
+        """
+        if self._docker_env is None:
+            self._docker_env = {}
+
+        for st in vars:
+            name = st.name
+            value = self.settings.get(name, "")
+            if not isinstance(st.check, Check):
+                self.warning(f"{name} has improper .check value")
+            if st.check is Check.BOOL:
+                self.fatal(f"{name} setting type bool not allowed")
+            if value == "":
+                if (
+                    st.check is Check.ALLOW_EMPTY
+                    or st.check is Check.PROD
+                    and not self.is_prod_staging()
+                ):
+                    pass
+                else:
+                    self.fatal(f"{name} setting must not be empty")
+            if st.check is Check.INT and (not value or not value.isdigit()):
+                self.fatal(f"{name} setting must be integer")
+            assert isinstance(value, str)
+            self._docker_env[name] = value
 
     def docker_stack_deploy(self) -> int:
         """
@@ -128,8 +187,27 @@ class DockerDeploy(BaseDeploy):
                 self.inst_name,
             ],
             cwd=self.get_deploy_dir(),
-            env=self.compose_env,
+            env=self._docker_env,
         )
+
+    def settings_defaults(self, vars: list[ST]) -> None:
+        for st in vars:
+            if st.default:
+                self.settings_add(st.name, st.default)
+
+    def write_deploy_log(self) -> None:
+        if self.dry_run:
+            return
+
+        with open(os.path.join(self.deploy_dir, "deploy.log"), "a") as f:
+            self.fix_file_owner(f, False)  # owned by user; not private
+            ct = self.config_tag or "-"
+            # story-indexer/deploy.sh put in remote rather than host
+            # (but it wasn't terribly useful)
+            host = self.tag_host()
+            f.write(
+                f"{self.date_time} {self.inst_name} {host} {self.tag} {ct}\n"
+            )
 
     ################ overrides
 
@@ -138,9 +216,18 @@ class DockerDeploy(BaseDeploy):
         called with result of argparse.parse_args
         """
         super().parser_results(args)
-        self.compose_env: dict[str, str] | None = None
+        # default to None, so None is passed to proc_call unless something set!
+        self._docker_env = None
 
     ################ commands
+
+    def deploy_cmd_helper(self, args: CmdArgs) -> None:
+        super().deploy_cmd_helper(args)
+        # self.tag now set
+
+        self.image_tag = self.docker_image_tag(self.tag)
+        self.image_name = self.docker_image_name()
+        self.image_full = self.docker_image_full()
 
     def deploy_cmd_init(self, cp: CmdParser) -> None:
         super().deploy_cmd_init(cp)
@@ -156,14 +243,8 @@ class DockerDeploy(BaseDeploy):
         """Deploy code to docker stack"""
 
         self.check_root_or_docker()
-
         self.deploy_cmd_requirements()  # before clean check!
-
-        self.deploy_cmd_helper(args)
-
-        self.image_tag = self.docker_image_tag(self.tag)
-        self.image_name = self.docker_image_name()
-        self.image_full = self.docker_image_full()
+        self.deploy_cmd_helper(args)  # sets self.tag, image_{name,full,tag}
         self.docker_compose_file_create()
         self.docker_compose_file_check()
         self.docker_compose_build()
@@ -173,15 +254,6 @@ class DockerDeploy(BaseDeploy):
         if (ret := self.docker_stack_deploy()) != 0:
             return ret
 
-        with open(os.path.join(self.deploy_dir, "deploy.log"), "a") as f:
-            self.fix_file_owner(f, False)  # owned by user; not private
-            ct = self.config_tag or "-"
-            # story-indexer/deploy.sh put in remote rather than host
-            # (but it wasn't terribly useful)
-            host = self.tag_host()
-            f.write(
-                f"{self.date_time} {self.inst_name} {host} {self.tag} {ct}\n"
-            )
-
+        self.write_deploy_log()
         self.airtable_notify()
         return 0
