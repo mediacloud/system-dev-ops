@@ -1,0 +1,7 @@
+WISH:
+
+table (dict of NamedTuples) of variables to transfer to jinja or
+environment variables!!  Notes in story-indexer/docker/deploy.py?
+
+pre_helper hook/method (before inst_id)?
+post_helper hook/method (after config read)?

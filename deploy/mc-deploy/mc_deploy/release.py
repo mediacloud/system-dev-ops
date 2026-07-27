@@ -1,5 +1,7 @@
 """
-plugin used to release this package!!!
+mixin used to release this package!!!
+The primitives were there, so it was obvious... eventually!
+(once I started thinking about a script to do the job)
 """
 
 from .base import CmdArgs, DeployMixinBase
@@ -12,7 +14,10 @@ class ReleaseMixin(DeployMixinBase):
     requires a version mixin!
     """
 
+    # prefix added to proj_version() for tag:
     TAG_PREFIX = "v"
+
+    # add .latest: some repos have github CI hooks to do this!
     LATEST = True
 
     def release_cmd(self, args: CmdArgs) -> int:
