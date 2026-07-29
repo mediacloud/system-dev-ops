@@ -157,30 +157,36 @@ class BaseDeploy:
         self.fatal("must be run as root")
         # may return in dry runs
 
+    def _confirm(self, msg: str, exact: bool) -> None:
+        sys.stderr.write("\n")
+        sys.stderr.write(msg)  # no newline
+        sys.stderr.flush()
+        conf = sys.stdin.readline().strip()
+
+        # could be one "if", but expanded for maximum clarity
+        if exact:
+            confirmed = (conf == "YES")
+        else:
+            confirmed = conf.lower() in ("y", "yes")
+        if not confirmed:
+            self.fatal("[cancelled]", quit=True)
+            # never returns
+
     def confirm(self, msg: str) -> None:
         """
         call for first confirmation; exits if not confirmed
         """
-        sys.stderr.write("\n")
-        sys.stderr.write(msg)  # no newline
-        sys.stderr.flush()
-        conf = sys.stdin.readline().strip().lower()
-        if conf not in ("y", "yes"):
-            self.fatal("[cancelled]", quit=True)
-            # may return in dry runs
+        self._confirm(msg, False)
 
     def confirm_production(self) -> None:
         """
         call for second confirmation; exits if not confirmed
         """
-        sys.stderr.write("This is production! Type YES to confirm: ")
-        sys.stderr.flush()
-        conf = sys.stdin.readline().strip()
-        if conf != "YES":  # must be exact
-            self.fatal("[cancelled]", quit=True)  # never returns
+        self._confirm("This is production! Type YES to confirm: ")
 
     def fatal(self, msg: str, quit: bool = False) -> None:
-        sys.stderr.write(msg + "\n")
+        sys.stderr.write(f"FATAL: {msg}\n")
+        # no flush needed: always line buffered since Python 3.9
         if self.dry_run and not quit:
             print("(continuing with dry-run)")
             return
