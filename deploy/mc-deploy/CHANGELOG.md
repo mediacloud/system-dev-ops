@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.14.0: docker.py: add settings_{default,docker,jinja}, XV, XC
+
 * 0.12.0: work on sous-chef-kitchen deploy.py (second Docker project)
 	much const renaming, cleanup, write_deploy_log()
 	pulled Check enum up to base, add SettingsTuple, docker_settings()

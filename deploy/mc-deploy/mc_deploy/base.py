@@ -38,6 +38,8 @@ SubCommandParser: TypeAlias = argparse._SubParsersAction
 # space in it, you MUST pass the arguments as a list, without quoting.
 ProcCmd: TypeAlias = str | list[str]
 
+Settings: TypeAlias = dict[str, str]
+
 
 class Flavor(NamedTuple):
     """
@@ -96,7 +98,7 @@ class BaseDeploy:
         self.private_dir: tempfile.TemporaryDirectory[str] | None = None
         self.private_repos: list[PrivateRepo] = []
         self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
-        self.settings: dict[str, str | None] = {}  # app/stack settings
+        self.settings: Settings = {}  # app/stack settings
         self.uid = os.getuid()  # cheap, but checked multiple places
 
     ################ utilities (in alphabetical order!)
@@ -602,6 +604,13 @@ class BaseDeploy:
         assert isinstance(value, str)
         self.settings[key] = value
 
+    def settings_biased(self, key: str, base: int) -> None:
+        """
+        set a value based on a base port variable and
+        the instance port_bias
+        """
+        self.settings[key] = str(base + self.port_bias)
+
     def settings_del(self, key: str) -> None:
         """
         remove a setting value
@@ -633,7 +642,10 @@ class BaseDeploy:
         if not os.path.exists(fname):
             return False
         self.debug("loading", fname)
-        self.settings.update(dotenv.dotenv_values(fname))
+        # loop to avoid None values
+        for key, value in dotenv.dotenv_values(fname).items():
+            if value is not None:
+                self.settings_add(key, value)
         return True
 
     def settings_load_private_files(

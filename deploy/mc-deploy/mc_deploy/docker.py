@@ -8,7 +8,6 @@ compatibility and inertia, at the very least due to no overwelming
 need or desire to change.
 """
 
-# XXX does not call git_is_current, honor --ignore-no-changes!
 # WISH: do clean "clone -b BRANCH URL" (in tempdir) from:
 #       local repo (dirname(deploy_dir)) if dev & --unpushed
 #       origin repo URL if dev
@@ -18,35 +17,64 @@ import grp
 import os
 import re
 from enum import Enum
-from typing import NamedTuple, TypeAlias
+from typing import Callable, TypeAlias
 
-from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs
+from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs, Settings
 
+# values passed to docker via environment: string values only
 DockerEnv: TypeAlias = dict[str, str]
 
+# values for expanding a jinja2 template.
+# NOTE: bools are ints my friend....
+JinjaVal: TypeAlias = int | bool | str
+JinjaVars: TypeAlias = dict[str, JinjaVal]
 
-class Check(Enum):
+# returns whether to transfer value to output:
+TransferCond: TypeAlias = Callable[[Settings], bool]
+
+
+class TransferCheck(Enum):
     """
-    value checks for settings passed as jinja template vars
-    or via _docker_env
+    list of variables and expected types for "settings" passed forward
+    in docker environment, or to a jinja2 template.
+
+    This MIGHT be used w/ Dokku (which currently
+    pass all values thru to container environment).
     """
 
     INT = "int"
-    BOOL = "bool"  # only with jinja
+    BOOL = "bool"
     STR = "str"
+
+    # possibly orthogonal attributes for STR
+    # (could apply to INT/BOOL)
     ALLOW_EMPTY = "allow-empty"
     PROD = "prod"  # allow empty unless production
-    # XXX add entry for not transfered (for internal use only)???
 
 
-class ST(NamedTuple):
+XC = TransferCheck
+
+
+class TransferVar:
     """
-    settings tuple
+    Declare a settings variable that is transferred
+    to the docker environment or a jinja template.
+
+    List passed to settings_{default,docker,jinja}
     """
 
-    name: str
-    check: Check = Check.STR
-    default: str = ""
+    def __init__(
+        self,
+        name: str,
+        *,
+        check: TransferCheck = XC.STR,
+        default: str = "",
+        cond: TransferCond | None = None,
+    ):
+        self.name = name
+        self.check = check
+        self.default = default
+        self.cond = cond
 
 
 class DockerDeploy(BaseDeploy):
@@ -140,35 +168,6 @@ class DockerDeploy(BaseDeploy):
         """override as needed; used to set self.image_tag"""
         return re.sub(r"[^a-zA-Z0-9_.-]", "_", tag)
 
-    def docker_settings(self, vars: list[ST]) -> None:
-        """
-        transfer values from settings to environment passed to docker
-        commands
-        """
-        if self._docker_env is None:
-            self._docker_env = {}
-
-        for st in vars:
-            name = st.name
-            value = self.settings.get(name, "")
-            if not isinstance(st.check, Check):
-                self.warning(f"{name} has improper .check value")
-            if st.check is Check.BOOL:
-                self.fatal(f"{name} setting type bool not allowed")
-            if value == "":
-                if (
-                    st.check is Check.ALLOW_EMPTY
-                    or st.check is Check.PROD
-                    and not self.is_prod_staging()
-                ):
-                    pass
-                else:
-                    self.fatal(f"{name} setting must not be empty")
-            if st.check is Check.INT and (not value or not value.isdigit()):
-                self.fatal(f"{name} setting must be integer")
-            assert isinstance(value, str)
-            self._docker_env[name] = value
-
     def docker_stack_deploy(self) -> int:
         """
         returns status code
@@ -190,10 +189,81 @@ class DockerDeploy(BaseDeploy):
             env=self._docker_env,
         )
 
-    def settings_defaults(self, vars: list[ST]) -> None:
-        for st in vars:
-            if st.default:
-                self.settings_add(st.name, st.default)
+    def _settings_check(self, xv: TransferVar) -> str:
+        """
+        fetch setting, and check syntax for environment vars.
+        always returns str.
+        """
+        value = self.settings.get(xv.name, "")
+        assert isinstance(value, str)
+        if xv.check is XC.BOOL:
+            if value not in ("true", "false"):
+                self.fatal(f"{xv.name} invalid bool: '{value}'")
+        elif not value and (
+            xv.check is not XC.ALLOW_EMPTY
+            and (xv.check is not XC.PROD or not self.is_prod_staging())
+        ):
+            self.fatal(f"{xv.name} setting must not be empty")
+
+        if xv.check is XC.INT and (not value or not value.isdigit()):
+            self.fatal(f"{xv.name} setting must be integer")
+            return "-12345678"  # in case dry run
+
+        return value
+
+    def _settings_check_jinja(self, xv: TransferVar) -> JinjaVal:
+        sval = self._settings_check(xv)  # checks string syntax
+        if xv.check is XC.INT:
+            return int(sval)
+        elif xv.check is XC.BOOL:
+            return sval == "true"
+        return sval
+
+    def settings_defaults(self, xvars: list[TransferVar]) -> None:
+        for xv in xvars:
+            if xv.default:
+                self.settings_add(xv.name, xv.default)
+
+    def settings_docker(self, xvars: list[TransferVar]) -> None:
+        """
+        transfer values from settings to environment passed to docker
+        commands
+        """
+        if self._docker_env is None:
+            self._docker_env = {}
+
+        for xv in xvars:
+            if xv.cond and not xv.cond(self.settings):
+                continue
+            value = self._settings_check(xv)
+            assert isinstance(value, str)
+            self._docker_env[xv.name] = value
+
+    # code to expand template not here so package doesn't become jinja
+    # dependent. Could move to a mixin, and jinja2 dep to an "extra"
+    # in pyproject, but then it wouldn't be near the other uses of the
+    # "ST" type, and might (would) escape notice!
+    def settings_jinja(
+        self, xvars: list[TransferVar], lower: bool = True
+    ) -> JinjaVars:
+        """
+        transfer values from settings to vars to expand a jinja2 template
+        """
+        ret: JinjaVars = {}
+
+        for xv in xvars:
+            if xv.cond and not xv.cond(self.settings):
+                continue
+            name = xv.name
+            if lower:
+                # Phil: I chose to lowercasify names in story-indexer
+                # docker-compose template to try to make it clear(er)
+                # that values weren't automatically passed thru from
+                # settings files.
+                name = name.lower()
+            ret[name] = self._settings_check_jinja(xv)
+
+        return ret
 
     def write_deploy_log(self) -> None:
         if self.dry_run:
