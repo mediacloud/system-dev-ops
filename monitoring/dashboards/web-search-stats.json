@@ -10,10 +10,10 @@
     "url": "/d/44aItldNk/web-search-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2025-01-28T23:47:00Z",
-    "updated": "2026-07-24T01:20:40Z",
+    "updated": "2026-07-25T14:51:28Z",
     "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 39,
+    "version": 41,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 14,
-    "iteration": 1784855693503,
+    "iteration": 1784990741754,
     "links": [],
     "panels": [
       {
@@ -86,7 +86,7 @@
           {
             "refCount": 0,
             "refId": "B",
-            "target": "stats.timers.mc.$realm.web-search.monitor-api.*.*.*.median",
+            "target": "aliasSub(stats.timers.mc.$realm.web-search.monitor-api.*.*.*.median, 'stats.timers.mc.prod.web-search.monitor-api.(.*).median', '\\1')",
             "textEditor": false
           }
         ],
@@ -1188,7 +1188,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(stats.counters.mc.$realm.web-search.provider.*.query.*.rate, -2)",
+            "target": "aliasSub(aliasByNode(stats.counters.mc.$realm.web-search.provider.*.query.*.rate, -2), 'op_(.*)', '\\1')",
             "textEditor": false
           }
         ],
@@ -1234,7 +1234,7 @@
         }
       }
     ],
-    "refresh": "1m",
+    "refresh": false,
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1302,6 +1302,6 @@
     "timezone": "",
     "title": "web-search stats",
     "uid": "44aItldNk",
-    "version": 39
+    "version": 41
   }
 }
