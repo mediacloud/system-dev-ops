@@ -165,7 +165,7 @@ class BaseDeploy:
 
         # could be one "if", but expanded for maximum clarity
         if exact:
-            confirmed = (conf == "YES")
+            confirmed = conf == "YES"
         else:
             confirmed = conf.lower() in ("y", "yes")
         if not confirmed:
@@ -182,7 +182,7 @@ class BaseDeploy:
         """
         call for second confirmation; exits if not confirmed
         """
-        self._confirm("This is production! Type YES to confirm: ")
+        self._confirm("This is production! Type YES to confirm: ", exact=True)
 
     def fatal(self, msg: str, quit: bool = False) -> None:
         sys.stderr.write(f"FATAL: {msg}\n")
@@ -626,18 +626,22 @@ class BaseDeploy:
     def settings_get_new(self, args: ParserArgs) -> None:
         """
         subclass with additional settings, loading files etc.
-        """
-        # if this script ever sends directly to airtable,
-        # no need to add them to app settings!!!!
-        # self.settings_add("AIRTABLE_HARDWARE", self.tag_host())
-        # self.settings_add("AIRTABLE_ENV", self.inst_type)
-        # self.settings_add("AIRTABLE_NAME", self.inst_name)
 
-        self.settings_add("STATSD_PREFIX", self.statsd_prefix)
+        called from BaseDeploy.deploy_cmd_helper
+        BEFORE .inst_name and .tag set
+        but AFTER branch, inst_type, inst_id set
+           (do is_prod etc are safe)
+        """
+        # no longer sets AIRTABLE_{ENV,HARDWARE,NAME} since
+        # .airtable_notify is built into this class does not need to
+        # be passed to containers.
+
+        # universal settings, in alphabetical order
         if self.is_prod():
             self.settings_add("SENTRY_ENV", "production")
         elif self.is_staging():
             self.settings_add("SENTRY_ENV", "staging")
+        self.settings_add("STATSD_PREFIX", self.statsd_prefix)
         self.settings_add("TZ", "UTC")  # display/log time in UTC
 
     def settings_load_file(self, fname: str) -> bool:
