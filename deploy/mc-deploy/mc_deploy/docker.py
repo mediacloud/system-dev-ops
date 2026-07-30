@@ -323,12 +323,22 @@ class DockerDeploy(BaseDeploy):
         self.deploy_cmd_requirements()  # before clean check!
         self.deploy_cmd_helper(args)  # sets self.tag, image_{name,full,tag}
         self.docker_compose_file_create()
+
+        print("Last commit:")
+        self.proc_call("git log -n1", always=True)  # output to user
+        self.confirm(
+            f"Deploy from branch {self.branch} to stack {self.inst_name}? [no] "
+        )
+        if self.is_prod():
+            self.confirm_production()
+
         self.docker_compose_file_check()
         self.docker_compose_build()
         if args.build_only:
             return 0
 
-        if (ret := self.docker_stack_deploy()) != 0:
+        ret = self.docker_stack_deploy()
+        if ret != 0:
             return ret
 
         self.write_deploy_log()
