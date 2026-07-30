@@ -191,23 +191,30 @@ class DockerDeploy(BaseDeploy):
 
     def _settings_check(self, xv: TransferVar) -> str:
         """
-        fetch setting, and check syntax for environment vars.
-        always returns str.
+        fetch setting: MUST BE SET, and check syntax.  always returns str
+        (to be used in environment, or cooerced by caller)
         """
-        value = self.settings.get(xv.name, "")
+        try:
+            value = self.settings[xv.name]
+        except KeyError:
+            self.fatal(f"{xv.name} not set")
+            # here on dry-run:
+            value = "MISSING"
         assert isinstance(value, str)
         if xv.check is XC.BOOL:
             if value not in ("true", "false"):
                 self.fatal(f"{xv.name} invalid bool: '{value}'")
-        elif not value and (
-            xv.check is not XC.ALLOW_EMPTY
-            and (xv.check is not XC.PROD or not self.is_prod_staging())
-        ):
-            self.fatal(f"{xv.name} setting must not be empty")
+        elif not value:
+            if xv.check is XC.ALLOW_EMPTY:
+                pass
+            elif xv.check is XC.PROD and not self.is_prod():
+                pass
+            else:
+                self.fatal(f"{xv.name} setting must not be empty")
 
         if xv.check is XC.INT and (not value or not value.isdigit()):
             self.fatal(f"{xv.name} setting must be integer")
-            return "-12345678"  # in case dry run
+            return "12345678"  # in case dry run
 
         return value
 
