@@ -15,6 +15,7 @@ import statsd
 import psutil
 
 INTERVAL = 60                   # seconds
+
 STATSD_HOST = "tarbell.angwin"
 
 # map partition mount points to reporting names
@@ -39,7 +40,46 @@ def get_devices():
             dev_to_fs[devname] = disk.mountpoint
             filesystems.add(disk.mountpoint)
 
-def report(f):
+def full_diskstats():
+    # psutil disk_io_counters is incomplete!
+    ret = {}
+    with open("/proc/diskstats") as f:
+        for line in f:
+            # docs are one-based in terms of fields after the name:
+            # 0 & 1 are major and minor device numbers?
+            toks = line.strip().split()[2:]
+            device = toks[0]
+            if device.startswith("loop"):
+                continue
+            ret[device] = devstats = {}
+            # discard are TRIM discard ops
+            ops = devstats["ops"] = {}
+            for op, start in [("read", 1), ("write", 5), ("discard", 12)]:
+                ops[op] = {
+                    "completed": int(toks[start]),
+                    "merged": int(toks[start+1]),
+                    "kb": int(toks[start+2]) // 2, # sectors to kB
+                    "ms": int(toks[start+3])
+                }
+            # not per disk:
+            devstats["in-progress"] = int(toks[9])
+            devstats["time-busy"] = int(toks[10])
+            devstats["weighted-time"] = int(toks[11]) # qlen x time product?
+            devstats["flush-completed"] = int(toks[16])
+            devstats["flush-ms"] = int(toks[17])
+
+    return ret
+
+def report(f, prev, curr):
+    """
+    takes function to report or print a gauge
+    """
+    curr['time'] = now = time.monotonic()
+    if prev:
+        dt = (now - prev['time']) * 1000 # ms
+    else:
+        dt = 0
+
     for mount_point in filesystems:
         disk_usage = psutil.disk_usage(mount_point)
         name = DISKS[mount_point]
@@ -61,6 +101,7 @@ def report(f):
     f(f"load.5.{host}", la[1])
     f(f"load.15.{host}", la[2])
 
+    # OLD: remove once grafana switched over
     diskstats = psutil.disk_io_counters(perdisk=True)
     for dev, stats in diskstats.items():
         if dev in dev_to_fs:
@@ -69,6 +110,64 @@ def report(f):
                 name, unit = field.replace("_", "-").rsplit("-", 1)
                 # group like units together
                 f(f"disk.stats.{unit}.{name}.{host}.{fs}", getattr(stats, field))
+
+    # NEW: psutil disk_io_counters are incomplete. Created this after
+    # I saw Zabbix, and read
+    # https://kernel-internals.org/io/observability/
+    # and couldn't find anything off the shelf....
+
+    # Doing deltas and calculations here because it's too much of a
+    # pain in graphite queries (and need to know the reporting interval),
+
+    # trying to stick to what "iostat -x" reports and not make
+    # anything up!
+    fulldisk = curr['disk'] = full_diskstats()
+    prevdisk = prev.get('disk')
+    if prevdisk and dt:
+        for dev, stats in fulldisk.items():
+            if dev not in dev_to_fs:
+                continue        # not a mounted device
+
+            fspath = dev_to_fs[dev] # get mount location
+            if fspath not in DISKS: # no mapping to stats name?
+                continue            # complain????
+            fsname = DISKS[fspath]
+
+            p = prevdisk[dev]
+
+            def report(op, stat, value):
+                f(f"disk.nstats.{op}.{stat}.{host}.{fs}", value)
+
+            pops = p["ops"]
+            for op, counts in stats["ops"].items():
+                # op is read/write/discard
+                # counts is dict with complete, merged, sectors, time
+
+                pcounts = pops[op]      # prev counts
+                d_count = counts["completed"] - pcounts["completed"]
+                d_kb = counts["kb"] - pcounts["kb"]
+                d_ms = counts["ms"] - pcounts["ms"]
+                if d_count:
+                    avg_kb = d_kb / d_count
+                else:
+                    avg_kb = 0
+
+                report(op, "reqs-sec", d_count/dt) # requests per second
+                report(op, "kb-sec", d_kb/dt) # kBbytes per second
+                report(op, "avg-wait-ms", d_ms/dt) # avg wait in ms
+                report(op, "avg-kb", avg_kb) # avg request size in kB
+
+            # remainder not per-operation:
+            d_flushes = stats["flush-completed"] - p["flush-completed"]
+            d_flush_ms = stats["flush-ms"] - p["flush-ms"]
+
+            # not operation with full stats, but using same names:
+            report("flush", "reqs-sec", d_flushes/dt) # flushes/second
+            report("flush", "avg-wait-ms", d_flush_ms/dt) # avg flush wait time
+
+            d_weighted = stats["weighted-time"] - p["weighted-time"]
+            report("overall", "queue-avg-len", d_weighted/dt)
+            report("overall", "in-progress", stats["in-progress"]) # instantaneous FWIW
 
     cputimes = psutil.cpu_times()
     for field in cputimes._fields:
@@ -93,14 +192,18 @@ def report(f):
             f(f"net.pkts.tx.drop.{host}.{ifname}", stats.dropout)
 
 get_devices()
+prev = {}
 while True:
+    # PB: why did I put this inside the loop? in case don't start up correctly??
     c = statsd.StatsdClient(STATSD_HOST, 8125, prefix="mc.systems")
     if "--debug" in sys.argv:
         f = print
     else:
         f = c.gauge
 
-    report(f)
+    curr = {}
+    report(f, prev, curr)
+    prev = curr
    
     sleep_sec = INTERVAL - time.time() % INTERVAL
     time.sleep(sleep_sec)
