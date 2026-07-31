@@ -147,15 +147,20 @@ def report(f, prev, curr):
                 d_count = counts["completed"] - pcounts["completed"]
                 d_kb = counts["kb"] - pcounts["kb"]
                 d_ms = counts["ms"] - pcounts["ms"]
+                d_merged = counts["merged"] - pcounts["merged"]
+
                 if d_count:
                     avg_kb = d_kb / d_count
+                    pct_merged = 100 * d_merged / d_count
                 else:
                     avg_kb = 0
+                    pct_merged = 0
 
                 report(op, "reqs-sec", d_count/dt) # requests per second
                 report(op, "kb-sec", d_kb/dt) # kBbytes per second
                 report(op, "avg-wait-ms", d_ms/dt) # avg wait in ms
                 report(op, "avg-kb", avg_kb) # avg request size in kB
+                report(op, "pct-merged", pct_merged) # indicates seqential access
 
             # remainder not per-operation:
             d_flushes = stats["flush-completed"] - p["flush-completed"]
@@ -166,8 +171,10 @@ def report(f, prev, curr):
             report("flush", "avg-wait-ms", d_flush_ms/dt) # avg flush wait time
 
             d_weighted = stats["weighted-time"] - p["weighted-time"]
+            d_busy = stats["time-busy"] - p["time-busy"]
             report("overall", "queue-avg-len", d_weighted/dt)
             report("overall", "in-progress", stats["in-progress"]) # instantaneous FWIW
+            report("overall", "utilization", 100*d_busy/dt)
 
     cputimes = psutil.cpu_times()
     for field in cputimes._fields:
@@ -198,6 +205,7 @@ while True:
     c = statsd.StatsdClient(STATSD_HOST, 8125, prefix="mc.systems")
     if "--debug" in sys.argv:
         f = print
+        INTERVAL = 10
     else:
         f = c.gauge
 
