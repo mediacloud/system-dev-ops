@@ -42,6 +42,8 @@ def get_devices():
 
 def full_diskstats():
     # psutil disk_io_counters is incomplete!
+    # see https://kernel-internals.org/io/observability/
+    # for descriptions
     ret = {}
     with open("/proc/diskstats") as f:
         for line in f:
@@ -67,7 +69,6 @@ def full_diskstats():
             devstats["weighted-time"] = int(toks[11]) # qlen x time product?
             devstats["flush-completed"] = int(toks[16])
             devstats["flush-ms"] = int(toks[17])
-
     return ret
 
 def report(f, prev, curr):
@@ -112,11 +113,10 @@ def report(f, prev, curr):
                 f(f"disk.stats.{unit}.{name}.{host}.{fs}", getattr(stats, field))
 
     # NEW: psutil disk_io_counters are incomplete. Created this after
-    # I saw Zabbix, and read
-    # https://kernel-internals.org/io/observability/
-    # and couldn't find anything off the shelf....
+    # I saw Zabbix, and couldn't find anything off the shelf....
+    # see full_diskstats() for generation/descriptions
 
-    # Doing deltas and calculations here because it's too much of a
+    # FINALLY doing deltas and calculations here because it's too much of a
     # pain in graphite queries (and need to know the reporting interval),
 
     # trying to stick to what "iostat -x" reports and not make
@@ -124,25 +124,22 @@ def report(f, prev, curr):
     fulldisk = curr['disk'] = full_diskstats()
     prevdisk = prev.get('disk')
     if prevdisk and dt:
-        for dev, stats in fulldisk.items():
-            if dev not in dev_to_fs:
-                continue        # not a mounted device
+        for dev, fspath in dev_to_fs.items():
+            fsname = DISKS.get(fspath, "")
+            if not fsname:
+                continue
 
-            fspath = dev_to_fs[dev] # get mount location
-            if fspath not in DISKS: # no mapping to stats name?
-                continue            # complain????
-            fsname = DISKS[fspath]
-
+            stats = fulldisk[dev]
             p = prevdisk[dev]
 
             def g(op, stat, value):
                 if value >= 0:
-                    f(f"disk.nstats.{op}.{stat}.{host}.{fs}", value)
+                    f(f"disk.nstats.{op}.{stat}.{host}.{fsname}", value)
 
             pops = p["ops"]
             for op, counts in stats["ops"].items():
                 # op is read/write/discard
-                # counts is dict with complete, merged, sectors, time
+                # counts is dict with keys complete, merged, sectors, time
 
                 pcounts = pops[op]      # prev counts
                 d_count = counts["completed"] - pcounts["completed"]
@@ -163,14 +160,13 @@ def report(f, prev, curr):
                 g(op, "avg-kb", avg_kb) # avg request size in kB
                 g(op, "pct-merged", pct_merged) # indicates seqential access
 
-            # remainder not per-operation:
+            # not operation with full stats, but using same names:
             d_flushes = stats["flush-completed"] - p["flush-completed"]
             d_flush_ms = stats["flush-ms"] - p["flush-ms"]
-
-            # not operation with full stats, but using same names:
             g("flush", "reqs-sec", d_flushes/dt) # flushes/second
             g("flush", "avg-wait-ms", d_flush_ms/dt) # avg flush wait time
 
+            # remainder not per-operation:
             d_weighted = stats["weighted-time"] - p["weighted-time"]
             d_busy = stats["time-busy"] - p["time-busy"]
             g("overall", "queue-avg-len", d_weighted/dt)
@@ -201,10 +197,13 @@ def report(f, prev, curr):
 
 get_devices()
 prev = {}
+debug = '--debug' in sys.argv
+if debug:
+    print(filesystems, dev_to_fs)
 while True:
     # PB: why did I put this inside the loop? in case don't start up correctly??
     c = statsd.StatsdClient(STATSD_HOST, 8125, prefix="mc.systems")
-    if "--debug" in sys.argv:
+    if debug:
         f = print
         INTERVAL = 10
     else:
