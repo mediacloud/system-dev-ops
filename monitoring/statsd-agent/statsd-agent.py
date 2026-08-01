@@ -135,8 +135,9 @@ def report(f, prev, curr):
 
             p = prevdisk[dev]
 
-            def report(op, stat, value):
-                f(f"disk.nstats.{op}.{stat}.{host}.{fs}", value)
+            def g(op, stat, value):
+                if value >= 0:
+                    f(f"disk.nstats.{op}.{stat}.{host}.{fs}", value)
 
             pops = p["ops"]
             for op, counts in stats["ops"].items():
@@ -156,25 +157,25 @@ def report(f, prev, curr):
                     avg_kb = 0
                     pct_merged = 0
 
-                report(op, "reqs-sec", d_count/dt) # requests per second
-                report(op, "kb-sec", d_kb/dt) # kBbytes per second
-                report(op, "avg-wait-ms", d_ms/dt) # avg wait in ms
-                report(op, "avg-kb", avg_kb) # avg request size in kB
-                report(op, "pct-merged", pct_merged) # indicates seqential access
+                g(op, "reqs-sec", d_count/dt) # requests per second
+                g(op, "kb-sec", d_kb/dt) # kBbytes per second
+                g(op, "avg-wait-ms", d_ms/dt) # avg wait in ms
+                g(op, "avg-kb", avg_kb) # avg request size in kB
+                g(op, "pct-merged", pct_merged) # indicates seqential access
 
             # remainder not per-operation:
             d_flushes = stats["flush-completed"] - p["flush-completed"]
             d_flush_ms = stats["flush-ms"] - p["flush-ms"]
 
             # not operation with full stats, but using same names:
-            report("flush", "reqs-sec", d_flushes/dt) # flushes/second
-            report("flush", "avg-wait-ms", d_flush_ms/dt) # avg flush wait time
+            g("flush", "reqs-sec", d_flushes/dt) # flushes/second
+            g("flush", "avg-wait-ms", d_flush_ms/dt) # avg flush wait time
 
             d_weighted = stats["weighted-time"] - p["weighted-time"]
             d_busy = stats["time-busy"] - p["time-busy"]
-            report("overall", "queue-avg-len", d_weighted/dt)
-            report("overall", "in-progress", stats["in-progress"]) # instantaneous FWIW
-            report("overall", "utilization", 100*d_busy/dt)
+            g("overall", "queue-avg-len", d_weighted/dt)
+            g("overall", "in-progress", stats["in-progress"]) # instantaneous FWIW
+            g("overall", "utilization", 100*d_busy/dt)
 
     cputimes = psutil.cpu_times()
     for field in cputimes._fields:
