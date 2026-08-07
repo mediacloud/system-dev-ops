@@ -283,7 +283,7 @@ class DockerDeploy(BaseDeploy):
             # (but it wasn't terribly useful)
             host = self.tag_host()
             f.write(
-                f"{self.date_time} {self.inst_name} {host} {self.tag} {ct}\n"
+                f"{self.date_time} {host} {self.inst_name} {self.tag} {ct}\n"
             )
 
     ################ overrides

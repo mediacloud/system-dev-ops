@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.14.2: docker.py: swap host and stack name in deploy.log
 * 0.14.1: cleanup: add "FATAL:", _confirm worker, linted
 	docker.py _settings_check -- setting MUST exist
 	fix dokku_fix_git_deploy_branch
