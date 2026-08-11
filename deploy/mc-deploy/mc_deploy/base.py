@@ -731,6 +731,14 @@ class BaseDeploy:
         """
         return inspect.getsourcefile(type(self))
 
+    def stats_app(self) -> str:
+        """
+        default to stack/app name;
+        correct for a multi-flavor app like story-indexer
+        (stack names indexer, hist-indexer, arch-indexer)
+        """
+        return self.get_inst_base()
+
     def tag_make(self) -> str:
         if self.is_prod():
             return self.tag_prod()
@@ -818,13 +826,13 @@ class BaseDeploy:
             ftup = self.INST_FLAVORS[args.flavor]
             self.inst_flavor_prefix = ftup.prefix
 
-        inst_base = self.get_inst_base()
-        self.statsd_prefix = f"mc.{self.inst_id}.{inst_base}"
+        # inst id is prod, staging or USER
+        # default stats_app returns app/stack name including flavor-
+        self.statsd_prefix = f"mc.{self.inst_id}.{self.stats_app()}"
+        self.debug("statsd_prefix", self.statsd_prefix)
 
         # allow subclass override of STATSD_HOST
         self.statsd_url = f"statsd://{self.STATSD_HOST}:8125"
-
-        self.debug("statsd_prefix", self.statsd_prefix)
 
         # port bias is used (if desired) to generate local host
         # ports to access containers (by adding to native or interval port)
