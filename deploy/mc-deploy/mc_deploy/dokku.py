@@ -289,7 +289,7 @@ class DokkuDeploy(BaseDeploy):
         for line in self.dokku_output_lines(["git:report", app]):
             line = line.lstrip()
             if line.startswith("Git deploy branch:"):
-                curr_dokku_git_branch = line.split(":", maxsplit=1)[1]
+                curr_dokku_git_branch = line.split(":", maxsplit=1)[1].strip()
                 break
         else:
             return
