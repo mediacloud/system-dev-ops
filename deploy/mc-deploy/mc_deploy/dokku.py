@@ -705,7 +705,7 @@ class DokkuDeploy(BaseDeploy):
             ):
                 print(f"added git remote {dokku_remote}")
             else:
-                self.fatal(f"Failed to add remote {drem} {ssh_url}")
+                self.fatal(f"Failed to add remote {dokku_remote} {git_ssh_url}")
 
         # else MAYBE check if remotes[dokku_remote] == ssh_url??
         # (would stumble over different versions of hostname)
