@@ -1,3 +1,29 @@
+msg: rerun 'create **INSTANCE**'
+
+dokku.py:
+	configure postgres:backup-{auth,schedule}!!!
+		take _MC_DEPLOY_DOKKU_DB_BACKUP..... vars?
+
+		DOKKU_POSTGRES_S3_SCHEDULE="0 1 * * *"
+		DOKKU_POSTGRES_S3_BUCKET
+		DOKKU_POSTGRES_S3_KEY_ID
+		DOKKU_POSTGRES_S3_SECRET_KEY
+		DOKKU_POSTGRES_S3_REGION
+		DOKKU_POSTGRES_S3_SIGN_VERS
+		DOKKU_POSTGRES_S3_ENDPOINT
+
+		postgres:backup-auth SVC K1 K2
+		postgres:backup-schedule SVC SCH BUCKET [REGION [SIGN_VERS [ENDPOINT]]]
+
+
+staging: check if current w/ main????? option to disable
+prod: check if current with staging???
+
+Always check if newer mc-deploy vX.Y.latest??
+	always try upgrade from "make deploy"??
+	add upgrade-mc-deploy command????
+	always generate hash-locked req-deploy.lock???
+
 Use TransferVar's (XV) w/ dokku too???????????
 
 BETTER HOOK/METHOD NAMES!
@@ -11,7 +37,7 @@ rss-fetcher:
 		remove AIRTABLE from rss-fetcher conf
 		read manage private config
 		remove mc-manage dependency
-		remove postdeploy.sh
+		remove postdeploy.sh?
 
 
 web-search:
@@ -20,4 +46,4 @@ web-search:
 		remove AIRTABLE from web-search conf
 		read manage private config
 		remove mc-manage dependency
-		remove postdeploy.sh
+		remove postdeploy.sh?
