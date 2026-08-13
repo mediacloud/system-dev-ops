@@ -108,9 +108,6 @@ class BaseDeploy:
     def airtable_name(self) -> str:
         return self.PROJECT_REPO
 
-    def airtable_load_private_config(self) -> None:
-        self.settings_load_private_files("management-config", ["env.sh"])
-
     def airtable_notify(self) -> None:
         """notify of a deployment"""
         if self.is_dev():
@@ -660,6 +657,12 @@ class BaseDeploy:
             if value is not None:
                 self.settings_add(key, value)
         return True
+
+    def settings_load_management_config(self) -> None:
+        """
+        load AIRTABLE and SENTRY config
+        """
+        self.settings_load_private_files("management-config", ["env.sh"])
 
     def settings_load_private_files(
         self, repo: str, fnames: list[str]
