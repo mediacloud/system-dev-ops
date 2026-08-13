@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.14.5: base.py: add airtable_load_private_config()
 * 0.14.4: dokku.py: fix dokku_fix_git_deploy_branch!
 * 0.14.3: base.py: add stats_app() method for mcweb/web-search override
 * 0.14.2: docker.py: swap host and stack name in deploy.log

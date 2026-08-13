@@ -108,6 +108,9 @@ class BaseDeploy:
     def airtable_name(self) -> str:
         return self.PROJECT_REPO
 
+    def airtable_load_private_config(self) -> None:
+        self.settings_load_private_files("management-config", ["env.sh"])
+
     def airtable_notify(self) -> None:
         """notify of a deployment"""
         if self.is_dev():
