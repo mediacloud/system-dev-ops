@@ -75,6 +75,7 @@ def log_to_sink(
     *,
     add_to_root_logger: bool = True,
     log_thread_id: bool = False,
+    format: str | None = None,
 ) -> SysLogHandler | None:
     if not syslog_host or not syslog_port:
         return None
@@ -92,10 +93,11 @@ def log_to_sink(
     )
     handler.socket = SendtoSocketWrapper(handler.socket)  # type: ignore[attr-defined]
 
-    if log_thread_id:
-        fmt = THREAD_SYSLOG_FORMAT
-    else:
-        fmt = NORMAL_SYSLOG_FORMAT
+    if format is None:
+        if log_thread_id:
+            format = THREAD_SYSLOG_FORMAT
+        else:
+            format = NORMAL_SYSLOG_FORMAT
 
     # additional items available to format string:
     defaults = {
@@ -105,7 +107,7 @@ def log_to_sink(
 
     # Might like default datefmt includes milliseconds
     # (which aren't otherwise available)
-    formatter = logging.Formatter(fmt=fmt, defaults=defaults)
+    formatter = logging.Formatter(fmt=format, defaults=defaults)
     handler.setFormatter(formatter)
 
     if add_to_root_logger:
