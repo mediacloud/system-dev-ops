@@ -7,6 +7,7 @@ import logging.handlers
 import socket
 import sys
 import time
+from typing import Any
 
 # local:
 from mc_logging.common import syslog_host, syslog_path, syslog_port
@@ -18,6 +19,10 @@ NORMAL_SYSLOG_FORMAT = (
 )
 # include thread, formatted as if syslog pid:
 THREAD_SYSLOG_FORMAT = "%(asctime)s %(hostname)s %(app)s[%(threadName)s] %(levelname)s: %(message)s"
+# include supplied subid as if a syslog pid:
+SUBID_SYSLOG_FORMAT = (
+    "%(asctime)s %(hostname)s %(app)s[%(subId)s] %(levelname)s: %(message)s"
+)
 
 
 # not a subclass of socket.socket due to signature forgery issues
@@ -78,14 +83,20 @@ class SysLogHandler(logging.handlers.SysLogHandler):
         pass
 
 
+_saved_handler: SysLogHandler | None = None
+
+
 def log_to_sink(
     app: str,  # program/process name
     *,
+    sub_id: str | None = None,
     add_to_root_logger: bool = True,
     log_thread_id: bool = False,
     facility: int = SysLogHandler.LOG_LOCAL0,
     format: str | None = None,
+    overrides: dict[str, Any] = {},
 ) -> SysLogHandler | None:
+    global _saved_handler
 
     # NOTE!! Using unreliable UDP because TCP connection backlog
     # can cause sends to socket to block!!
@@ -109,7 +120,9 @@ def log_to_sink(
         return None
 
     if format is None:
-        if log_thread_id:
+        if sub_id:
+            format = SUBID_SYSLOG_FORMAT
+        elif log_thread_id:
             format = THREAD_SYSLOG_FORMAT
         else:
             format = NORMAL_SYSLOG_FORMAT
@@ -120,6 +133,12 @@ def log_to_sink(
         "hostname": socket.gethostname(),  # without domain
         "app": app,
     }
+    if sub_id:
+        defaults["subId"] = sub_id
+
+    if overrides:
+        # could be used with user supplied format
+        defaults.update(overrides)
 
     # Might like default datefmt includes milliseconds
     # (which aren't otherwise available)
@@ -128,6 +147,9 @@ def log_to_sink(
 
     if add_to_root_logger:
         root_logger = logging.getLogger()
+        if _saved_handler:
+            root_logger.removeHandler(_saved_handler)
+        _saved_handler = handler
         root_logger.addHandler(handler)
 
     return handler
