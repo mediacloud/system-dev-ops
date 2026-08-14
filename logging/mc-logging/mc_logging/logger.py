@@ -83,7 +83,7 @@ class SysLogHandler(logging.handlers.SysLogHandler):
         pass
 
 
-_saved_handler: SysLogHandler | None = None
+_saved_handlers: dict[int, SysLogHandler] = {}
 
 
 def log_to_sink(
@@ -96,8 +96,6 @@ def log_to_sink(
     format: str | None = None,
     overrides: dict[str, Any] = {},
 ) -> SysLogHandler | None:
-    global _saved_handler
-
     # NOTE!! Using unreliable UDP because TCP connection backlog
     # can cause sends to socket to block!!
 
@@ -147,9 +145,10 @@ def log_to_sink(
 
     if add_to_root_logger:
         root_logger = logging.getLogger()
-        if _saved_handler:
-            root_logger.removeHandler(_saved_handler)
-        _saved_handler = handler
+        prev = _saved_handlers.get(facility)
+        if prev:
+            root_logger.removeHandler(prev)
+        _saved_handlers[facility] = handler
         root_logger.addHandler(handler)
 
     return handler
