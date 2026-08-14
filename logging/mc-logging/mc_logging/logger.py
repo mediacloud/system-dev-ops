@@ -3,9 +3,13 @@ From mediaclud/story-indexer/indexer/app.py
 """
 
 import logging
+import logging.handlers
 import socket
+import sys
 import time
-from logging.handlers import SysLogHandler
+
+# local:
+from mc_logging.common import syslog_host, syslog_path, syslog_port
 
 # look like syslog messages (except date format),
 # adds levelname; does NOT include logger name, or pid:
@@ -16,6 +20,7 @@ NORMAL_SYSLOG_FORMAT = (
 THREAD_SYSLOG_FORMAT = "%(asctime)s %(hostname)s %(app)s[%(threadName)s] %(levelname)s: %(message)s"
 
 
+# not a subclass of socket.socket due to signature forgery issues
 class SendtoSocketWrapper:
     """
     Wrapper for UDP sockets used in logging.handlers.SysLogHandler and
@@ -68,17 +73,19 @@ class SendtoSocketWrapper:
         self.actual_socket.close()
 
 
+class SysLogHandler(logging.handlers.SysLogHandler):
+    def handleError(self, record: logging.LogRecord) -> None:
+        pass
+
+
 def log_to_sink(
     app: str,  # program/process name
-    syslog_host: str,
-    syslog_port: str,
     *,
     add_to_root_logger: bool = True,
     log_thread_id: bool = False,
+    facility: int = SysLogHandler.LOG_LOCAL0,
     format: str | None = None,
 ) -> SysLogHandler | None:
-    if not syslog_host or not syslog_port:
-        return None
 
     # NOTE!! Using unreliable UDP because TCP connection backlog
     # can cause sends to socket to block!!
@@ -87,11 +94,19 @@ def log_to_sink(
     # files with different formats via different LOCALn facilities.
     # (so if that's needed, merge that to this file, and have
     # web-search use it!!!)
-    handler = SysLogHandler(
-        address=(syslog_host, int(syslog_port)),
-        facility=SysLogHandler.LOG_LOCAL0,
-    )
-    handler.socket = SendtoSocketWrapper(handler.socket)  # type: ignore[attr-defined]
+    if syslog_path:
+        handler = SysLogHandler(address=syslog_path, facility=facility)
+    elif syslog_host and syslog_port:
+        handler = SysLogHandler(
+            address=(syslog_host, int(syslog_port)), facility=facility
+        )
+        # wrap to avoid DNS lookup on each message!!!
+        handler.socket = SendtoSocketWrapper(handler.socket)  # type: ignore[attr-defined]
+    else:
+        # tempting to log, but requires a terminal logger is set up
+        # (ie; basicConfig called)
+        sys.stderr.write("WARNING: no valid syslog destination\n")
+        return None
 
     if format is None:
         if log_thread_id:
@@ -99,7 +114,8 @@ def log_to_sink(
         else:
             format = NORMAL_SYSLOG_FORMAT
 
-    # additional items available to format string:
+    # additional items available to format string
+    # XXX take additional values as argument??
     defaults = {
         "hostname": socket.gethostname(),  # without domain
         "app": app,
@@ -115,3 +131,15 @@ def log_to_sink(
         root_logger.addHandler(handler)
 
     return handler
+
+
+if __name__ == "__main__":
+    logging.basicConfig()
+
+    # basic development test
+    log_to_sink("testing")
+    tl = logging.getLogger("test")
+    tl.setLevel(logging.DEBUG)
+    tl.info("info")
+    tl.warning("warning")
+    tl.error("error")

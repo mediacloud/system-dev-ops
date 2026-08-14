@@ -1,6 +1,6 @@
 [project]
 name = "mc-logging"
-version = "0.1.0"     # ALSO: update CHANGELOG.md, run "make release"
+version = "0.2.0"     # ALSO: update CHANGELOG.md, run "make release"
 description='Media Cloud Logging Tools'
 readme = "README.md"
 requires-python = ">=3.10"
@@ -8,12 +8,14 @@ authors = [
     {name = "Phil Budne", email = "phil@regressive.org"},
 ]
 
-dependencies = [
+# no dependencies for deployment!
+
+[project.optional-dependencies]
+dev = [
   # a repo-mate!
   "mc-deploy @ git+https://github.com/mediacloud/system-dev-ops@mc-deploy-0.14.latest#subdirectory=deploy/mc-deploy"
 ]
 
-[project.optional-dependencies]
 # temp(?) [until using pre-commit]
 lint = [
     "black",

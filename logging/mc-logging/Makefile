@@ -27,7 +27,7 @@ release: lint
 venv/.pyproject: pyproject.toml
 	python -m venv venv
 	cmp pyproject.toml venv/.pyproject || \
-		venv/bin/pip install -e '.[lint]' && \
+		venv/bin/pip install -e '.[dev,lint]' && \
 		cp -p pyproject.toml venv/.pyproject
 
 clean:
