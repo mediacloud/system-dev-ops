@@ -708,6 +708,34 @@ class BaseDeploy:
         # cloned repo kept around for later tagging
         # (see settings_tag_private_conf below)
 
+    def settings_mc_logging_unix_domain(self, data_dir: str) -> None:
+        """
+        add configuration for mc-logging using unix domain socketry
+        (Dokku compatible)
+        """
+        log_dir = os.path.join(data_dir, "logs")
+
+        # unix-domain socket path (does not require docker network setup)
+        # for logger and sink rendezvous (inside log directory):
+        self.settings_add("LOG_PATH", os.path.join(log_dir, "socket"))
+
+        # log file destination for log sink:
+        self.settings_add("LOG_DIR", log_dir)
+
+    def settings_mc_logging_udp(
+        self, data_dir: str, container: str, port: int
+    ) -> None:
+        """
+        add configuration for mc-logging using UDP socketry
+        (swarm compatible)
+        """
+        self.settings_add("LOG_HOST", container)
+        self.settings_add("LOG_PORT", str(port))
+
+        # log file destination for log sink:
+        log_dir = os.path.join(data_dir, "logs")
+        self.settings_add("LOG_DIR", log_dir)
+
     def settings_private_cleanup(self) -> None:
         """
         here from atexit

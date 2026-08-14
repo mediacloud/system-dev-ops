@@ -605,6 +605,9 @@ class DokkuDeploy(BaseDeploy):
         self.settings_add("DOKKU_DEFAULT_CHECKS_WAIT", "5")  # default: 10
         self.settings_add("DOKKU_WAIT_TO_RETIRE", "30")  # default: 60
 
+    def settings_mc_logging(self) -> None:
+        self.settings_mc_logging_unix_domain(self.DOKKU_STORAGE_MOUNT_POINT)
+
     ################ commands (in alphabetical order)
 
     def create_cmd_init(self, cp: CmdParser) -> None:
