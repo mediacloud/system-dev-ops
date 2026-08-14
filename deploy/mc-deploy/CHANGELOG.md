@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.14.8: fix mc-logging SYSLOG_ vars
 * 0.14.7: add mc-logging config support
 * 0.14.6: base.py: airtable_... => settings_load_management_config()
 * 0.14.5: base.py: add airtable_load_private_config()

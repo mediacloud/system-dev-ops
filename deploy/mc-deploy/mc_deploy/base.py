@@ -717,7 +717,7 @@ class BaseDeploy:
 
         # unix-domain socket path (does not require docker network setup)
         # for logger and sink rendezvous (inside log directory):
-        self.settings_add("LOG_PATH", os.path.join(log_dir, "socket"))
+        self.settings_add("SYSLOG_PATH", os.path.join(log_dir, "syslog.sock"))
 
         # log file destination for log sink:
         self.settings_add("LOG_DIR", log_dir)
@@ -729,8 +729,8 @@ class BaseDeploy:
         add configuration for mc-logging using UDP socketry
         (swarm compatible)
         """
-        self.settings_add("LOG_HOST", container)
-        self.settings_add("LOG_PORT", str(port))
+        self.settings_add("SYSLOG_HOST", container)
+        self.settings_add("SYSLOG_PORT", str(port))
 
         # log file destination for log sink:
         log_dir = os.path.join(data_dir, "logs")
