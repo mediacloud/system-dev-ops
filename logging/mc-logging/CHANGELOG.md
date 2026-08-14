@@ -1,3 +1,4 @@
+* 0.2.1: Add py.typed!
 * 0.2.0: D'oh!  Want Un*x-domain socket under Dokku!
 
 * 0.1.0: add log_to_sink optional format argument
