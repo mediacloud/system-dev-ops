@@ -516,7 +516,10 @@ class DokkuDeploy(BaseDeploy):
             self.dokku_call(f"storage:ensure-directory {name}")
 
         expect = f"{stdir}:{self.DOKKU_STORAGE_MOUNT_POINT}"
-        mounts = self.dokku_output_lines(["storage:list", app])
+        mounts = [
+            line.strip()
+            for line in self.dokku_output_lines(["storage:list", app])
+        ]
         if expect in mounts:
             print(
                 "storage directory",
