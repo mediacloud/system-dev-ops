@@ -1,9 +1,17 @@
 """
+Send log messages from all containers/processes/threads
+to a single log file written by mc_logging.sink
+
+Using Unix syslog protocol (but have avoided putting that
+in the file/class/method names)!
+
 From mediaclud/story-indexer/indexer/app.py
+Phil Budne 8/14/2026
 """
 
 import logging
 import logging.handlers
+import os
 import socket
 import sys
 import time
@@ -95,6 +103,7 @@ def log_to_sink(
     facility: int = SysLogHandler.LOG_LOCAL0,
     format: str | None = None,
     overrides: dict[str, Any] = {},
+    startup_delay: float = 5.0,  # zero for no delay
 ) -> SysLogHandler | None:
     # NOTE!! Using unreliable UDP because TCP connection backlog
     # can cause sends to socket to block!!
@@ -105,6 +114,8 @@ def log_to_sink(
     # web-search use it!!!)
     if syslog_path:
         handler = SysLogHandler(address=syslog_path, facility=facility)
+        if startup_delay:
+            wait_for_sink(syslog_path, startup_delay)
     elif syslog_host and syslog_port:
         handler = SysLogHandler(
             address=(syslog_host, int(syslog_port)), facility=facility
@@ -152,6 +163,37 @@ def log_to_sink(
         root_logger.addHandler(handler)
 
     return handler
+
+
+def wait_for_sink(path: str, startup_delay: float) -> None:
+    """
+    called to wait for startup of unix-domain log sink
+    """
+    orig_ctime = -1.0
+    delayed = 0.0
+    sleep_time = 0.5
+    while True:
+        try:
+            st = os.stat(path)
+            if orig_ctime == -1:
+                orig_ctime = st.st_ctime
+                if time.time() - orig_ctime < 60.0:
+                    # less than a minute old
+                    break
+            elif st.st_ctime > orig_ctime:
+                return
+        except OSError:
+            pass
+
+        if delayed > startup_delay:
+            break
+
+        time.sleep(sleep_time)
+        delayed += sleep_time
+    else:
+        sys.stderr.write(
+            f"did not see new log socket within {delayed} seconds\n"
+        )
 
 
 if __name__ == "__main__":

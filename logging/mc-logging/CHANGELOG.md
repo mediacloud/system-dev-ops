@@ -1,3 +1,4 @@
+* 0.2.4: add startup_delay
 * 0.2.3: _saved_handlerS
 * 0.2.2: Add _saved_handler, sub_id, overrides
 * 0.2.1: Add py.typed!
