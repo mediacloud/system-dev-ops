@@ -662,7 +662,7 @@ class DokkuDeploy(BaseDeploy):
             check: list[str] = []
             if args.instance == "prod":
                 if self.PUBLIC_NAME:
-                    check.append("{self.PUBLIC_NAME}.{self.PUBLIC_DOMAIN}")
+                    check.append(f"{self.PUBLIC_NAME}.{self.PUBLIC_DOMAIN}")
             elif args.instance == "staging":
                 if self.STAGING_PUBLIC_NAME:
                     check.append(

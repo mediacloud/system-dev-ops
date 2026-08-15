@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.14.10: fix create command for production
 * 0.14.9: strip storage:list output
 * 0.14.8: fix mc-logging SYSLOG_ vars
 * 0.14.7: add mc-logging config support
