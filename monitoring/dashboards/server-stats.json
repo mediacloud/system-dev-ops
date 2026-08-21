@@ -10,10 +10,10 @@
     "url": "/d/dG5Q_MJIz/server-stats",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-03-15T22:08:11Z",
-    "updated": "2026-07-24T04:01:57Z",
-    "updatedBy": "admin",
+    "updated": "2026-08-11T05:52:01Z",
+    "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 34,
+    "version": 41,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -316,7 +316,7 @@
         "targets": [
           {
             "refId": "A",
-            "target": "stats.gauges.mc.systems.vm.pct.*"
+            "target": "aliasByNode(stats.gauges.mc.systems.vm.pct.*, 6)"
           }
         ],
         "thresholds": [],
@@ -503,7 +503,7 @@
         "gridPos": {
           "h": 9,
           "w": 12,
-          "x": 0,
+          "x": 5,
           "y": 18
         },
         "id": 5,
@@ -597,8 +597,96 @@
         "gridPos": {
           "h": 9,
           "w": 12,
+          "x": 0,
+          "y": 27
+        },
+        "id": 23,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "maxDataPoints": "",
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.overall.queue-avg-len.*.*, 8, 9)"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Average Disk Queue Size",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "none",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "description": "Percentage of the time in which there was an active request",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
           "x": 12,
-          "y": 18
+          "y": 27
         },
         "id": 9,
         "legend": {
@@ -628,14 +716,358 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(scale(nonNegativeDerivative(stats.gauges.mc.systems.cpu.state.*.iowait), 10), 6)"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.overall.utilization.*.*, 8, 9)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "iowait time (sum of ms for all CPUs)",
+        "title": "Disk Utilization",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "none",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 12,
+          "x": 0,
+          "y": 36
+        },
+        "id": 19,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.read.kb-sec.*.*, 8, 9)"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Read bytes per second",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "KBs",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 12,
+          "x": 12,
+          "y": 36
+        },
+        "id": 21,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.write.kb-sec.*.*, 8, 9)"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Write bytes per second",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "KBs",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 12,
+          "x": 0,
+          "y": 47
+        },
+        "id": 20,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.read.avg-wait-ms.*.*, 8, 9)"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Read  average wait time",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 12,
+          "x": 12,
+          "y": 47
+        },
+        "id": 22,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": true,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.write.avg-wait-ms.*.*, 8, 9)"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Write  average wait time",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -685,7 +1117,7 @@
           "h": 11,
           "w": 12,
           "x": 0,
-          "y": 27
+          "y": 58
         },
         "id": 11,
         "legend": {
@@ -714,14 +1146,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.count.read.*.*data), 8)"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.read.reqs-sec.*.*, 8, 9)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Read IOPs per minute",
+        "title": "Read IOPs",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -737,7 +1169,7 @@
         },
         "yaxes": [
           {
-            "format": "rpm",
+            "format": "rps",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -771,7 +1203,7 @@
           "h": 11,
           "w": 12,
           "x": 12,
-          "y": 27
+          "y": 58
         },
         "id": 12,
         "legend": {
@@ -800,14 +1232,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.count.write.*.*data), 8)"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.write.reqs-sec.*.*, 8, 9)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Write IOPs per minute",
+        "title": "Write IOPs",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -823,7 +1255,7 @@
         },
         "yaxes": [
           {
-            "format": "wpm",
+            "format": "wps",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -857,9 +1289,9 @@
           "h": 11,
           "w": 12,
           "x": 0,
-          "y": 38
+          "y": 69
         },
-        "id": 13,
+        "id": 24,
         "legend": {
           "avg": false,
           "current": false,
@@ -886,14 +1318,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.time.read.*.*data), 8)"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.read.avg-kb.*.*, 8, 9)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Read time",
+        "title": "Avg Read Size",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -909,7 +1341,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "deckbytes",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -943,9 +1375,9 @@
           "h": 11,
           "w": 12,
           "x": 12,
-          "y": 38
+          "y": 69
         },
-        "id": 14,
+        "id": 25,
         "legend": {
           "avg": false,
           "current": false,
@@ -972,14 +1404,14 @@
         "targets": [
           {
             "refId": "A",
-            "target": "aliasByNode(nonNegativeDerivative(stats.gauges.mc.systems.disk.stats.time.write.*.*data), 8)"
+            "target": "aliasByNode(stats.gauges.mc.systems.disk.nstats.write.avg-kb.*.*, 8, 9)"
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Write time",
+        "title": "Avg Write Size",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -995,7 +1427,7 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "format": "deckbytes",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1029,7 +1461,7 @@
           "h": 11,
           "w": 12,
           "x": 0,
-          "y": 49
+          "y": 80
         },
         "id": 16,
         "legend": {
@@ -1115,7 +1547,7 @@
           "h": 11,
           "w": 12,
           "x": 12,
-          "y": 49
+          "y": 80
         },
         "id": 17,
         "legend": {
@@ -1201,7 +1633,7 @@
           "h": 11,
           "w": 12,
           "x": 0,
-          "y": 60
+          "y": 91
         },
         "id": 15,
         "legend": {
@@ -1288,7 +1720,7 @@
           "h": 11,
           "w": 12,
           "x": 12,
-          "y": 60
+          "y": 91
         },
         "id": 18,
         "legend": {
@@ -1362,7 +1794,7 @@
         }
       }
     ],
-    "refresh": "5m",
+    "refresh": "30s",
     "schemaVersion": 20,
     "style": "dark",
     "tags": [],
@@ -1377,6 +1809,6 @@
     "timezone": "",
     "title": "Server stats",
     "uid": "dG5Q_MJIz",
-    "version": 34
+    "version": 41
   }
 }

@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2026-07-22T04:40:40Z",
-    "updatedBy": "admin",
+    "updated": "2026-08-17T16:17:54Z",
+    "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 109,
+    "version": 110,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,12 +39,12 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1784693287382,
+    "iteration": 1786983159122,
     "links": [],
     "panels": [
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -67,7 +67,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -79,7 +79,7 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
@@ -131,7 +131,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -154,7 +154,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -166,7 +166,7 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
@@ -218,7 +218,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -241,7 +241,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -253,7 +253,7 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
@@ -305,7 +305,7 @@
       },
       {
         "aliasColors": {},
-        "bars": false,
+        "bars": true,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -328,7 +328,7 @@
           "total": false,
           "values": false
         },
-        "lines": true,
+        "lines": false,
         "linewidth": 1,
         "nullPointMode": "null",
         "options": {
@@ -340,7 +340,7 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
@@ -1672,6 +1672,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 109
+    "version": 110
   }
 }

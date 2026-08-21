@@ -10,10 +10,10 @@
     "url": "/d/YHyBwfGNz/elasticsearch-graphs",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2024-11-13T05:54:16Z",
-    "updated": "2026-07-29T15:58:31Z",
+    "updated": "2026-08-08T16:06:15Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 51,
+    "version": 54,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -40,7 +40,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 13,
-    "iteration": 1785340033736,
+    "iteration": 1786203874378,
     "links": [],
     "panels": [
       {
@@ -1512,6 +1512,103 @@
           "x": 0,
           "y": 64
         },
+        "id": 62,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "A",
+            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.get.total)",
+            "textEditor": false
+          },
+          {
+            "refCount": 0,
+            "refId": "B",
+            "target": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.get.time_in_millis), #A)",
+            "targetFull": "divideSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.get.time_in_millis), nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.get.total))",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "mean get latency",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "description": "NOTE: story indexing does a (quick) query before each story is added, which dilutes values in this graph!\n",
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 64
+        },
         "id": 29,
         "legend": {
           "avg": false,
@@ -1576,133 +1673,6 @@
             "label": null,
             "logBase": 1,
             "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": true,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 1,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 64
-        },
-        "id": 51,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": false,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": true,
-        "steppedLine": false,
-        "targets": [
-          {
-            "hide": false,
-            "refCount": 4,
-            "refId": "A",
-            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.bulk.*time_in_millis.name_mc*)), #G), 'bulk')",
-            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.bulk.*time_in_millis.name_mc*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'bulk')",
-            "textEditor": false
-          },
-          {
-            "refCount": 3,
-            "refId": "B",
-            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.search.*millis.name_mc*)), #G), 'search')",
-            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.search.*millis.name_mc*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'search')",
-            "textEditor": false
-          },
-          {
-            "refCount": 3,
-            "refId": "C",
-            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.refresh.total_time_in_millis.name_mc_search*)), #G), 'refresh')",
-            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.refresh.total_time_in_millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'refresh')",
-            "textEditor": false
-          },
-          {
-            "refCount": 3,
-            "refId": "D",
-            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.warmer.*millis.name_mc_search*)), #G), 'warmer')",
-            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.warmer.*millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'warmer')",
-            "textEditor": false
-          },
-          {
-            "hide": true,
-            "refCount": 3,
-            "refId": "F",
-            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.flush.*millis.name_mc_search*)), #G), 'flush')",
-            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.flush.*millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))), 'flush')",
-            "textEditor": false
-          },
-          {
-            "hide": true,
-            "refCount": 2,
-            "refId": "G",
-            "target": "sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*millis.name_mc_search*))",
-            "textEditor": false
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "mc_search time percentages",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "decimals": null,
-            "format": "percent",
-            "label": null,
-            "logBase": 1,
-            "max": "100",
             "min": null,
             "show": true
           },
@@ -1814,7 +1784,7 @@
         "dashLength": 10,
         "dashes": false,
         "datasource": null,
-        "fill": 0,
+        "fill": 1,
         "fillGradient": 0,
         "gridPos": {
           "h": 8,
@@ -1822,7 +1792,7 @@
           "x": 12,
           "y": 72
         },
-        "id": 4,
+        "id": 51,
         "legend": {
           "avg": false,
           "current": false,
@@ -1844,12 +1814,67 @@
         "renderer": "flot",
         "seriesOverrides": [],
         "spaceLength": 10,
-        "stack": false,
+        "stack": true,
         "steppedLine": false,
         "targets": [
           {
+            "hide": false,
+            "refCount": 4,
             "refId": "A",
-            "target": "nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*_in_millis)",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.bulk.total_time_in_millis.name_mc*)), #G), 'bulk')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.bulk.total_time_in_millis.name_mc*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'bulk')",
+            "textEditor": false
+          },
+          {
+            "refCount": 4,
+            "refId": "B",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.search.*millis.name_mc*)), #G), 'search')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.search.*millis.name_mc*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'search')",
+            "textEditor": false
+          },
+          {
+            "refCount": 3,
+            "refId": "C",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.refresh.total_time_in_millis.name_mc_search*)), #G), 'refresh')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.refresh.total_time_in_millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'refresh')",
+            "textEditor": false
+          },
+          {
+            "refCount": 3,
+            "refId": "D",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.warmer.total_time_in_millis.name_mc_search*)), #G), 'warmer')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.warmer.total_time_in_millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'warmer')",
+            "textEditor": false
+          },
+          {
+            "hide": false,
+            "refCount": 3,
+            "refId": "F",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.flush.total_time_in_millis.name_mc_search*)), #G), 'flush')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.flush.total_time_in_millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'flush')",
+            "textEditor": false
+          },
+          {
+            "hide": true,
+            "refCount": 2,
+            "refId": "G",
+            "target": "sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))",
+            "textEditor": false
+          },
+          {
+            "hide": false,
+            "refCount": 3,
+            "refId": "E",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.get.time_in_millis.name_mc_search*)), #G), 'get')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.get.time_in_millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'get')",
+            "textEditor": false
+          },
+          {
+            "hide": false,
+            "refCount": 3,
+            "refId": "H",
+            "target": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.indexing.*millis.name_mc_search*)), #G), 'indexing')",
+            "targetFull": "alias(asPercent(sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.indexing.*millis.name_mc_search*)), sumSeries(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.indices.primaries.*.*_in_millis.name_mc_search*))), 'indexing')",
             "textEditor": true
           }
         ],
@@ -1857,7 +1882,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "all indices avg time in millis",
+        "title": "mc_search time percentages",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -1873,15 +1898,16 @@
         },
         "yaxes": [
           {
-            "format": "ms",
+            "decimals": null,
+            "format": "percent",
             "label": null,
             "logBase": 1,
-            "max": null,
+            "max": "100",
             "min": null,
             "show": true
           },
           {
-            "format": "ms",
+            "format": "short",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -1969,6 +1995,93 @@
           },
           {
             "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 80
+        },
+        "id": 4,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasSub(aliasByNode(nonNegativeDerivative(stats.gauges.mc.$realm.story-indexer.elastic-stats.indices.all.primaries.*.*_in_millis), 9, 10), '(.*)_in_millis', '\\1')",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "all indices  time",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "ms",
             "label": null,
             "logBase": 1,
             "max": null,
@@ -2128,7 +2241,7 @@
               "value": "csv-prod"
             },
             {
-              "selected": false,
+              "selected": true,
               "text": "staging",
               "value": "staging"
             },
@@ -2143,7 +2256,7 @@
               "value": "pgulley"
             },
             {
-              "selected": true,
+              "selected": false,
               "text": "new",
               "value": "new"
             }
@@ -2175,6 +2288,6 @@
     "timezone": "",
     "title": "Elasticsearch Graphs",
     "uid": "YHyBwfGNz",
-    "version": 51
+    "version": 54
   }
 }
