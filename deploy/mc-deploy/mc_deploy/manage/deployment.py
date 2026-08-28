@@ -11,6 +11,7 @@ from pyairtable.formulas import match
 
 # A utility to report new deployments to the central MEAG airtable record.
 def create_deployment(
+    *,
     codebase_name: str,
     deployment_name: str | None,
     environment: str,
@@ -81,3 +82,43 @@ def create_deployment(
         key_fields=["Name"],
     )
     print(resp)
+
+
+# from mc-manage/mc-manage/airtable-deployment-update.py
+# to replace remaining uses of mc-manage
+if __name__ == "__main__":
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(
+        description="A utility for updating an airtable deployment record"
+    )
+
+    parser.add_argument(
+        "--codebase", help="codebase being deployed", required=True
+    )
+    parser.add_argument(
+        "--name", help="additional deployment name", required=True
+    )
+    parser.add_argument("--env", help="Formal environment name", required=True)
+    parser.add_argument(
+        "--version", help="A descriptive version string", required=True
+    )
+    parser.add_argument(
+        "--hardware",
+        nargs="+",
+        help="The names of one or more machines",
+        required=True,
+    )
+
+    args = parser.parse_args()
+
+    create_deployment(
+        codebase_name=args.codebase,
+        deployment_name=args.name,
+        environment=args.env,
+        version_info=args.version,
+        hardware_names=args.hardware,
+        api_key=os.environ["AIRTABLE_API_KEY"],
+        base_id=os.environ["MEAG_BASE_ID"],
+    )
