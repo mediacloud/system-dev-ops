@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.15.1: Add docker tagging, tag pushing!
 * 0.15.0: Add command line parsing to mc_deploy.manage.{deployment,release}
 
 * 0.14.10: fix create command for production

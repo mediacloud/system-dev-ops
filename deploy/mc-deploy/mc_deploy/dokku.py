@@ -809,9 +809,8 @@ class DokkuDeploy(BaseDeploy):
         print("===")  # end of build output
 
         ################
-        # code push succeeded, add local tag:
-        print("adding local tag", tag)
-        self.proc_call(["git", "tag", tag])
+        # code push succeeded, add local tag
+        self.git_tag(tag)
 
         ################
         # push tag to dokku repo after code pushed

@@ -361,6 +361,10 @@ class BaseDeploy:
     def git_revision_hash(self) -> str:
         return self.proc_output_one("git rev-parse HEAD", as_login_user=True)
 
+    def git_tag(self, tag: str) -> None:
+        print("adding local tag", tag)
+        self.proc_call(["git", "tag", tag])
+
     def git_upstream_remote(self) -> str:
         """
         return name of git "remote" of "official" repo

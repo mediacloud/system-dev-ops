@@ -341,6 +341,8 @@ class DockerDeploy(BaseDeploy):
         if ret != 0:
             return ret
 
+        self.git_tag(self.tag)
+        self.deploy_cmd_push_tags()
         self.write_deploy_log()
         self.airtable_notify()
         return 0
