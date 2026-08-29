@@ -46,7 +46,8 @@ def create_release(
 
 # ~/github/mc-manage/mc-manage/airtable-release-update.py
 # to replace remaining uses of mc-manage
-if __name__ == "__main__":
+# (now a function that can be called from mc-manage)
+def main() -> None:
     import argparse
     import os
 
@@ -69,3 +70,7 @@ if __name__ == "__main__":
         api_key=os.environ["AIRTABLE_API_KEY"],
         base_id=os.environ["MEAG_BASE_ID"],
     )
+
+
+if __name__ == "__main__":
+    main()
