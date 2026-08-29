@@ -227,10 +227,10 @@ class DokkuDeploy(BaseDeploy):
         if not self.dokku_plugin_enabled("letsencrypt"):
             self.fatal("letsencrypt not present/enabled on public host")
 
-        # "letsencrypt:active app" outputs "true" or nothing?
+        # "letsencrypt:active app" outputs "true" or "false"
         resp = self.dokku_output_one(["letsencrypt:active", app])
-        if resp and resp[0] == "true":
-            self.fatal("letsencrypt not active on public host")
+        if resp == "true":
+            return True
 
         return self.dokku_call(["letsencrypt:enable", app]) == 0
 
@@ -355,7 +355,7 @@ class DokkuDeploy(BaseDeploy):
 
     def dokku_output_one(self, cmd: ProcCmd, **kws: Any) -> str:
         """
-        run a dokku command via ssh capturing output, return first line or None
+        run a dokku command via ssh capturing output, return first line or ""
         (always via ssh to allow configuring remote server)
         """
         lines = self.dokku_output_lines(cmd, **kws)
