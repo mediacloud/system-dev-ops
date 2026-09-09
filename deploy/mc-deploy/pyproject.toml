@@ -1,6 +1,6 @@
 [project]
 name = "mc-deploy"
-version = "0.15.3"     # ALSO: update CHANGELOG.md, run "make release"
+version = "0.16.0"     # ALSO: update CHANGELOG.md, run "make release"
 description='Media Cloud Extensible Deployment Tools'
 readme = "README.md"
 requires-python = ">=3.10"
@@ -9,8 +9,8 @@ authors = [
 ]
 
 dependencies = [
-    "pyairtable == 2.3.*",
-    "python-dotenv ~= 1.0.1",
+    "pyairtable == 3.4.0",
+    "python-dotenv ~= 1.2.0",
     "tomli; python_version < '3.11'", # installed by pip? let it decide what version
 ]
 

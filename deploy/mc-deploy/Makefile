@@ -1,32 +1,41 @@
 # not (yet) using pre-commit; would apply to entire repo!
 
+VENVDIR=.venv
+VENVBIN=$(VENVDIR)/bin
+
 help:
 	@echo Usage:
 	@echo "make install -- installs dev environment"
 	@echo "make lint -- runs formatting, type checks"
 	@echo "make release -- add tag and push to github"
 	@echo "make clean -- remove development environment"
+	@echo "make list-outdated -- list outdated requirements"
 	@echo "make help -- this message!"
 
 # story-indexer order: black, mypy, flake8, isort
 lint:	install
-	venv/bin/black mc_deploy
-	venv/bin/mypy mc_deploy
-	venv/bin/flake8 mc_deploy
-	venv/bin/isort mc_deploy
+	$(VENVBIN)/black mc_deploy
+	$(VENVBIN)/mypy mc_deploy
+	$(VENVBIN)/flake8 mc_deploy
+	$(VENVBIN)/isort mc_deploy
 
-install: venv/.pyproject
+VENVPROJ=$(VENVDIR)/.pyproject
+install: $(VENVPROJ)
 
 # tag and push using mc-deploy itself!
 release: lint
-	venv/bin/python release.py release
+	$(VENVBIN)/python release.py release
 
-# pip install -e not perfect; "installs" package in venv
-venv/.pyproject: pyproject.toml
-	python -m venv venv
-	cmp pyproject.toml venv/.pyproject || \
-		venv/bin/pip install -e '.[lint]' && \
-		cp -p pyproject.toml venv/.pyproject
+$(VENVPROJ): pyproject.toml
+	cmp pyproject.toml $(VENVPROJ) || \
+		uv sync --extra lint && \
+		cp -p pyproject.toml $(VENVPROJ)
+
+# list outdated requirements
+# https://github.com/astral-sh/uv/issues/6794
+# discusses automagic update
+list-outdated:
+	uv pip list --outdated
 
 clean:
-	rm -rf venv .mypy_cache build mc_deploy.egg-info mc_deploy/__pycache__ 
+	rm -rf $(VENVDIR) .mypy_cache mc_deploy.egg-info mc_deploy/__pycache__

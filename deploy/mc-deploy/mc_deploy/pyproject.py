@@ -9,7 +9,7 @@ try:
     import tomli as tomllib  # type: ignore[import-not-found,unused-ignore]
 except ModuleNotFoundError:
     # in Python 3.11
-    import tomllib  # type: ignore[import-not-found,no-redef]
+    import tomllib
 
 from .base import DeployMixinBase
 

@@ -1,5 +1,9 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.16.0: Updated requirements, switch to uv for package management,
+	add list-outdated. Bumped minor version to avoid being picked up
+	by unsuspecting projects with conflicting requirements.
+
 * 0.15.3: Fix dokku letsencrypt active check
 * 0.15.2: mc_deploy.manage.{deployment,release}.main functions
 * 0.15.1: Add docker tagging, tag pushing!
