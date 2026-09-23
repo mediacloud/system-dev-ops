@@ -459,6 +459,9 @@ class BaseDeploy:
             choices=["prod", "staging"],
             help="test deployment code (impl. --dry-run)",
         )
+        ap.add_argument(
+            "-U", "--user", help="override logged in user for instance naming"
+        )
 
         self.init_command_parsers(ap)
 
@@ -478,6 +481,8 @@ class BaseDeploy:
                 self.fatal("--ignore-no-changes ignored without dry-run")
                 # not reached, since not a dry run?!
         self.debug_output = args.debug
+        if args.user:
+            self.user = args.user
         # can now call debug method!!
         self.debug("user", self.user)
         if self.INST_FLAVORS:
