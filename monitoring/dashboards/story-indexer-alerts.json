@@ -10,10 +10,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2026-08-30T20:22:23Z",
+    "updated": "2026-09-08T19:39:06Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "phil.budne@gmail.com",
-    "version": 63,
+    "version": 64,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -1554,6 +1554,140 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "alert": {
+          "alertRuleTags": {},
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  1999950000
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "A",
+                  "5m",
+                  "now"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "avg"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "for": "10m",
+          "frequency": "10m",
+          "handler": 1,
+          "name": "2 Billion stories soon!",
+          "noDataState": "no_data",
+          "notifications": [
+            {
+              "uid": "_ApAP7FVk"
+            }
+          ]
+        },
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 41
+        },
+        "id": 24,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "sumSeries(stats.gauges.mc.prod.story-indexer.elastic-stats.indices.indices.primaries.docs.count.*)"
+          }
+        ],
+        "thresholds": [
+          {
+            "colorMode": "critical",
+            "fill": true,
+            "line": true,
+            "op": "gt",
+            "value": 1999950000,
+            "yaxis": "left"
+          }
+        ],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Total stories",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -1584,6 +1718,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 63
+    "version": 64
   }
 }

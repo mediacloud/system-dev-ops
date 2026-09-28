@@ -10,10 +10,10 @@
     "url": "/d/YVUKAfDVk/rss-fetcher-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-10T21:45:57Z",
-    "updated": "2025-12-15T21:30:14Z",
+    "updated": "2026-09-27T22:33:00Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 32,
+    "version": 33,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -316,7 +316,7 @@
             {
               "evaluator": {
                 "params": [
-                  9000
+                  9900
                 ],
                 "type": "gt"
               },
@@ -400,7 +400,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 9000
+            "value": 9900
           }
         ],
         "timeFrom": null,
@@ -459,6 +459,6 @@
     "timezone": "",
     "title": "rss-fetcher alerts",
     "uid": "YVUKAfDVk",
-    "version": 32
+    "version": 33
   }
 }
