@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.17.0: DOKKU_SERVICES now takes Service tuples with version etc
+
 * 0.16.1: Add --user base argument to override .user value
 * 0.16.0: Updated requirements, switch to uv for package management,
 	add list-outdated. Bumped minor version to avoid being picked up

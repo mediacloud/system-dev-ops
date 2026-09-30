@@ -14,9 +14,26 @@ import os
 import socket
 import subprocess
 import sys
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from .base import BaseDeploy, CmdArgs, CmdParser, ParserArgs, ProcCmd
+
+
+@dataclass(frozen=True, kw_only=True)
+class Service:
+    """
+    values for DOKKU_SERVICES dict (services to create)
+    (no arguments are OK if no suffix, image, or version)!
+
+    NOTE! Version/image only honored on create
+    (postgres, for example requires dump/restore for upgrades)
+    """
+
+    # NOTE! default values must be immutable types!
+    suffix: str = ""  # suffix (must include hyphen) for service name
+    image: str | None = None  # create --image value
+    version: str | None = None  # create --image-version value
 
 
 class DokkuDeploy(BaseDeploy):
@@ -38,8 +55,8 @@ class DokkuDeploy(BaseDeploy):
     # Map of process (Procfile) names to number of containers ("dynos"):
     DOKKU_SCALE: dict[str, int]
 
-    # Map plugin name to service name suffix:
-    DOKKU_SERVICES: dict[str, str]
+    # Map plugin name to Service (suffix, image, version) for services to create.
+    DOKKU_SERVICES: dict[str, Service]
 
     # If True, issue ps:stop before deploying.  For rss-fetcher this
     # avoids the fetcher inserting new rows when the new version
@@ -401,18 +418,33 @@ class DokkuDeploy(BaseDeploy):
                 scale_cmd.append(f"{proc}={count}")
             self.dokku_call(scale_cmd)
 
-    def dokku_service_create(self, plugin: str, name: str, app: str) -> bool:
+    def dokku_service_create(
+        self, plugin: str, app: str, svc: Service
+    ) -> bool:
         if not self.dokku_plugin_enabled(plugin):
             self.fatal(f"plugin {plugin} not enabled")
+        name = app + svc.suffix
         if plugin == "storage":
             return self.dokku_storage_create(name, app)
+
+        # maybe check svc.image & version and complain if mismatched
+        # (need dokku_service_info)?
         if self.dokku_service_exists(plugin, name):
             print(plugin, "service", name, "already exists")
-        elif self.dokku_call(f"{plugin}:create {name}") == 0:  # loud for now
-            print(plugin, "service", name, "created")
+            # fall thru to ensure linked
         else:
-            print(plugin, "service", name, "create failed")
-            return False
+            cmd = [f"{plugin}:create", name]
+            if svc.version:
+                cmd.append("--image-version")
+                cmd.append(svc.version)
+            if svc.image:
+                cmd.append("--image")
+                cmd.append(svc.image)
+            if self.dokku_call(cmd) == 0:  # loud for now
+                print(plugin, "service", name, "created")
+            else:
+                print(plugin, "service", name, "create failed")
+                return False
 
         if self.dokku_service_linked(plugin, name, app):
             print(plugin, "service", name, "already linked to app", app)
@@ -486,7 +518,7 @@ class DokkuDeploy(BaseDeploy):
         return service name (eg USER-mcweb-db)
         """
         app = self._id2name(instance)
-        return app + self.DOKKU_SERVICES[plugin]
+        return app + self.DOKKU_SERVICES[plugin].suffix
 
     def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
         return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
@@ -496,14 +528,14 @@ class DokkuDeploy(BaseDeploy):
             if not self.dokku_plugin_enabled(plugin):
                 self.fatal(f"plugin {plugin} not enabled")
 
-        for plugin, suffix in self.DOKKU_SERVICES.items():
-            if not self.dokku_service_create(plugin, app + suffix, app):
+        for plugin, svc in self.DOKKU_SERVICES.items():
+            if not self.dokku_service_create(plugin, app, svc):
                 return False
         return True
 
     def dokku_services_destroy(self, app: str) -> bool:
-        for plugin, suffix in self.DOKKU_SERVICES.items():
-            self.dokku_service_destroy(plugin, app + suffix, app)
+        for plugin, svc in self.DOKKU_SERVICES.items():
+            self.dokku_service_destroy(plugin, app + svc.suffix, app)
         return True
 
     def _dokku_storage_path(self, app: str) -> str:
@@ -908,7 +940,7 @@ class DokkuDBMixin(DokkuMixinBase):
         self.check_not_root()  # use user ssh keys for dokku & git
 
         dbtype = self.DATABASE
-        from_svc = self.get_inst_base() + self.DOKKU_SERVICES[dbtype]
+        from_svc = self.get_inst_base() + self.DOKKU_SERVICES[dbtype].suffix
         from_host = self.SERVER_HOST
         self.debug("from_host", from_host)
         self.debug("from_svc", from_svc)
