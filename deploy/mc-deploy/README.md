@@ -86,14 +86,18 @@ story-indexer (with some stricter settings).
 
 ## Media Cloud projects using this
 
+ie; places that may need updating if a serious fix made here
+
 ### deploy.py
 
 * rss-fetcher
 * web-search
 * collection-review-tool
+* sous-chef-kitchen
 
 ### release.py
 
 * sitemap-tools
 * system-dev-ops/deploy/mc-deploy (itself!)
 * system-dev-ops/logging/mc-logging
+
