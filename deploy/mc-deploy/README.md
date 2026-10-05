@@ -83,3 +83,17 @@ and will run lint first!
 Using pre-commit would likely effect the entire repo, so it's been
 avoided (so far), but "make lint" runs the full gauntlet as
 story-indexer (with some stricter settings).
+
+## Media Cloud projects using this
+
+### deploy.py
+
+* rss-fetcher
+* web-search
+* collection-review-tool
+
+### release.py
+
+* sitemap-tools
+* system-dev-ops/deploy/mc-deploy (itself!)
+* system-dev-ops/logging/mc-logging
