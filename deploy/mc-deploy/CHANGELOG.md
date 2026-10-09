@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.17.1: dokku.py: add dokku_services_check_versions
 * 0.17.0: DOKKU_SERVICES now takes Service tuples with version etc
 
 * 0.16.1: Add --user base argument to override .user value

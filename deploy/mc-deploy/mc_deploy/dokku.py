@@ -523,6 +523,31 @@ class DokkuDeploy(BaseDeploy):
     def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
         return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
 
+    def dokku_services_check_versions(self, app: str) -> None:
+        for plugin, svc in self.DOKKU_SERVICES.items():
+            if not svc.version:
+                continue
+
+            name = app + svc.suffix
+            toks = []
+            for line in self.dokku_output_lines([f"{plugin}:info", name]):
+                line = line.strip()
+                if line.startswith("Version:"):
+                    toks = line.split(":")
+                    break
+
+            # toks should be ["Version", plugin, version]
+            if len(toks) != 3:
+                self.warning(f"could not check {plugin} version")
+                continue
+
+            vers = toks[2]
+            want = svc.version
+            if "." in vers and "." not in want:  # count dots??
+                want += ".0"
+            if vers != want:
+                self.warning(f"plugin {plugin} version {vers}, want {want}")
+
     def dokku_services_create(self, app: str) -> bool:
         for plugin in self.DOKKU_SERVICES.keys():
             if not self.dokku_plugin_enabled(plugin):
@@ -728,6 +753,8 @@ class DokkuDeploy(BaseDeploy):
         app = self.inst_name  # Dokku app name
         if not self.dokku_app_exists(app):
             self.fatal(f"App {app} does not exist at {self.dokku_host_fqdn}")
+
+        self.dokku_services_check_versions(app)
 
         self.dokku_fix_git_deploy_branch(app)  # (do only in "create"?)
 
