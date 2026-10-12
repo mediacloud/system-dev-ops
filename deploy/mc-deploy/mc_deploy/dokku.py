@@ -470,14 +470,14 @@ class DokkuDeploy(BaseDeploy):
                 val = "NOT_SET"  # for dry run
             return val
 
-        enable = get_opt("ENABLE", default=None)
+        enable_param_name = "ENABLE"
+        enable = get_opt(enable_param_name, default=None)
         if not enable:
-            enable_param = param("ENABLE")
+            enable_param = param(enable_param_name)
             if self.is_prod():
                 self.fatal(f"{enable_param} not set!")
                 # here if dry-run
-            elif self.is_staging():
-                self.warning(f"{enable_param} not set!")
+            else:
                 unsched_cmd = f"{plugin}:backup-unschedule"
                 if not self.dokku_call_null(f"{unsched_cmd} {svc_name}"):
                     # warning after a warning! double secret probation?
