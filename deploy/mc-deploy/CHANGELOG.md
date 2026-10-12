@@ -1,5 +1,10 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.18.2: Once more into the Dokku service backup breach!
+	Split up into {auth,schedule}_{check,set}
+	Add BackupSettings NamedTuple
+	Handle non-existent crontab file
+	Fix schedule command
 * 0.18.1: handle dev/staging backups disabled
 * 0.18.0: Configure dokku DB backups; Service has "backup" member
 	difficult/ugly, likely needs work.  Little wonder wasn't done sooner!
