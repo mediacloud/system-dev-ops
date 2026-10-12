@@ -88,6 +88,9 @@ story-indexer (with some stricter settings).
 
 ie; places that may need updating if a serious fix made here
 
+Projects may be using older major/minor release if they didn't
+previously need a new feature!
+
 ### deploy.py
 
 * rss-fetcher
@@ -100,4 +103,3 @@ ie; places that may need updating if a serious fix made here
 * sitemap-tools
 * system-dev-ops/deploy/mc-deploy (itself!)
 * system-dev-ops/logging/mc-logging
-

@@ -34,6 +34,7 @@ class Service:
     suffix: str = ""  # suffix (must include hyphen) for service name
     image: str | None = None  # create --image value
     version: str | None = None  # create --image-version value
+    backup: bool = False
 
 
 class DokkuDeploy(BaseDeploy):
@@ -418,6 +419,117 @@ class DokkuDeploy(BaseDeploy):
                 scale_cmd.append(f"{proc}={count}")
             self.dokku_call(scale_cmd)
 
+    def dokku_service_backups(
+        self, plugin: str, app: str, svc: Service
+    ) -> None:
+        """
+        configure database backup to S3-like service.
+        written for postgres, may work for mysql?? others???
+
+        If MCDEPLOY_<PLUGIN>_BACKUP_ENABLE is non-null,
+        expects:
+                MCDEPLOY_<PLUGIN>_BACKUP_SCHEDULE
+                MCDEPLOY_<PLUGIN>_BACKUP_KEY_ID
+                MCDEPLOY_<PLUGIN>_BACKUP_SECRET
+                MCDEPLOY_<PLUGIN>_BACKUP_BUCKET
+                MCDEPLOY_<PLUGIN>_BACKUP_REGION (optional)
+                MCDEPLOY_<PLUGIN>_BACKUP_SIGN_VERS (optional)
+                MCDEPLOY_<PLUGIN>_BACKUP_ENDPOINT (optional)
+
+        Expects dokku commands:
+                PLUGIN:backup-auth SVC K1 K2 [REGION [SIGN_VERS [EP]]]
+                PLUGIN:backup-schedule SVC SCHEDULE BUCKET
+
+        backup-schedule creates /etc/cron.d/dokku-PLUGIN-SERVICE with
+        "SCHEDULE /usr/bin/dokku PLUGIN:backup SERVICE BUCKET"
+        SO: regular crontab(5) format, interpreted in system local TZ!!!
+        (so avoid times between 01:00 and 02:00 to avoid running twice
+         or not at all at DST changes)
+        """
+        if not svc.backup:
+            return
+
+        svc_name = app + svc.suffix
+
+        # NOTE!! settings that start with MCDEPLOY_ are not passed to app:
+        prefix = f"MCDEPLOY_{plugin.upper()}_BACKUP_"
+
+        def param(key: str) -> str:
+            return prefix + key
+
+        def get_opt(key: str, default: str | None = None) -> str | None:
+            full = param(key)
+            val = self.settings.get(full, default)
+            self.debug(full, val)
+            return val
+
+        def get_req(key: str, default: str | None = None) -> str:
+            val = get_opt(key, default)
+            if val is None:
+                self.fatal(f"{param(key)} not set")
+                val = "NOT_SET"  # for dry run
+            return val
+
+        enable = get_opt("ENABLE", default=None)
+        if not enable:
+            enable_param = param("ENABLE")
+            if self.is_prod():
+                self.fatal(f"{enable_param} not set!")
+                # here if dry-run
+            elif self.is_staging():
+                self.warning(f"{enable_param} not set!")
+                unsched_cmd = f"{plugin}:backup-unschedule"
+                if not self.dokku_call_null(f"{unsched_cmd} {svc_name}"):
+                    # warning after a warning! double secret probation?
+                    self.warning(f"{unsched_cmd} failed")
+                    return
+
+        sign_vers = endpoint = None
+        sched = get_req("SCHEDULE")
+        key_id = get_req("KEY_ID")
+        secret = get_req("SECRET")
+        bucket = get_req("BUCKET")
+        region = get_opt("REGION")
+        if region:
+            sign_vers = get_opt("SIGN_VERS", "s3v4")
+            if sign_vers:
+                endpoint = get_opt("ENDPOINT")
+
+        # Try to avoid constantly overwriting config by checking EXACT
+        # crontab file contents using dokku command.  This seems
+        # likely to be brittle!!
+        crontab = self.dokku_output_one(
+            f"{plugin}:backup-schedule-cat {svc_name}",
+            stderr=subprocess.DEVNULL,  # avoid complaints
+        )
+        self.debug("crontab", crontab)
+        expect = f"{sched} /usr/bin/dokku {plugin}:backup {svc_name} {bucket}"
+        self.debug("expect", expect)
+        if crontab == expect:
+            print("Found expected backup schedule crontab")
+            return
+
+        # backup-auth data files seem like they SHOULD be protected:
+        # /var/lib/dokku/services/PLUGIN/SERVICE/backup/
+        #       AWS_ACCESS_KEY_ID   AWS_SECRET_ACCESS_KEY  ENDPOINT_URL
+        #       AWS_DEFAULT_REGION  AWS_SIGNATURE_VERSION
+
+        auth = [f"{plugin}:backup-auth", svc_name, key_id, secret]
+        if region:
+            auth.append(region)
+            if sign_vers:
+                auth.append(sign_vers)
+                if endpoint:
+                    auth.append(endpoint)
+        if not self.dokku_call(auth):
+            self.fatal(f"dokku {auth[0]} command failed")
+
+        # XXX sanity check sched string (5 tokens, no wildcard hour or minute??)
+        sched_cmd = f"{plugin}:backup-sched"
+        # list argument allows passing sched without adding quotes:
+        if not self.dokku_call([sched_cmd, svc_name, sched, bucket]):
+            self.fatal(f"dokku {sched_cmd} failed")
+
     def dokku_service_create(
         self, plugin: str, app: str, svc: Service
     ) -> bool:
@@ -455,6 +567,7 @@ class DokkuDeploy(BaseDeploy):
         else:
             print(plugin, "service", name, "link failed")
             return False
+
         return True
 
     def dokku_service_destroy(self, plugin: str, name: str, app: str) -> bool:
@@ -523,6 +636,16 @@ class DokkuDeploy(BaseDeploy):
     def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
         return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
 
+    def dokku_services_backups(self, app: str) -> None:
+        """
+        configure backups for datastores
+        """
+        for plugin, svc in self.DOKKU_SERVICES.items():
+            self.dokku_service_backups(plugin, app, svc)
+
+    def dokku_services_backups_needed(self, app: str) -> bool:
+        return any(svc.backup for svc in self.DOKKU_SERVICES.values())
+
     def dokku_services_check_versions(self, app: str) -> None:
         for plugin, svc in self.DOKKU_SERVICES.items():
             if not svc.version:
@@ -548,7 +671,7 @@ class DokkuDeploy(BaseDeploy):
             if vers != want:
                 self.warning(f"plugin {plugin} version {vers}, want {want}")
 
-    def dokku_services_create(self, app: str) -> bool:
+    def dokku_services_create(self, app: str, instance: str) -> bool:
         for plugin in self.DOKKU_SERVICES.keys():
             if not self.dokku_plugin_enabled(plugin):
                 self.fatal(f"plugin {plugin} not enabled")
@@ -688,7 +811,7 @@ class DokkuDeploy(BaseDeploy):
 
         if not self.dokku_app_create(app):
             return 1
-        if not self.dokku_services_create(app):
+        if not self.dokku_services_create(app, args.instance):
             return 1
 
         self.dokku_fix_git_deploy_branch(app)
@@ -727,6 +850,21 @@ class DokkuDeploy(BaseDeploy):
                     )
             if check:
                 self.dokku_domains_check(app, check)
+
+        if self.dokku_services_backups_needed(app):
+            # CROCKERY! dokku_services_backups needs config!
+            # clean up by refactoring?!!!
+            self.inst_id = args.instance
+            if self.inst_id in ("prod", "staging"):
+                self.inst_type = self.inst_id
+            else:
+                self.inst_type = "dev"
+            self.statsd_prefix = "CROCK!"
+            self.statsd_url = "crock://host"
+            self.settings_get_new(args)
+            # end crockery
+
+            self.dokku_services_backups(app)
 
         return 0
 
