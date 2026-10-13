@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.18.3: deauth backups if disabled
 * 0.18.2: Once more into the Dokku service backup breach!
 	Split up into {auth,schedule}_{check,set}
 	Add BackupSettings NamedTuple

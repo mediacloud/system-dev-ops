@@ -440,7 +440,9 @@ class DokkuDeploy(BaseDeploy):
         check if configured backup-auth settings are what's expected.
         backup-auth data files seem like they SHOULD be protected!!!
         """
-        dir = self.dokku_service_backup_conf_dir(bs)
+        dir = self.dokku_service_backup_conf_dir(
+            plugin=bs.plugin, svc_name=bs.svc_name
+        )
         files: list[tuple[str, str | None]] = [
             ("AWS_ACCESS_KEY_ID", bs.key_id),
             ("AWS_SECRET_ACCESS_KEY", bs.secret),
@@ -477,14 +479,16 @@ class DokkuDeploy(BaseDeploy):
         if not self.dokku_call([sched_cmd, bs.svc_name, bs.sched, bs.bucket]):
             self.fatal(f"dokku {sched_cmd} failed")
 
-    def dokku_service_backup_conf_dir(self, bs: BackupSettings) -> str:
+    def dokku_service_backup_conf_dir(
+        self, *, plugin: str, svc_name: str
+    ) -> str:
         """
         backup-auth fails when directory exists??
 
         Takes kwargs only to try to avoid badness.
         """
         # XXX check if plugin/svc_name directory exists??
-        return f"/var/lib/dokku/services/{bs.plugin}/{bs.svc_name}/backup"
+        return f"/var/lib/dokku/services/{plugin}/{svc_name}/backup"
 
     def dokku_service_backup_schedule_check(self, bs: BackupSettings) -> bool:
         """
@@ -596,14 +600,22 @@ class DokkuDeploy(BaseDeploy):
                 self.fatal(f"{enable_param} not set!")
                 # here if dry-run
             else:
+                print(f"{plugin} backups not enabled")
                 crontab_path = self.dokku_service_backup_schedule_path(
                     plugin=plugin, svc_name=svc_name
                 )
                 if os.path.exists(crontab_path):
-                    print(f"{plugin} backups not enabled: disabling")
+                    print(" unscheduling backups")
                     self.dokku_call_null(
                         f"{plugin}:backup-unschedule {svc_name}"
                     )
+                conf_dir = self.dokku_service_backup_conf_dir(
+                    plugin=plugin, svc_name=svc_name
+                )
+                if os.path.exists(conf_dir):
+                    print(" deauthorizing backups")
+                    self.dokku_call_null(f"{plugin}:backup-deauth {svc_name}")
+
             return  # backups disabled
 
         sign_vers = endpoint = None
