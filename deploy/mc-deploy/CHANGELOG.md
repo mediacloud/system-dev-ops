@@ -1,5 +1,9 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.19.0: split git_clone, get_private_dir_name from settings_load_private_files
+	for making docker images from clean source checkouts.
+	renamed PrivateRepo to ConfigRepo, self.private_repos to config_repos
+
 * 0.18.3: deauth backups if disabled
 * 0.18.2: Once more into the Dokku service backup breach!
 	Split up into {auth,schedule}_{check,set}

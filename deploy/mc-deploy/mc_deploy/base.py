@@ -50,7 +50,7 @@ class Flavor(NamedTuple):
     bias: int
 
 
-class PrivateRepo(NamedTuple):
+class ConfigRepo(NamedTuple):
     repo: str  # repo name
     dir: str  # full path to cloned repo
 
@@ -95,8 +95,8 @@ class BaseDeploy:
         self._login_uid = -1
         self.port_bias = 0
         # directory for cloned private repos:
-        self.private_dir: tempfile.TemporaryDirectory[str] | None = None
-        self.private_repos: list[PrivateRepo] = []
+        self._private_dir: tempfile.TemporaryDirectory[str] | None = None
+        self.config_repos: list[ConfigRepo] = []  # config repos to tag
         self._remotes: dict[str, str] = {}  # cached git remote name -> "url"
         self.settings: Settings = {}  # app/stack settings
         self.uid = os.getuid()  # cheap, but checked multiple places
@@ -255,6 +255,26 @@ class BaseDeploy:
             user = "DRYRUN"
         return user
 
+    def get_private_dir_name(self) -> str:
+        """
+        return private directory for git clones of config or sources
+        """
+        if self._private_dir is None:
+            self._private_dir = tempfile.TemporaryDirectory(
+                dir=self.get_deploy_dir(),
+                ignore_cleanup_errors=True,  # may cleanup twice
+                prefix="private-",
+            )
+            if self.uid == 0:  # root?
+                # change directory ownership to login user
+                # (in case cleanup fails).
+                # directory created mode 700, so group doesn't matter
+                os.chown(
+                    self._private_dir.name, uid=self.get_login_uid(), gid=-1
+                )
+            atexit.register(self.settings_private_cleanup)  # bound method
+        return self._private_dir.name
+
     def git_branch(self) -> str:
         """return branch name of current checkout"""
         # NOTE: does not need to be run as login user
@@ -289,6 +309,31 @@ class BaseDeploy:
         if status == 0:  # found
             # report using helper for common formatting
             self._git_bad_version(f"found {remote} tag {tag}")
+
+    def git_clone(self, repo: str, url: str, rev: str | None = None) -> str:
+        """
+        clone repo to private directory;
+        used for config and sources
+        returns path to cloned repo
+        """
+        print("cloning", url)
+        private_dir = self.get_private_dir_name()
+        cmd = ["git", "clone"]
+        if rev:
+            cmd.append("-b")
+            cmd.append(rev)
+        cmd.append(url)
+        self.proc_call(
+            cmd,
+            always=True,
+            as_login_user=True,
+            cwd=private_dir,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            umask=0o077,  # no permissions for group/other!
+        )
+        dir = os.path.join(private_dir, repo)
+        return dir
 
     def git_file_hash(self, fname: str) -> str:
         """return git hash of one file"""
@@ -353,8 +398,11 @@ class BaseDeploy:
             for remote in self.proc_output_lines(
                 "git remote -v", as_login_user=True
             ):
-                if "\t" in remote and remote.endswith("(push)"):
+                ending = "(push)"
+                if "\t" in remote and remote.endswith(ending):
                     name, url = remote.split("\t")
+                    url = url.removesuffix(ending).strip()
+                    print("HERE", name, url)
                     self._remotes[name] = url
         return self._remotes
 
@@ -677,37 +725,15 @@ class BaseDeploy:
         self, repo: str, fnames: list[str]
     ) -> None:
         """
-        helper for settings_get_new
+        helper for settings_get_new;
+        clone a private config repo and load files with fnames.
+        keeps record of cloned repos for later tagging.
         """
         if not repo.endswith("-config"):
             repo += "-config"  # always?
         url = self.git_upstream_url(repo)
-        if self.private_dir is None:
-            self.private_dir = tempfile.TemporaryDirectory(
-                dir=self.get_deploy_dir(),
-                ignore_cleanup_errors=True,  # may cleanup twice
-                prefix="conf-",
-            )
-            if self.uid == 0:  # root?
-                # change directory ownership to login user
-                # (in case cleanup fails).
-                # directory created mode 700, so group doesn't matter
-                os.chown(
-                    self.private_dir.name, uid=self.get_login_uid(), gid=-1
-                )
-            atexit.register(self.settings_private_cleanup)  # bound method
-        print("cloning", url)
-        self.proc_call(
-            ["git", "clone", url],
-            always=True,
-            as_login_user=True,
-            cwd=self.private_dir.name,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            umask=0o077,  # no permissions for you!
-        )
-        dir = os.path.join(self.private_dir.name, repo)
-        self.private_repos.append(PrivateRepo(repo, dir))
+        dir = self.git_clone(repo, url)
+        self.config_repos.append(ConfigRepo(repo, dir))  # for tagging
 
         for fname in fnames:  # may read prod, then staging for overrides
             print("loading", repo, fname)
@@ -750,21 +776,21 @@ class BaseDeploy:
         here from atexit
         """
         # RACE here if threaded!!!
-        if self.private_dir:
-            self.debug("cleaning up private dir", self.private_dir.name)
-            self.private_dir.cleanup()
-            self.private_dir = None
+        if self._private_dir:
+            self.debug("cleaning up private dir", self._private_dir.name)
+            self._private_dir.cleanup()
+            self._private_dir = None
 
     def settings_tag_private_conf(self, tag: str) -> None:
-        assert isinstance(self.private_dir, tempfile.TemporaryDirectory)
-        for pr in self.private_repos:
-            print("tagging", pr.repo, "with", tag)
-            self.proc_call(["git", "tag", tag], as_login_user=True, cwd=pr.dir)
+        assert isinstance(self._private_dir, tempfile.TemporaryDirectory)
+        for cr in self.config_repos:
+            print("tagging", cr.repo, "with", tag)
+            self.proc_call(["git", "tag", tag], as_login_user=True, cwd=cr.dir)
             # freshly cloned above, so always default remote
             self.proc_call(
                 ["git", "push", self.GIT_DEFAULT_REMOTE, tag],
                 as_login_user=True,
-                cwd=pr.dir,
+                cwd=cr.dir,
             )
 
     def source_file(self) -> str | None:
@@ -988,7 +1014,7 @@ class BaseDeploy:
                 stderr=subprocess.DEVNULL,
             )
 
-        if self.private_repos and self.config_tag:
+        if self.config_repos and self.config_tag:
             self.settings_tag_private_conf(self.config_tag)
 
     def deploy_cmd_requirements(self) -> None:
