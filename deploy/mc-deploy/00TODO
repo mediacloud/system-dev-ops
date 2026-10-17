@@ -1,21 +1,5 @@
 msg: rerun 'create **INSTANCE**'
 
-dokku.py:
-	configure postgres:backup-{auth,schedule}!!!
-		take _MC_DEPLOY_DOKKU_DB_BACKUP..... vars?
-
-		DOKKU_POSTGRES_S3_SCHEDULE="0 1 * * *"
-		DOKKU_POSTGRES_S3_BUCKET
-		DOKKU_POSTGRES_S3_KEY_ID
-		DOKKU_POSTGRES_S3_SECRET_KEY
-		DOKKU_POSTGRES_S3_REGION
-		DOKKU_POSTGRES_S3_SIGN_VERS
-		DOKKU_POSTGRES_S3_ENDPOINT
-
-		postgres:backup-auth SVC K1 K2
-		postgres:backup-schedule SVC SCH BUCKET [REGION [SIGN_VERS [ENDPOINT]]]
-
-
 staging: check if current w/ main????? option to disable
 prod: check if current with staging???
 
@@ -31,17 +15,15 @@ BETTER HOOK/METHOD NAMES!
 	post_helper hook/method (after config read)?
 
 rss-fetcher:
-	add cronjobs to app.json (require enables for some!)
-	dummy out push.sh, remove instance.sh, dburl.sh
+	set MCDEPLOY_POSTGRES_BACKUP_ vars
 	verify notification
 		remove AIRTABLE from rss-fetcher conf
 		read manage private config
 		remove mc-manage dependency
 		remove postdeploy.sh?
 
-
 web-search:
-	add cronjobs to app.json (require enables for some!)
+	set MCDEPLOY_POSTGRES_BACKUP_ vars
 	verify notification
 		remove AIRTABLE from web-search conf
 		read manage private config
