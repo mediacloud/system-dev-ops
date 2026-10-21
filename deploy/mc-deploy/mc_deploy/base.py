@@ -402,7 +402,6 @@ class BaseDeploy:
                 if "\t" in remote and remote.endswith(ending):
                     name, url = remote.split("\t")
                     url = url.removesuffix(ending).strip()
-                    print("HERE", name, url)
                     self._remotes[name] = url
         return self._remotes
 
