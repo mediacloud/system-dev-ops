@@ -91,7 +91,11 @@ class DokkuDeploy(BaseDeploy):
     # (ISTR seeing refs/tags/..../refs/tags/....)
     DOKKU_GIT_BRANCH = "main"  # branch at dokku_git_remote
 
+    DOKKU_GRAPHITE_LINK = False  # most apps can use proxy URL
+    DOKKU_GRAPHITE_SERVICE = "ObscureStatsServiceName"
+
     DOKKU_LETSENCRYPT_EMAIL = "system@mediacloud.org"
+
     DOKKU_STORAGE_HOME = "/var/lib/dokku/data/storage"  # odd this is needed!
     DOKKU_STORAGE_MOUNT_POINT = "/app/data"  # reasonable default!
 
@@ -678,17 +682,7 @@ class DokkuDeploy(BaseDeploy):
                 print(plugin, "service", name, "create failed")
                 return False
 
-        if self.dokku_service_linked(plugin, name, app):
-            print(plugin, "service", name, "already linked to app", app)
-        elif (
-            self.dokku_call(f"{plugin}:link {name} {app}") == 0
-        ):  # loud for now
-            print(plugin, "service", name, "linked to app", app)
-        else:
-            print(plugin, "service", name, "link failed")
-            return False
-
-        return True
+        return self.dokku_service_link(plugin, name, app)
 
     def dokku_service_destroy(self, plugin: str, name: str, app: str) -> bool:
         if plugin == "storage":
@@ -696,10 +690,10 @@ class DokkuDeploy(BaseDeploy):
         if self.dokku_service_exists(plugin, name):
             print(plugin, "service", name, "exists")
             if self.dokku_service_linked(plugin, name, app):
-                self.dokku_call(f"{plugin}:unlink {name} {app}")  # XXX check?
-                print("destroying", plugin, "service", name)
-                if not self.dokku_call(f"--force {plugin}:destroy {name}"):
-                    return False
+                self.dokku_service_unlink(plugin, name, app)
+            print("destroying", plugin, "service", name)
+            if not self.dokku_call(f"--force {plugin}:destroy {name}"):
+                return False
         return True
 
     def dokku_service_dsn(self, plugin: str, name: str) -> str:
@@ -744,6 +738,21 @@ class DokkuDeploy(BaseDeploy):
             == 0
         )
 
+    def dokku_service_link(self, plugin: str, name: str, app: str) -> bool:
+        if self.dokku_service_linked(plugin, name, app):
+            print(plugin, "service", name, "already linked to app", app)
+            return True
+
+        if self.dokku_call_null(f"{plugin}:link {name} {app}") == 0:
+            print(plugin, "service", name, "linked to app", app)
+            return True
+
+        print(plugin, "service", name, "link failed")
+        return False
+
+    def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
+        return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
+
     def dokku_service_name(self, plugin: str, instance: str) -> str:
         """
         take plugin name (eg postgres, redis)
@@ -753,8 +762,9 @@ class DokkuDeploy(BaseDeploy):
         app = self._id2name(instance)
         return app + self.DOKKU_SERVICES[plugin].suffix
 
-    def dokku_service_linked(self, plugin: str, name: str, app: str) -> bool:
-        return self.dokku_call_null(f"{plugin}:linked {name} {app}") == 0
+    def dokku_service_unlink(self, plugin: str, name: str, app: str) -> None:
+        if self.dokku_service_linked(plugin, name, app):
+            self.dokku_call_null(f"{plugin}:unlink {name} {app}")
 
     def dokku_services_backups(self, app: str) -> None:
         """
@@ -975,7 +985,7 @@ class DokkuDeploy(BaseDeploy):
                 self.dokku_domains_check(app, check)
 
         if self.dokku_services_backups_needed(app):
-            # CROCKERY! dokku_services_backups needs config!
+            # CROCKERY! dokku_services_backups needs config from files!
             # clean up by refactoring?!!!
             self.inst_id = args.instance
             if self.inst_id in ("prod", "staging"):
@@ -988,6 +998,13 @@ class DokkuDeploy(BaseDeploy):
             # end crockery
 
             self.dokku_services_backups(app)
+
+        if self.DOKKU_GRAPHITE_LINK:
+            # for apps (vitals-api) that NEED a link to graphite
+            # (can't use proxy)
+            self.dokku_service_link(
+                "graphite", self.DOKKU_GRAPHITE_SERVICE, app
+            )
 
         return 0
 
@@ -1179,6 +1196,10 @@ class DokkuDeploy(BaseDeploy):
         self.confirm(f"Really destroy app {app}? [no] ")
         if not self.dokku_services_destroy(app):
             return 1
+        if self.DOKKU_GRAPHITE_LINK:
+            self.dokku_service_unlink(
+                "graphite", self.DOKKU_GRAPHITE_SERVICE, app
+            )
         if not self.dokku_app_destroy(app):
             return 1
         print("[OK]")

@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.19.1: add DOKKU_GRAPHITE_LINK
 * 0.19.0: split git_clone, get_private_dir_name from settings_load_private_files
 	for making docker images from clean source checkouts.
 	renamed PrivateRepo to ConfigRepo, self.private_repos to config_repos
