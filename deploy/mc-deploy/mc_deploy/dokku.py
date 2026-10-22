@@ -1000,6 +1000,11 @@ class DokkuDeploy(BaseDeploy):
             self.dokku_services_backups(app)
 
         if self.DOKKU_GRAPHITE_LINK:
+            if not self.dokku_service_exists(
+                "graphite", self.DOKKU_GRAPHITE_SERVICE
+            ):
+                self.fatal("local graphite service not found")
+
             # for apps (vitals-api) that NEED a link to graphite
             # (can't use proxy)
             self.dokku_service_link(
