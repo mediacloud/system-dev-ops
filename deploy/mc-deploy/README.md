@@ -97,6 +97,7 @@ previously need a new feature!
 * web-search
 * collection-review-tool
 * sous-chef-kitchen
+* vitals-api
 
 ### release.py
 
