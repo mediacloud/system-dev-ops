@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2026-08-17T16:17:54Z",
+    "updated": "2026-09-29T18:09:10Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 110,
+    "version": 112,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1786983159122,
+    "iteration": 1790704932065,
     "links": [],
     "panels": [
       {
@@ -1584,6 +1584,102 @@
           "align": false,
           "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 72
+        },
+        "id": 60,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refCount": 0,
+            "refId": "A",
+            "target": "asPercent(summarize(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_ok.count, '1d', 'sum', false), #B)",
+            "targetFull": "asPercent(summarize(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_ok.count, '1d', 'sum', false), summarize(sumSeries(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_*.count), '1d', 'sum', false))",
+            "textEditor": false
+          },
+          {
+            "hide": true,
+            "refCount": -1,
+            "refId": "B",
+            "target": "summarize(sumSeries(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_*.count), '1d', 'sum', false)",
+            "textEditor": true
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "percentage of feeds fetched successfully",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
     ],
     "refresh": false,
@@ -1672,6 +1768,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 110
+    "version": 112
   }
 }
