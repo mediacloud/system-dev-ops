@@ -53,6 +53,11 @@ class Service:
     backup: bool = False
 
 
+class _DeploymentHash(NamedTuple):
+    deploy_vers: str
+    script_hash: str
+
+
 class DokkuDeploy(BaseDeploy):
     DEPLOY_DIR = "dokku-scripts"
 
@@ -173,7 +178,16 @@ class DokkuDeploy(BaseDeploy):
         src = self.source_file()
         assert isinstance(src, str)
         deploy_py_hash = self.git_file_hash(src)
+
+        # if this changes, update deployment_hash_split!!
         return f"{mc_deploy_vers}-{deploy_py_hash}"
+
+    def deployment_hash_split(self, h: str) -> _DeploymentHash:
+        """
+        keep order of deployment_hash string opaque!
+        """
+        split = h.split("-", 1)
+        return _DeploymentHash(deploy_vers=split[0], script_hash=split[1])
 
     def dokku_app_create(self, app: str) -> bool:
         if self.dokku_app_exists(app):
@@ -927,11 +941,15 @@ class DokkuDeploy(BaseDeploy):
     ################ commands (in alphabetical order)
 
     def create_cmd_init(self, cp: CmdParser) -> None:
-        cp.add_argument("instance", help="prod/staging/USER")
+        cp.add_argument("instance", help="prod/staging/USER", nargs="?")
 
     def create_cmd(self, args: CmdArgs) -> int:
         """Create Dokku app instance"""
         self.check_not_root()  # use user ssh keys for dokku & git
+
+        if args.instance is None:
+            self.make_inst_id()
+            args.instance = self.inst_id
 
         self.dokku_check_host(self.dokku_host_fqdn)
         app = self._id2name(args.instance)
@@ -1072,15 +1090,36 @@ class DokkuDeploy(BaseDeploy):
             curr_settings = json.loads(jstr)
 
         # check if mc-remote version & hash of deploy.py that
-        # invoked us have changed (if so, need to re-run 'deploy' command)
-        curr_hash = curr_settings.get(
-            self.DEPLOY_HASH_VAR
-        )  # set by create cmd
+        # invoked us have changed
+        hash_var = self.DEPLOY_HASH_VAR  # set by create cmd
+        curr_hash = curr_settings.get(hash_var)
         expected_hash = self.deployment_hash()
         self.debug("curr_hash", curr_hash)
         self.debug("expected_hash", expected_hash)
         if curr_hash != expected_hash:
-            self.fatal("instance deployment hash mismatch: rerun 'create'")
+            if curr_hash:
+                run = "rerun"
+                c = self.deployment_hash_split(curr_hash)
+                e = self.deployment_hash_split(expected_hash)
+
+                print("Current app created by")
+
+                if c.deploy_vers != e.deploy_vers:
+                    print(
+                        f"    mc-deploy vers {c.deploy_vers}, running {e.deploy_vers}"
+                    )
+
+                    s = sys.argv[0]  # script path
+                    if c.script_hash != e.script_hash:
+                        print(
+                            f"    {s} hash {c.script_hash}, running {e.script_hash}"
+                        )
+            else:
+                run = "run"
+
+            p = self.python_path()  # relative path to running interpreter
+            # create now defaults based on current branch, so inst_id not needed!
+            self.fatal(f"{run}: {p} {s} create")
 
         # check if code has changed (compare with dokku git remote)
         self.proc_call(["git", "fetch", dokku_remote])
@@ -1245,7 +1284,8 @@ class DokkuDBMixin(DokkuMixinBase):
     def clone_cmd_init(self, cp: CmdParser) -> None:
         cp.add_argument(
             "instance",
-            help="db instance (prod/staging/USER) to clone prod database to",
+            help="db instance (staging/USER) to clone prod database to",
+            nargs="?",
         )
         # maybe take optional source host & service names?
 
@@ -1259,6 +1299,13 @@ class DokkuDBMixin(DokkuMixinBase):
         self.debug("from_host", from_host)
         self.debug("from_svc", from_svc)
         self.dokku_check_host(from_host, what="source")
+
+        if args.instance is None:
+            self.make_inst_id()
+            args.instance = self.inst_id
+
+        if args.instance == "prod":
+            self.fatal("Cannot clone to production!!")
 
         to_svc = self.dokku_service_name(dbtype, args.instance)
         to_host = self.dokku_host_fqdn

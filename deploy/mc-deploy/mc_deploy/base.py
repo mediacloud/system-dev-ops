@@ -84,6 +84,7 @@ class BaseDeploy:
         # map command name to method:
         self.cmd_funcs: dict[str, Callable[[CmdArgs], int]] = {}
         self._conf_loaded = False  # true if config file read attempted
+        self._cwd: str | None = None  # for relpath()
         self.date_time = self.get_date_time()
         self.debug_output = False  # for early debug calls
         self.deploy_dir = self.get_deploy_dir()
@@ -217,9 +218,13 @@ class BaseDeploy:
         return os.path.dirname(src)
 
     def get_inst_base(self) -> str:
-        # PLEASE do not override!!!
-        # naming scheme used across MC projects;
-        # group by user/realm then app/stack
+        """
+        return base (production) instance name (including flavor)
+
+        PLEASE do not override!!!
+        naming scheme used across MC projects;
+        groups by user/realm then app/stack
+        """
         base = self.INST_BASE
         if self.INST_FLAVORS and self.inst_flavor_prefix:
             return f"{self.inst_flavor_prefix}{base}"
@@ -465,6 +470,34 @@ class BaseDeploy:
         assert isinstance(self.inst_type, str)
         return self.inst_type == "staging"
 
+    def make_inst_id(self) -> None:
+        """
+        factored out of deploy_cmd_helper
+        run always (move to process_args)???
+        MUST run after parser_results!!
+        """
+
+        if self.test_branch:
+            self.branch = self.test_branch
+        else:
+            self.branch = self.git_branch()
+        self.debug("branch", self.branch)
+
+        if self.branch in ("prod", "staging"):
+            self.inst_type = self.inst_id = self.branch
+        else:
+            self.inst_type = "dev"
+            self.inst_id = self.user  # in case --user option
+
+        self.debug("inst_type", self.inst_type)  # prod/staging/dev
+        self.debug("inst_id", self.inst_id)  # prod/staging/USER
+
+        if self.INST_FLAVORS:
+            assert self.inst_flavor
+            self.inst_flavor_prefix = self.INST_FLAVORS[
+                self.inst_flavor
+            ].prefix
+
     def parser_init(self, ap: argparse.ArgumentParser) -> None:
         """
         add top-level arguments common to all commands.
@@ -485,6 +518,7 @@ class BaseDeploy:
         )
         if self.INST_FLAVORS:
             # top level option for create/destroy commands
+            # first item is default, displayed in sorted order
             def_flavor = next(iter(self.INST_FLAVORS))
             ap.add_argument(
                 "-F",
@@ -658,6 +692,24 @@ class BaseDeploy:
 
     def proj_version_location(self) -> str:
         raise NotImplementedError("use a mixin!")
+
+    def python_path(self) -> str:
+        """
+        return relative path to running interpreter
+        """
+        return self.relpath(sys.executable)
+
+    def relpath(self, p: str) -> str:
+        """
+        if path p starts with current working directory, remove it.
+        pathlib.Path.relative_to not in Python 3.10 (and I avoid pathlib).
+        os.path.relpath returns .. for paths outside cwd!!
+        """
+        if self._cwd is None:
+            # os.curdir == ".", so useless!
+            self._cwd = os.getcwd()
+        assert self._cwd
+        return p.removeprefix(f"{self._cwd}/")
 
     def settings_add(self, key: str, value: str) -> None:
         """
@@ -875,24 +927,8 @@ class BaseDeploy:
             self.fatal("local changes not checked in")
 
         self.unpushed = args.unpushed
-        if self.test_branch:
-            self.branch = self.test_branch
-        else:
-            self.branch = self.git_branch()
-        self.debug("branch", self.branch)
 
-        if self.branch in ("prod", "staging"):
-            self.inst_type = self.inst_id = self.branch
-        else:
-            self.inst_type = "dev"
-            self.inst_id = self.user  # in case --user option
-
-        self.debug("inst_type", self.inst_type)  # prod/staging/dev
-        self.debug("inst_id", self.inst_id)  # prod/staging/USER
-
-        if self.INST_FLAVORS:
-            ftup = self.INST_FLAVORS[args.flavor]
-            self.inst_flavor_prefix = ftup.prefix
+        self.make_inst_id()
 
         # inst id is prod, staging or USER
         # default stats_app returns app/stack name including flavor-

@@ -1,5 +1,7 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.19.3: Default instance in Dokku create and clone cmds (split out make_inst_id)
+	Explain deploy hash change, give full cmd to run (added relpath, python_path)
 * 0.19.2: if DOKKU_GRAPHITE_LINK, check graphite service exists
 * 0.19.1: add DOKKU_GRAPHITE_LINK
 * 0.19.0: split git_clone, get_private_dir_name from settings_load_private_files
