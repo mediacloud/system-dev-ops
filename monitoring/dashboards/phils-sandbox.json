@@ -9,10 +9,10 @@
     "url": "/d/-czjBEvVz/phils-sandbox",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2022-11-11T17:43:47Z",
-    "updated": "2026-09-29T18:09:10Z",
+    "updated": "2026-11-04T22:30:18Z",
     "updatedBy": "phil.budne@gmail.com",
     "createdBy": "admin",
-    "version": 112,
+    "version": 115,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -39,7 +39,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 3,
-    "iteration": 1790704932065,
+    "iteration": 1793830527919,
     "links": [],
     "panels": [
       {
@@ -56,6 +56,180 @@
           "w": 12,
           "x": 0,
           "y": 0
+        },
+        "id": 62,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.counters.mc.$realm.web-search.api.calls.*.what*.rate, -3, -2)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Calls by App and Op",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 63,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "refId": "A",
+            "target": "aliasByNode(stats.counters.mc.$realm.web-search.api.status.*.*.rate, -2, -3)",
+            "textEditor": false
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Call Status by App",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "cacheTimeout": "",
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
         },
         "id": 52,
         "legend": {
@@ -142,7 +316,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 0
+          "y": 8
         },
         "id": 53,
         "legend": {
@@ -229,7 +403,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 8
+          "y": 16
         },
         "id": 54,
         "legend": {
@@ -316,7 +490,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 8
+          "y": 16
         },
         "id": 56,
         "legend": {
@@ -403,7 +577,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 16
+          "y": 24
         },
         "id": 50,
         "legend": {
@@ -500,7 +674,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 16
+          "y": 24
         },
         "id": 22,
         "legend": {
@@ -588,7 +762,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 24
+          "y": 32
         },
         "id": 46,
         "legend": {
@@ -682,7 +856,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 24
+          "y": 32
         },
         "id": 48,
         "legend": {
@@ -768,7 +942,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 32
+          "y": 40
         },
         "id": 16,
         "legend": {
@@ -870,7 +1044,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 32
+          "y": 40
         },
         "id": 18,
         "legend": {
@@ -955,7 +1129,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 40
+          "y": 48
         },
         "id": 14,
         "legend": {
@@ -1054,7 +1228,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 40
+          "y": 48
         },
         "id": 38,
         "legend": {
@@ -1140,7 +1314,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 48
+          "y": 56
         },
         "id": 23,
         "legend": {
@@ -1240,7 +1414,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 48
+          "y": 56
         },
         "id": 39,
         "legend": {
@@ -1332,7 +1506,7 @@
           "h": 8,
           "w": 12,
           "x": 5,
-          "y": 56
+          "y": 64
         },
         "id": 40,
         "legend": {
@@ -1416,178 +1590,6 @@
       {
         "aliasColors": {},
         "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 64
-        },
-        "id": 58,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stor*.count"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "rss-fetcher story(-ref) counts",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "cacheTimeout": "",
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": null,
-        "fill": 0,
-        "fillGradient": 0,
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 12,
-          "y": 64
-        },
-        "id": 59,
-        "legend": {
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "nullPointMode": "null",
-        "options": {
-          "dataLinks": []
-        },
-        "percentage": false,
-        "pointradius": 2,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "refId": "A",
-            "target": "divideSeries(stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.story-refs.count,stats.gauges.mc.$realm.rss-fetcher.rss-fetcher-stats.stories.count)",
-            "textEditor": true
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeRegions": [],
-        "timeShift": null,
-        "title": "ratio of story-refs to stories",
-        "tooltip": {
-          "shared": true,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
         "cacheTimeout": "",
         "dashLength": 10,
         "dashes": false,
@@ -1630,7 +1632,7 @@
             "refId": "A",
             "target": "asPercent(summarize(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_ok.count, '1d', 'sum', false), #B)",
             "targetFull": "asPercent(summarize(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_ok.count, '1d', 'sum', false), summarize(sumSeries(stats.counters.mc.$realm.rss-fetcher.fetcher.feeds.stat_*.count), '1d', 'sum', false))",
-            "textEditor": false
+            "textEditor": true
           },
           {
             "hide": true,
@@ -1768,6 +1770,6 @@
     "timezone": "",
     "title": "Phil's Sandbox",
     "uid": "-czjBEvVz",
-    "version": 112
+    "version": 115
   }
 }
