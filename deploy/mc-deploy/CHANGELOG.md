@@ -1,5 +1,6 @@
 ALSO: UPDATE version in pyproject.toml, run "make release" to tag & push!!
 
+* 0.19.4: Fix (re)run create message
 * 0.19.3: Default instance in Dokku create and clone cmds (split out make_inst_id)
 	Explain deploy hash change, give full cmd to run (added relpath, python_path)
 * 0.19.2: if DOKKU_GRAPHITE_LINK, check graphite service exists

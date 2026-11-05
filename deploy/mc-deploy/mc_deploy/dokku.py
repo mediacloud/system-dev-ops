@@ -1097,8 +1097,9 @@ class DokkuDeploy(BaseDeploy):
         self.debug("curr_hash", curr_hash)
         self.debug("expected_hash", expected_hash)
         if curr_hash != expected_hash:
+            s = sys.argv[0]  # script path
             if curr_hash:
-                run = "rerun"
+                r = "rerun"
                 c = self.deployment_hash_split(curr_hash)
                 e = self.deployment_hash_split(expected_hash)
 
@@ -1109,7 +1110,6 @@ class DokkuDeploy(BaseDeploy):
                         f"    mc-deploy vers {c.deploy_vers}, running {e.deploy_vers}"
                     )
 
-                    s = sys.argv[0]  # script path
                     if c.script_hash != e.script_hash:
                         print(
                             f"    {s} hash {c.script_hash}, running {e.script_hash}"
