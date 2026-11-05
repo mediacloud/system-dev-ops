@@ -1099,7 +1099,7 @@ class DokkuDeploy(BaseDeploy):
         if curr_hash != expected_hash:
             s = sys.argv[0]  # script path
             if curr_hash:
-                r = "rerun"
+                run = "rerun"
                 c = self.deployment_hash_split(curr_hash)
                 e = self.deployment_hash_split(expected_hash)
 
