@@ -1,5 +1,3 @@
-msg: rerun 'create **INSTANCE**'
-
 staging: check if current w/ main????? option to disable
 prod: check if current with staging???
 

@@ -51,8 +51,13 @@ class Flavor(NamedTuple):
 
 
 class ConfigRepo(NamedTuple):
+    """
+    config repos to tag
+    """
+
     repo: str  # repo name
     dir: str  # full path to cloned repo
+    common: bool  # shared repo: prefix tags
 
 
 class BaseDeploy:
@@ -770,10 +775,10 @@ class BaseDeploy:
         """
         load AIRTABLE and SENTRY config
         """
-        self.settings_load_private_files("management-config", ["env.sh"])
+        self.settings_load_private_files("management-config", ["env.sh"], True)
 
     def settings_load_private_files(
-        self, repo: str, fnames: list[str]
+        self, repo: str, fnames: list[str], common_repo: bool = False
     ) -> None:
         """
         helper for settings_get_new;
@@ -784,7 +789,9 @@ class BaseDeploy:
             repo += "-config"  # always?
         url = self.git_upstream_url(repo)
         dir = self.git_clone(repo, url)
-        self.config_repos.append(ConfigRepo(repo, dir))  # for tagging
+        self.config_repos.append(
+            ConfigRepo(repo, dir, common_repo)
+        )  # for tagging
 
         for fname in fnames:  # may read prod, then staging for overrides
             print("loading", repo, fname)
@@ -835,6 +842,12 @@ class BaseDeploy:
     def settings_tag_private_conf(self, tag: str) -> None:
         assert isinstance(self._private_dir, tempfile.TemporaryDirectory)
         for cr in self.config_repos:
+            if cr.common:  # common config repo
+                # avoid applying v1.2.3 to shared repos.
+                # probably not perfect, but a start.
+                if self.INST_BASE not in tag:
+                    inst_base = self.get_inst_base()  # includes flavor
+                    tag = f"{inst_base}-{tag}"
             print("tagging", cr.repo, "with", tag)
             self.proc_call(["git", "tag", tag], as_login_user=True, cwd=cr.dir)
             # freshly cloned above, so always default remote
