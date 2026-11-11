@@ -10,10 +10,10 @@
     "url": "/d/hN1OxidSk/story-indexer-alerts",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2023-12-19T01:11:55Z",
-    "updated": "2026-10-11T04:31:19Z",
-    "updatedBy": "phil.budne@gmail.com",
+    "updated": "2026-11-08T15:26:47Z",
+    "updatedBy": "admin",
     "createdBy": "phil.budne@gmail.com",
-    "version": 65,
+    "version": 66,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -1562,7 +1562,7 @@
             {
               "evaluator": {
                 "params": [
-                  1999000000
+                  2000000000
                 ],
                 "type": "gt"
               },
@@ -1587,7 +1587,7 @@
           "for": "10m",
           "frequency": "10m",
           "handler": 1,
-          "name": "2 Billion stories soon!",
+          "name": "2 Billion stories!!",
           "noDataState": "no_data",
           "notifications": [
             {
@@ -1645,7 +1645,7 @@
             "fill": true,
             "line": true,
             "op": "gt",
-            "value": 1999000000
+            "value": 2000000000
           }
         ],
         "timeFrom": null,
@@ -1717,6 +1717,6 @@
     "timezone": "",
     "title": "story-indexer alerts",
     "uid": "hN1OxidSk",
-    "version": 65
+    "version": 66
   }
 }
