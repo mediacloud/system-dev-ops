@@ -1277,7 +1277,7 @@ class DokkuDBMixin(DokkuMixinBase):
 
     # not tested with anything but postgres!!
     DATABASE = "postgres"  # plugin name
-    POST_CLONE_SCRIPT = "post-clone.psql" # in deploy_dir
+    POST_CLONE_SCRIPT = "post-clone.psql"  # in deploy_dir
 
     SQLALCHEMY2 = False  # URL crockery
 
@@ -1362,9 +1362,9 @@ class DokkuDBMixin(DokkuMixinBase):
         self.debug("import_status", import_status)
         self.debug("export_status", export_status)
         if import_status:
-            self.fatal(f"import status {import_status}");
+            self.fatal(f"import status {import_status}")
         if export_status:
-            self.fatal(f"export status {export_status}");
+            self.fatal(f"export status {export_status}")
 
         # if POST_CLONE_SCRIPT set, run as a file of db commands
         # (ie; disable non-staff accounts for web-search in case
@@ -1376,10 +1376,11 @@ class DokkuDBMixin(DokkuMixinBase):
             self.debug("found post_clone_path %s", post_clone_path)
             with open(post_clone_path) as pcf:
                 pc_proc = subprocess.Popen(
-                    self._dokku_ssh_args([f"{dbtype}:connect", to_svc],
-                                         no_input=False),
+                    self._dokku_ssh_args(
+                        [f"{dbtype}:connect", to_svc], no_input=False
+                    ),
                     shell=False,
-                    stdin=pcf
+                    stdin=pcf,
                 )
                 pc_status = pc_proc.wait()
             if pc_status:
